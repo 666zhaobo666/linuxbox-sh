@@ -76,6 +76,7 @@ CheckFirstRun() {
 	if [ ! -f "/usr/local/bin/${key}" ]; then
 		# 文件不存在：下载安装并赋予权限
 		if [ ! -f "./LinuxBox.sh" ]; then
+			echo -e "请稍后, 正在下载..."
 			# 获取当前脚本的在线原始地址（替换为你的实际 raw 地址）
 			script_url="https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh"
 			# 下载并保存到本地当前目录
@@ -85,9 +86,10 @@ CheckFirstRun() {
 		fi
 		cp -f ./LinuxBox.sh /usr/local/bin/j > /dev/null 2>&1
 		chmod +x /usr/local/bin/j > /dev/null 2>&1
-		echo -e "${cyan}安装完成, 您现在可以删除本目录文件！${white}"
+		echo -e "${cyan}安装完成！${white}"
+		rm -f ./LinuxBox.sh
 		sleep 2
-		UserLicenseAgreement_afterinstall
+		UserLicenseAgreement
 	else
 		# 文件存在：运行authorization_false函数
 		authorization_check
@@ -96,32 +98,6 @@ CheckFirstRun() {
 # 提示用户同意条款
 UserLicenseAgreement() {
 	clear
-	echo -e "${cyan}--欢迎使用LinuxBox脚本工具箱--${white}"
-	echo -e ""
-	echo -e "${pink}-----------------------------${white}"
-	echo -e "${yellow}此脚本基于自用开发${white}"
-	echo -e "${yellow}请尽量通过选择脚本选项退出${white}"
-	echo -e "${yellow}如有问题，后果自负！${white}"
-	echo -e "${pink}-----------------------------${white}"
-	read -r -p "是否同意以上条款？(y/n): " user_input
-
-	if [ "$user_input" = "y" ] || [ "$user_input" = "Y" ]; then
-		echo "已同意"
-		sed -i 's/^user_authorization="false"/user_authorization="true"/' /usr/local/bin/${key}
-		#安装sudo
-        install sudo
-	else
-		echo "已拒绝"
-		clear
-		exit 1
-	fi
-}
-
-# 安装后提示用户同意条款
-UserLicenseAgreement_afterinstall() {
-	clear
-	echo -e ""
-	echo -e "${red}安装完成, 您现在可以删除本目录文件！${white}"
 	echo -e "${cyan}--欢迎使用LinuxBox脚本工具箱--${white}"
 	echo -e ""
 	echo -e "${pink}-----------------------------${white}"
