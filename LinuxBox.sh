@@ -90,7 +90,7 @@ CheckFirstRun() {
 		echo -e "${cyan}安装完成！${white}"
 		echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
 		rm -f ./LinuxBox.sh
-		break_end
+		sleep 1
 		UserLicenseAgreement
 	else
 		# 文件存在：运行authorization_false函数
