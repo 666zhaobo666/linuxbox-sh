@@ -164,7 +164,7 @@ update_script() {
 	# 比较版本号
     if [ "$remote_version" = "$version" ]; then
         echo "当前已是最新版本 ($version)"
-        return 0
+        break_end
     fi
 	# 提示更新并确认
     echo "发现新版本 V$remote_version,当前版本 V$version"
@@ -190,11 +190,11 @@ update_script() {
         else
             echo "更新失败，恢复备份..."
             mv /usr/local/bin/${key}.bak /usr/local/bin/${key}
-            return 1
+            break_end
         fi
     else
         echo "已取消更新"
-        return 0
+        break_end
     fi
 }
 
