@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="1.3"
+version="1.4"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -59,7 +59,7 @@ use_proxy(){
     detect_region
     
     if [ "$region" == "CN" ]; then
-        url_proxy="https://gh.kejilion.pro/"
+        url_proxy="http://107.150.27.238:8046/"
     else
         url_proxy="https://"
     fi
