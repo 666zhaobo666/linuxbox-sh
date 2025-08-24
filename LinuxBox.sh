@@ -5016,7 +5016,7 @@ os=$(detect_os)
 if [ "$os" == "unsupported" ]; then
     error_exit "不支持的系统类型: $os_id"
 fi
-CheckFirstRun
 use_proxy
+CheckFirstRun
 # dependency_check
 main_menu
