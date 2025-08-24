@@ -104,7 +104,7 @@ CheckFirstRun() {
 # 提示用户同意条款
 UserLicenseAgreement() {
 	clear
-	echo -e "${cyan}--欢迎使用LinuxBox脚本工具箱--${white}"
+	echo -e "${cyan}欢迎使用LinuxBox脚本工具箱${white}"
 	echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
 	echo -e ""
 	echo -e "${pink}-----------------------------${white}"
