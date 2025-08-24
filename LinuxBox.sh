@@ -10,7 +10,7 @@ red='\033[31m'			# 红色
 yellow='\033[33m'		# 黄色
 grey='\e[37m'			# 灰色
 pink='\033[38;5;218m'	# 粉色
-cyan='\033[96m'			# 青色
+cyan='\033[36m'			# 青色
 purple='\033[35m'		# 紫色
 
 ## 支持系统
@@ -18,6 +18,12 @@ SUPPORTED_OS=("ubuntu" "debian" "arch" "fedora")
 
 ## 地区默认值
 region="US"
+
+## 默认快捷键
+key="j"
+
+#初始化授权状态
+user_authorization="false"
 
 ## 检测地区并更新region
 detect_region() {
@@ -54,6 +60,107 @@ use_proxy(){
     else
         url_proxy="https://"
     fi
+}
+authorization_check() {
+    if grep -q '^user_authorization="true"' /usr/local/bin/${key} > /dev/null 2>&1; then
+        sed -i 's/^user_authorization="false"/user_authorization="true"/' /usr/local/bin/${key}
+    fi
+	authorization_false
+}
+authorization_false() {
+    if grep -q '^user_authorization="false"' /usr/local/bin/${key} > /dev/null 2>&1; then
+        UserLicenseAgreement
+    fi
+}
+CheckFirstRun() {
+	if [ ! -f "/usr/local/bin/${key}" ]; then
+		# 文件不存在：复制并赋予权限
+		cp -f ./LinuxBox.sh /usr/local/bin/j > /dev/null 2>&1
+		chmod +x /usr/local/bin/j > /dev/null 2>&1
+		echo -e "${cyan}安装完成, 您现在可以删除本目录文件！${white}"
+		sleep 2
+		UserLicenseAgreement_afterinstall
+	else
+		# 文件存在：运行authorization_false函数
+		authorization_check
+	fi
+}
+# 提示用户同意条款
+UserLicenseAgreement() {
+	clear
+	echo -e "${cyan}--欢迎使用LinuxBox脚本工具箱--${white}"
+	echo -e ""
+	echo -e "${pink}-----------------------------${white}"
+	echo -e "${yellow}此脚本基于自用开发${white}"
+	echo -e "${yellow}请尽量通过选择脚本选项退出${white}"
+	echo -e "${yellow}如有问题，后果自负！${white}"
+	echo -e "${pink}-----------------------------${white}"
+	read -r -p "是否同意以上条款？(y/n): " user_input
+
+	if [ "$user_input" = "y" ] || [ "$user_input" = "Y" ]; then
+		echo "已同意"
+		sed -i 's/^user_authorization="false"/user_authorization="true"/' /usr/local/bin/${key}
+		#安装sudo
+        install sudo
+	else
+		echo "已拒绝"
+		clear
+		exit 1
+	fi
+}
+
+# 安装后提示用户同意条款
+UserLicenseAgreement_afterinstall() {
+	clear
+	echo -e ""
+	echo -e "${red}安装完成, 您现在可以删除本目录文件！${white}"
+	echo -e "${cyan}--欢迎使用LinuxBox脚本工具箱--${white}"
+	echo -e ""
+	echo -e "${pink}-----------------------------${white}"
+	echo -e "${yellow}此脚本基于自用开发${white}"
+	echo -e "${yellow}请尽量通过选择脚本选项退出${white}"
+	echo -e "${yellow}如有问题，后果自负！${white}"
+	echo -e "${pink}-----------------------------${white}"
+	read -r -p "是否同意以上条款？(y/n): " user_input
+
+	if [ "$user_input" = "y" ] || [ "$user_input" = "Y" ]; then
+		echo "已同意"
+		sed -i 's/^user_authorization="false"/user_authorization="true"/' /usr/local/bin/${key}
+		#安装sudo
+        install sudo
+	else
+		echo "已拒绝"
+		clear
+		exit 1
+	fi
+}
+
+## 卸载脚本
+uninstall_script() {
+	clear
+	echo -e "${red}警告: 你即将卸载LinuxBox脚本工具箱！${white}"
+	read -r -p "是否确认卸载？(y/n): " confirm
+	if [[ "$confirm" =~ ^[Yy]$ ]]; then
+		# 删除脚本文件
+		## rm -f ~/LinuxBox.sh
+		rm -f /usr/local/bin/${key}
+		
+		# 删除快捷键别名
+		if [ -f "$HOME/.bashrc" ]; then
+			sed -i "/alias ${key}='/d" "$HOME/.bashrc"
+			source "$HOME/.bashrc"
+		fi
+		if [ -f "$HOME/.zshrc" ]; then
+			sed -i "/alias ${key}='/d" "$HOME/.zshrc"
+			source "$HOME/.zshrc"
+		fi
+		
+		echo -e "${green}LinuxBox脚本工具箱已成功卸载!${white}"
+		exit 0
+	else
+		echo "卸载已取消。"
+		sleep 1
+	fi
 }
 
 ######################################################################
@@ -260,7 +367,7 @@ check_disk_space() {
 	available_space_mb=$(df -m / | awk 'NR==2 {print $4}')
 
 	if [ $available_space_mb -lt $required_space_mb ]; then
-		echo -e "${gl_huang}提示: ${white}磁盘空间不足！"
+		echo -e "${yellow}提示: ${white}磁盘空间不足！"
 		echo "当前可用空间: $((available_space_mb/1024))G"
 		echo "最小需求空间: ${required_gb}G"
 		echo "无法继续安装，请清理磁盘空间后重试。"
@@ -570,7 +677,7 @@ change_ip_priority() {
 			3)
 				clear
 				bash <(curl -L -s jhb.ovh/jb/v6.sh)
-				echo "该功能由jhb大神提供，感谢他！"
+				echo "该功能由jhb大神提供, 感谢!"
 				## "ipv6修复"
 				;;
 
@@ -3181,7 +3288,7 @@ linux_bbr() {
 # 检查panel是否安装
 check_panel_app() {
 	if $path > /dev/null 2>&1; then
-		check_panel="${gl_lv}已安装${white}"
+		check_panel="${green}已安装${white}"
 	else
 		check_panel=""
 	fi
@@ -3245,7 +3352,7 @@ docker_tato() {
 
 	if command -v docker &> /dev/null; then
 		echo -e "${cyan}------------------------${white}"
-		echo -e "${gl_lv}环境已经安装${white}  容器: ${gl_lv}$container_count${white}  镜像: ${gl_lv}$image_count${white}  网络: ${gl_lv}$network_count${white}  卷: ${gl_lv}$volume_count${white}"
+		echo -e "${green}环境已经安装${white}  容器: ${green}$container_count${white}  镜像: ${green}$image_count${white}  网络: ${green}$network_count${white}  卷: ${green}$volume_count${white}"
 	fi
 }
 
@@ -3309,7 +3416,7 @@ install_crontab() {
 		return
 	fi
 
-	echo -e "${gl_lv}crontab 已安装且 cron 服务正在运行。${white}"
+	echo -e "${green}crontab 已安装且 cron 服务正在运行。${white}"
 }
 
 # 保存 iptables 规则
@@ -3411,7 +3518,7 @@ check_docker_image_update() {
 
 		# 比较时间戳
 		if [[ $container_created_ts -lt $last_updated_ts ]]; then
-			update_status="${gl_huang}发现新版本!${white}"
+			update_status="${yellow}发现新版本!${white}"
 		else
 			update_status=""
 		fi
@@ -4086,9 +4193,9 @@ poste_mail_app(){
 		port=25
 		timeout=3
 		if echo "quit" | timeout $timeout telnet smtp.qq.com $port | grep 'Connected'; then
-			echo -e "${gl_lv}端口 $port 当前可用${white}"
+			echo -e "${green}端口 $port 当前可用${white}"
 		else
-			echo -e "${gl_hong}端口 $port 当前不可用${white}"
+			echo -e "${red}端口 $port 当前不可用${white}"
 		fi
 		echo ""
 
@@ -4830,7 +4937,9 @@ main_menu() {
     clear
     while true; do
 		clear
-        echo -e "命令行输入${yellow}j${cyan}可快速启动脚本${white}"
+		echo -e "${cyan}LinuxBox脚本工具箱 V$version${white}"
+        echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
+		echo -e ""
         echo -e "${cyan}------------------------${white}"
         echo -e "${cyan}1.   ${white}系统信息查询"
 		echo -e "${cyan}2.   ${white}系统工具"
@@ -4841,7 +4950,9 @@ main_menu() {
         echo -e "${cyan}7.   ${white}BBR加速管理"
         echo -e "${cyan}8.   ${white}应用市场"
         echo -e "${cyan}9.   ${white}Dev环境管理"
+		echo -e "${cyan}------------------------${white}"
         echo -e "${yellow}0.   ${white}退出脚本"
+		echo -e "${red}555.   ${white}卸载脚本"
         echo -e "${cyan}------------------------${white}"
 
         read -e -p "请选择功能编号: " choice
@@ -4856,6 +4967,7 @@ main_menu() {
             8) linux_app ;;
             9) echo "Dev环境管理(待实现)"; read -n1 -s -r -p "按任意键继续..." ;;
             0) exit 0 ;;
+			555) uninstall_script ;;
             *) echo "无效选择"; sleep 1 ;;
         esac
     done
@@ -4865,6 +4977,7 @@ os=$(detect_os)
 if [ "$os" == "unsupported" ]; then
     error_exit "不支持的系统类型: $os_id"
 fi
+CheckFirstRun
 use_proxy
 # dependency_check
 main_menu
