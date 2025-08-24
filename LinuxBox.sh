@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="1.5.2"
+version="1.5.3"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -80,18 +80,20 @@ authorization_false() {
 }
 CheckFirstRun() {
 	if [ ! -f "/usr/local/bin/${key}" ]; then
+		root_user
 		# 文件不存在：下载安装并赋予权限
 		if [ ! -f "./LinuxBox.sh" ]; then
 			echo -e "请稍后, 正在下载..."
 			# 下载并保存到本地当前目录
 			curl -sL "$script_url" -o ./LinuxBox.sh
+			echo -e "下载完成!"
 			# 赋予执行权限
 			chmod +x ./LinuxBox.sh
 		fi
-		cp -f ./LinuxBox.sh /usr/local/bin/j > /dev/null 2>&1
-		chmod +x /usr/local/bin/j > /dev/null 2>&1
+		cp -f ./LinuxBox.sh /usr/local/bin/${key} > /dev/null 2>&1
+		chmod +x /usr/local/bin/${key} > /dev/null 2>&1
 		echo -e "${cyan}安装完成！${white}"
-		echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
+		echo -e "命令行输入${yellow} ${key} ${cyan}可快速启动脚本${white}"
 		rm -f ./LinuxBox.sh
 		break_end
 		UserLicenseAgreement
