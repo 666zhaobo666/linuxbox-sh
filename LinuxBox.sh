@@ -87,6 +87,7 @@ CheckFirstRun() {
 		cp -f ./LinuxBox.sh /usr/local/bin/j > /dev/null 2>&1
 		chmod +x /usr/local/bin/j > /dev/null 2>&1
 		echo -e "${cyan}安装完成！${white}"
+		echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
 		rm -f ./LinuxBox.sh
 		sleep 2
 		UserLicenseAgreement
@@ -99,6 +100,7 @@ CheckFirstRun() {
 UserLicenseAgreement() {
 	clear
 	echo -e "${cyan}--欢迎使用LinuxBox脚本工具箱--${white}"
+	echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
 	echo -e ""
 	echo -e "${pink}-----------------------------${white}"
 	echo -e "${yellow}此脚本基于自用开发${white}"
