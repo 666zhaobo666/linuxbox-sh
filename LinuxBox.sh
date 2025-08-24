@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="1.5"
+version="1.5.1"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -17,7 +17,7 @@ purple='\033[35m'		# 紫色
 SUPPORTED_OS=("ubuntu" "debian" "arch" "fedora")
 
 ## 地区默认值
-region="US"
+region="CN"
 
 ## 默认快捷键
 key="j"
@@ -4988,8 +4988,8 @@ main_menu() {
         echo -e "${cyan}8.   ${white}应用市场"
         echo -e "${cyan}9.   ${white}Dev环境管理"
 		echo -e "${cyan}------------------------${white}"
+		echo -e "${yellow}0.   ${white}退出脚本"
 		echo -e "${green}00.   ${white}更新脚本"
-        echo -e "${yellow}0.   ${white}退出脚本"
 		echo -e "${red}555.   ${white}卸载脚本"
         echo -e "${cyan}------------------------${white}"
 
@@ -5018,5 +5018,5 @@ if [ "$os" == "unsupported" ]; then
 fi
 use_proxy
 CheckFirstRun
-# dependency_check
+dependency_check
 main_menu
