@@ -80,7 +80,6 @@ authorization_false() {
 }
 CheckFirstRun() {
 	if [ ! -f "/usr/local/bin/${key}" ]; then
-		root_user
 		# 文件不存在：下载安装并赋予权限
 		if [ ! -f "./LinuxBox.sh" ]; then
 			echo -e "请稍后, 正在下载..."
