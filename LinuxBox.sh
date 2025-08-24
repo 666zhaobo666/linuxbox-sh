@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="1.0"
+version="1.2"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -21,6 +21,9 @@ region="US"
 
 ## 默认快捷键
 key="j"
+
+# 脚本地址
+script_url="https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh"
 
 #初始化授权状态
 user_authorization="false"
@@ -77,8 +80,6 @@ CheckFirstRun() {
 		# 文件不存在：下载安装并赋予权限
 		if [ ! -f "./LinuxBox.sh" ]; then
 			echo -e "请稍后, 正在下载..."
-			# 获取当前脚本的在线原始地址（替换为你的实际 raw 地址）
-			script_url="https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh"
 			# 下载并保存到本地当前目录
 			curl -sL "$script_url" -o ./LinuxBox.sh
 			# 赋予执行权限
@@ -147,6 +148,54 @@ uninstall_script() {
 		echo "卸载已取消。"
 		sleep 1
 	fi
+}
+
+## 更新脚本
+update_script() {
+	echo "正在检查更新..."
+	# 尝试获取远程脚本的版本号
+    remote_version=$(curl -s "$script_url" | grep '^version=' | head -n 1 | cut -d '"' -f 2)
+	# 检查是否成功获取远程版本
+    if [ -z "$remote_version" ]; then
+        echo "错误：无法获取远程版本信息"
+		sleep 1
+        return 1
+    fi
+	# 比较版本号
+    if [ "$remote_version" = "$version" ]; then
+        echo "当前已是最新版本 ($version)"
+        return 0
+    fi
+	# 提示更新并确认
+    echo "发现新版本 V$remote_version,当前版本 V$version"
+	read -r -p "是否确认更新？(y/n): " confirm
+    echo
+	if [[ $confirm =~ ^[Yy]$ ]]; then
+        echo "正在更新脚本..."
+        
+        # 备份当前脚本
+        mv /usr/local/bin/${key} /usr/local/bin/${key}.bak || { echo "备份失败"; return 1; }
+        
+        # 下载新脚本
+        if curl -sL "$script_url" -o ./LinuxBox.sh; then
+            chmod +x ./LinuxBox.sh
+			cp -f ./LinuxBox.sh /usr/local/bin/j > /dev/null 2>&1
+			chmod +x /usr/local/bin/j > /dev/null 2>&1
+			echo -e "${cyan}更新完成! 请重新运行脚本${white}"
+			echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
+			rm -f ./LinuxBox.sh
+			rm -f /usr/local/bin/${key}.bak
+			sleep 2
+			exit 0
+        else
+            echo "更新失败，恢复备份..."
+            mv /usr/local/bin/${key}.bak /usr/local/bin/${key}
+            return 1
+        fi
+    else
+        echo "已取消更新"
+        return 0
+    fi
 }
 
 ######################################################################
@@ -4937,6 +4986,7 @@ main_menu() {
         echo -e "${cyan}8.   ${white}应用市场"
         echo -e "${cyan}9.   ${white}Dev环境管理"
 		echo -e "${cyan}------------------------${white}"
+		echo -e "${green}00.   ${white}更新脚本"
         echo -e "${yellow}0.   ${white}退出脚本"
 		echo -e "${red}555.   ${white}卸载脚本"
         echo -e "${cyan}------------------------${white}"
@@ -4953,6 +5003,7 @@ main_menu() {
             8) linux_app ;;
             9) echo "Dev环境管理(待实现)"; read -n1 -s -r -p "按任意键继续..." ;;
             0) exit 0 ;;
+			00) update_script ;;
 			555) uninstall_script ;;
             *) echo "无效选择"; sleep 1 ;;
         esac
