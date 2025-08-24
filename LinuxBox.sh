@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="1.2"
+version="1.3"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -90,7 +90,7 @@ CheckFirstRun() {
 		echo -e "${cyan}安装完成！${white}"
 		echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
 		rm -f ./LinuxBox.sh
-		sleep 2
+		break_end
 		UserLicenseAgreement
 	else
 		# 文件存在：运行authorization_false函数
@@ -165,6 +165,7 @@ update_script() {
     if [ "$remote_version" = "$version" ]; then
         echo "当前已是最新版本 ($version)"
         break_end
+		return 1
     fi
 	# 提示更新并确认
     echo "发现新版本 V$remote_version,当前版本 V$version"
@@ -185,16 +186,18 @@ update_script() {
 			echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
 			rm -f ./LinuxBox.sh
 			rm -f /usr/local/bin/${key}.bak
-			sleep 2
+			break_end
 			exit 0
         else
             echo "更新失败，恢复备份..."
             mv /usr/local/bin/${key}.bak /usr/local/bin/${key}
             break_end
+			return 1
         fi
     else
         echo "已取消更新"
         break_end
+		return 1
     fi
 }
 
@@ -553,7 +556,7 @@ change_ssh_port() {
 
 			echo "SSH 端口已修改为: $new_port"
 
-			sleep 1
+			break_end
 		elif [[ $new_port -eq 0 ]]; then
 			break
 		else
@@ -1020,7 +1023,7 @@ modify_hostname() {
 
 			echo "主机名已更改为: $new_hostname"
 			## "主机名已更改"
-			sleep 1
+			break_end
 		else
 			echo "已退出，未更改主机名。"
 			break
@@ -1491,7 +1494,7 @@ linux_trash() {
 			echo "alias rm='trash-put'" >> "$bashrc_profile"
 			source "$bashrc_profile"
 			echo "回收站已启用，删除的文件将移至回收站。"
-			sleep 2
+			break_end
 			;;
 		2)
 			remove trash-cli
@@ -1499,7 +1502,7 @@ linux_trash() {
 			echo "alias rm='rm -i'" >> "$bashrc_profile"
 			source "$bashrc_profile"
 			echo "回收站已关闭，文件将直接删除。"
-			sleep 2
+			break_end
 			;;
 		3)
 			read -e -p "输入要还原的文件名: " file_to_restore
@@ -2352,7 +2355,7 @@ install_add_docker() {
     fi
     
     install_add_docker_guanfang
-    sleep 2
+    break_end
 }
 
 ## 8. 安装Docker
