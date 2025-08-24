@@ -74,7 +74,15 @@ authorization_false() {
 }
 CheckFirstRun() {
 	if [ ! -f "/usr/local/bin/${key}" ]; then
-		# 文件不存在：复制并赋予权限
+		# 文件不存在：下载安装并赋予权限
+		if [ ! -f "./LinuxBox.sh" ]; then
+			# 获取当前脚本的在线原始地址（替换为你的实际 raw 地址）
+			script_url="https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh"
+			# 下载并保存到本地当前目录
+			curl -sL "$script_url" -o ./LinuxBox.sh
+			# 赋予执行权限
+			chmod +x ./LinuxBox.sh
+		fi
 		cp -f ./LinuxBox.sh /usr/local/bin/j > /dev/null 2>&1
 		chmod +x /usr/local/bin/j > /dev/null 2>&1
 		echo -e "${cyan}安装完成, 您现在可以删除本目录文件！${white}"
