@@ -49,10 +49,6 @@ detect_region() {
     echo "无法检测地区，使用默认值: $region"
     return 1
 }
-
-# 脚本地址
-script_url="${url_proxy}raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh"
-
 ## url加速服务
 use_proxy(){
     # 先检测并更新地区
@@ -64,6 +60,13 @@ use_proxy(){
         url_proxy="https://"
     fi
 }
+use_proxy
+
+
+# 脚本地址
+script_url="${url_proxy}raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh"
+
+
 authorization_check() {
     if grep -q '^user_authorization="true"' /usr/local/bin/${key} > /dev/null 2>&1; then
         sed -i 's/^user_authorization="false"/user_authorization="true"/' /usr/local/bin/${key}
@@ -5016,7 +5019,6 @@ os=$(detect_os)
 if [ "$os" == "unsupported" ]; then
     error_exit "不支持的系统类型: $os_id"
 fi
-use_proxy
 CheckFirstRun
 dependency_check
 main_menu
