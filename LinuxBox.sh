@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="1.4"
+version="1.5"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -21,9 +21,6 @@ region="US"
 
 ## 默认快捷键
 key="j"
-
-# 脚本地址
-script_url="https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh"
 
 #初始化授权状态
 user_authorization="false"
@@ -52,6 +49,9 @@ detect_region() {
     echo "无法检测地区，使用默认值: $region"
     return 1
 }
+
+# 脚本地址
+script_url="${url_proxy}raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh"
 
 ## url加速服务
 use_proxy(){
