@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="2.0.2"
+version="2.0.3"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -306,6 +306,13 @@ dependency_check(){
 	fi
 	if ! command -v grep &>/dev/null; then
 		install grep
+	fi
+}
+
+# 定义一个函数来执行命令
+run_command() {
+	if [ "$zhushi" -eq 0 ]; then
+		"$@"
 	fi
 }
 
@@ -1842,11 +1849,11 @@ linux_tools() {
     while true; do
         clear
         echo -e "${green}===== 系统工具菜单目录 =====${white}"
-        echo -e "${cyan}1.  ${white}设置脚本启动快捷键      ${cyan}2.  ${white}修改用户登录密码"
-        echo -e "${cyan}3.  ${white}修改root登录密码          ${cyan}4.  ${white}修改ssh连接端口"
-        echo -e "${cyan}5.  ${white}打开/关闭ssh密码登录      ${cyan}6.  ${white}打开/关闭ssh root登录"
-        echo -e "${cyan}7.  ${white}优化DNS地址               ${cyan}8.  ${white}切换优先ipv4/ipv6"
-        echo -e "${cyan}9.  ${white}查看端口占用状态          ${cyan}10. ${white}修改虚拟内存大小"
+        echo -e "${cyan}1.  ${white}设置脚本启动快捷键          ${cyan}2.  ${white}修改用户登录密码"
+        echo -e "${cyan}3.  ${white}修改root登录密码            ${cyan}4.  ${white}修改ssh连接端口"
+        echo -e "${cyan}5.  ${white}打开/关闭ssh密码登录        ${cyan}6.  ${white}打开/关闭ssh root登录"
+        echo -e "${cyan}7.  ${white}优化DNS地址                 ${cyan}8.  ${white}切换优先ipv4/ipv6"
+        echo -e "${cyan}9.  ${white}查看端口占用状态            ${cyan}10. ${white}修改虚拟内存大小"
 		echo -e "------------------------------------${white}"
         echo -e "${cyan}11. ${white}用户管理			${cyan}12. ${white}系统时区调整"
         echo -e "${cyan}13. ${white}修改主机名			${cyan}14. ${white}切换系统更新源"
@@ -2895,9 +2902,9 @@ certs_status() {
 	sleep 1
 	local file_path="/etc/letsencrypt/live/$yuming/fullchain.pem"
 	if [ -f "$file_path" ]; then
-		send_stats "域名证书申请成功"
+		# "域名证书申请成功"
 	else
-		send_stats "域名证书申请失败"
+		# "域名证书申请失败"
 		echo -e "${red}注意: ${white}证书申请失败，请检查以下可能原因并重试："
 		echo -e "1. 域名拼写错误 ➠ 请检查域名输入是否正确"
 		echo -e "2. DNS解析问题 ➠ 确认域名已正确解析到本服务器IP"
@@ -2917,7 +2924,7 @@ certs_status() {
 # 重复添加域名
 repeat_add_yuming() {
 	if [ -e /home/web/conf.d/$yuming.conf ]; then
-		send_stats "域名重复使用"
+		# "域名重复使用"
 		web_del "${yuming}" > /dev/null 2>&1
 	fi
 }
@@ -2990,7 +2997,7 @@ nginx_upgrade() {
 	docker exec nginx chown -R nginx:nginx /var/cache/nginx/fastcgi
 	docker restart $ldnmp_pods > /dev/null 2>&1
 
-	send_stats "更新$ldnmp_pods"
+	# "更新$ldnmp_pods"
 	echo "更新${ldnmp_pods}完成"
 }
 
@@ -3014,7 +3021,7 @@ phpmyadmin_upgrade() {
 	echo "用户名: $dbuse"
 	echo "密码: $dbusepasswd"
 	echo
-	send_stats "启动$ldnmp_pods"
+	# "启动$ldnmp_pods"
 }
 
 # 清理 Cloudflare 缓存
@@ -3060,7 +3067,7 @@ cf_purge_cache() {
 
 # 清理站点缓存
 web_cache() {
-	send_stats "清理站点缓存"
+	# "清理站点缓存"
 	cf_purge_cache
 	cd /home/web && docker compose restart
 	restart_redis
@@ -3069,7 +3076,7 @@ web_cache() {
 
 # 删除站点数据
 web_del() {
-	send_stats "删除站点数据"
+	# "删除站点数据"
 	yuming_list="${1:-}"
 	if [ -z "$yuming_list" ]; then
 		read -e -p "删除站点数据，请输入你的域名（多个域名用空格隔开）: " yuming_list
@@ -3326,9 +3333,9 @@ nginx_gzip() {
 
 # Fail2Ban状态
 f2b_status() {
-	 docker exec -it fail2ban fail2ban-client reload
-	 sleep 3
-	 docker exec -it fail2ban fail2ban-client status
+	docker exec -it fail2ban fail2ban-client reload
+	sleep 3
+	docker exec -it fail2ban fail2ban-client status
 }
 
 f2b_status_xxx() {
@@ -3388,7 +3395,7 @@ f2b_sshd() {
 
 # 网络安全
 web_security() {
-	send_stats "LDNMP环境防御"
+	# "LDNMP环境防御"
 	while true; do
 	check_waf_status
 	check_cf_mode
@@ -3495,7 +3502,7 @@ web_security() {
 					;;
 
 				21)
-					send_stats "cloudflare模式"
+					# "cloudflare模式"
 					echo "到cf后台右上角我的个人资料，选择左侧API令牌，获取Global API Key"
 					echo "https://dash.cloudflare.com/login"
 					read -e -p "输入CF的账号: " cfuser
@@ -3518,7 +3525,7 @@ web_security() {
 					;;
 
 				22)
-					send_stats "高负载开启5秒盾"
+					# "高负载开启5秒盾"
 					echo -e "${yellow}网站每5分钟自动检测，当达检测到高负载会自动开盾，低负载也会自动关闭5秒盾。${white}"
 					echo "--------------"
 					echo "获取CF参数: "
@@ -3555,13 +3562,13 @@ web_security() {
 				31)
 					nginx_waf on
 					echo "站点WAF已开启"
-					send_stats "站点WAF已开启"
+					# "站点WAF已开启"
 					;;
 
 				32)
 					nginx_waf off
 					echo "站点WAF已关闭"
-					send_stats "站点WAF已关闭"
+					# "站点WAF已关闭"
 					;;
 
 				33)
@@ -3581,6 +3588,138 @@ web_security() {
 	done
 }
 
+# 打开iptables
+iptables_open() {
+	install iptables
+	save_iptables_rules
+	iptables -P INPUT ACCEPT
+	iptables -P FORWARD ACCEPT
+	iptables -P OUTPUT ACCEPT
+	iptables -F
+
+	ip6tables -P INPUT ACCEPT
+	ip6tables -P FORWARD ACCEPT
+	ip6tables -P OUTPUT ACCEPT
+	ip6tables -F
+
+}
+
+
+open_port() {
+	local ports=($@)  # 将传入的参数转换为数组
+	if [ ${#ports[@]} -eq 0 ]; then
+		echo "请提供至少一个端口号"
+		return 1
+	fi
+
+	install iptables
+
+	for port in "${ports[@]}"; do
+		# 删除已存在的关闭规则
+		iptables -D INPUT -p tcp --dport $port -j DROP 2>/dev/null
+		iptables -D INPUT -p udp --dport $port -j DROP 2>/dev/null
+
+		# 添加打开规则
+		if ! iptables -C INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null; then
+			iptables -I INPUT 1 -p tcp --dport $port -j ACCEPT
+		fi
+
+		if ! iptables -C INPUT -p udp --dport $port -j ACCEPT 2>/dev/null; then
+			iptables -I INPUT 1 -p udp --dport $port -j ACCEPT
+			echo "已打开端口 $port"
+		fi
+	done
+
+	save_iptables_rules
+	# "已打开端口"
+}
+
+
+close_port() {
+	local ports=($@)  # 将传入的参数转换为数组
+	if [ ${#ports[@]} -eq 0 ]; then
+		echo "请提供至少一个端口号"
+		return 1
+	fi
+
+	install iptables
+
+	for port in "${ports[@]}"; do
+		# 删除已存在的打开规则
+		iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
+		iptables -D INPUT -p udp --dport $port -j ACCEPT 2>/dev/null
+
+		# 添加关闭规则
+		if ! iptables -C INPUT -p tcp --dport $port -j DROP 2>/dev/null; then
+			iptables -I INPUT 1 -p tcp --dport $port -j DROP
+		fi
+
+		if ! iptables -C INPUT -p udp --dport $port -j DROP 2>/dev/null; then
+			iptables -I INPUT 1 -p udp --dport $port -j DROP
+			echo "已关闭端口 $port"
+		fi
+	done
+
+	# 删除已存在的规则（如果有）
+	iptables -D INPUT -i lo -j ACCEPT 2>/dev/null
+	iptables -D FORWARD -i lo -j ACCEPT 2>/dev/null
+
+	# 插入新规则到第一条
+	iptables -I INPUT 1 -i lo -j ACCEPT
+	iptables -I FORWARD 1 -i lo -j ACCEPT
+
+	save_iptables_rules
+	# "已关闭端口"
+}
+
+
+allow_ip() {
+	local ips=($@)  # 将传入的参数转换为数组
+	if [ ${#ips[@]} -eq 0 ]; then
+		echo "请提供至少一个IP地址或IP段"
+		return 1
+	fi
+
+	install iptables
+
+	for ip in "${ips[@]}"; do
+		# 删除已存在的阻止规则
+		iptables -D INPUT -s $ip -j DROP 2>/dev/null
+
+		# 添加允许规则
+		if ! iptables -C INPUT -s $ip -j ACCEPT 2>/dev/null; then
+			iptables -I INPUT 1 -s $ip -j ACCEPT
+			echo "已放行IP $ip"
+		fi
+	done
+
+	save_iptables_rules
+	# "已放行IP"
+}
+
+block_ip() {
+	local ips=($@)  # 将传入的参数转换为数组
+	if [ ${#ips[@]} -eq 0 ]; then
+		echo "请提供至少一个IP地址或IP段"
+		return 1
+	fi
+
+	install iptables
+
+	for ip in "${ips[@]}"; do
+		# 删除已存在的允许规则
+		iptables -D INPUT -s $ip -j ACCEPT 2>/dev/null
+
+		# 添加阻止规则
+		if ! iptables -C INPUT -s $ip -j DROP 2>/dev/null; then
+			iptables -I INPUT 1 -s $ip -j DROP
+			echo "已阻止IP $ip"
+		fi
+	done
+
+	save_iptables_rules
+	# "已阻止IP"
+}
 
 # 检查nginx模式
 check_nginx_mode() {
@@ -3625,13 +3764,91 @@ check_nginx_compression() {
 	fi
 }
 
+# 网站搭建优化函数
+optimize_web_server() {
+	echo -e "${gl_lv}切换到网站搭建优化模式...${gl_bai}"
+
+	echo -e "${gl_lv}优化文件描述符...${gl_bai}"
+	ulimit -n 65535
+
+	echo -e "${gl_lv}优化虚拟内存...${gl_bai}"
+	sysctl -w vm.swappiness=10 2>/dev/null
+	sysctl -w vm.dirty_ratio=20 2>/dev/null
+	sysctl -w vm.dirty_background_ratio=10 2>/dev/null
+	sysctl -w vm.overcommit_memory=1 2>/dev/null
+	sysctl -w vm.min_free_kbytes=65536 2>/dev/null
+
+	echo -e "${gl_lv}优化网络设置...${gl_bai}"
+	sysctl -w net.core.rmem_max=16777216 2>/dev/null
+	sysctl -w net.core.wmem_max=16777216 2>/dev/null
+	sysctl -w net.core.netdev_max_backlog=5000 2>/dev/null
+	sysctl -w net.core.somaxconn=4096 2>/dev/null
+	sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216' 2>/dev/null
+	sysctl -w net.ipv4.tcp_wmem='4096 65536 16777216' 2>/dev/null
+	sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null
+	sysctl -w net.ipv4.tcp_max_syn_backlog=8192 2>/dev/null
+	sysctl -w net.ipv4.tcp_tw_reuse=1 2>/dev/null
+	sysctl -w net.ipv4.ip_local_port_range='1024 65535' 2>/dev/null
+
+	echo -e "${gl_lv}优化缓存管理...${gl_bai}"
+	sysctl -w vm.vfs_cache_pressure=50 2>/dev/null
+
+	echo -e "${gl_lv}优化CPU设置...${gl_bai}"
+	sysctl -w kernel.sched_autogroup_enabled=0 2>/dev/null
+
+	echo -e "${gl_lv}其他优化...${gl_bai}"
+	# 禁用透明大页面，减少延迟
+	echo never > /sys/kernel/mm/transparent_hugepage/enabled
+	# 禁用 NUMA balancing
+	sysctl -w kernel.numa_balancing=0 2>/dev/null
+}
+
+# 均衡模式优化函数
+optimize_balanced() {
+	echo -e "${gl_lv}切换到均衡模式...${gl_bai}"
+
+	echo -e "${gl_lv}优化文件描述符...${gl_bai}"
+	ulimit -n 32768
+
+	echo -e "${gl_lv}优化虚拟内存...${gl_bai}"
+	sysctl -w vm.swappiness=30 2>/dev/null
+	sysctl -w vm.dirty_ratio=20 2>/dev/null
+	sysctl -w vm.dirty_background_ratio=10 2>/dev/null
+	sysctl -w vm.overcommit_memory=0 2>/dev/null
+	sysctl -w vm.min_free_kbytes=32768 2>/dev/null
+
+	echo -e "${gl_lv}优化网络设置...${gl_bai}"
+	sysctl -w net.core.rmem_max=8388608 2>/dev/null
+	sysctl -w net.core.wmem_max=8388608 2>/dev/null
+	sysctl -w net.core.netdev_max_backlog=125000 2>/dev/null
+	sysctl -w net.core.somaxconn=2048 2>/dev/null
+	sysctl -w net.ipv4.tcp_rmem='4096 87380 8388608' 2>/dev/null
+	sysctl -w net.ipv4.tcp_wmem='4096 32768 8388608' 2>/dev/null
+	sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null
+	sysctl -w net.ipv4.tcp_max_syn_backlog=4096 2>/dev/null
+	sysctl -w net.ipv4.tcp_tw_reuse=1 2>/dev/null
+	sysctl -w net.ipv4.ip_local_port_range='1024 49151' 2>/dev/null
+
+	echo -e "${gl_lv}优化缓存管理...${gl_bai}"
+	sysctl -w vm.vfs_cache_pressure=75 2>/dev/null
+
+	echo -e "${gl_lv}优化CPU设置...${gl_bai}"
+	sysctl -w kernel.sched_autogroup_enabled=1 2>/dev/null
+
+	echo -e "${gl_lv}其他优化...${gl_bai}"
+	# 还原透明大页面
+	echo always > /sys/kernel/mm/transparent_hugepage/enabled
+	# 还原 NUMA balancing
+	sysctl -w kernel.numa_balancing=1 2>/dev/null
+}
+
 # 网站优化
 web_optimization() {
 	while true; do
 		check_nginx_mode
 		check_nginx_compression
 		clear
-		send_stats "优化LDNMP环境"
+		# "优化LDNMP环境"
 		echo -e "优化LDNMP环境${green}${mode_info}${gzip_status}${br_status}${zstd_status}${white}"
 		echo "------------------------"
 		echo "1. 标准模式              2. 高性能模式 (推荐2H4G以上)"
@@ -3645,7 +3862,7 @@ web_optimization() {
 		read -e -p "请输入你的选择: " sub_choice
 		case $sub_choice in
 			1)
-			send_stats "站点标准模式"
+			# "站点标准模式"
 
 			# nginx调优
 			sed -i 's/worker_connections.*/worker_connections 10240;/' /home/web/nginx.conf
@@ -3685,7 +3902,7 @@ web_optimization() {
 
 				;;
 			2)
-			send_stats "站点高性能模式"
+			# "站点高性能模式"
 
 			# nginx调优
 			sed -i 's/worker_connections.*/worker_connections 20480;/' /home/web/nginx.conf
@@ -3723,27 +3940,27 @@ web_optimization() {
 
 				;;
 			3)
-			send_stats "nginx_gzip on"
+			# "nginx_gzip on"
 			nginx_gzip on
 				;;
 			4)
-			send_stats "nginx_gzip off"
+			# "nginx_gzip off"
 			nginx_gzip off
 				;;
 			5)
-			send_stats "nginx_br on"
+			# "nginx_br on"
 			nginx_br on
 				;;
 			6)
-			send_stats "nginx_br off"
+			# "nginx_br off"
 			nginx_br off
 				;;
 			7)
-			send_stats "nginx_zstd on"
+			# "nginx_zstd on"
 			nginx_zstd on
 				;;
 			8)
-			send_stats "nginx_zstd off"
+			# "nginx_zstd off"
 			nginx_zstd off
 				;;
 			*)
@@ -3971,7 +4188,7 @@ ldnmp_install_status_one() {
 
 	if docker inspect "php" &>/dev/null; then
 		clear
-		send_stats "无法再次安装LDNMP环境"
+		# "无法再次安装LDNMP环境"
 		echo -e "${yellow}提示: ${white}建站环境已安装。无需再次安装！"
 		break_end
 		linux_ldnmp
@@ -3981,7 +4198,7 @@ ldnmp_install_status_one() {
 # LDNMP环境安装
 ldnmp_install_all() {
 	cd ~
-	send_stats "安装LDNMP环境"
+	# "安装LDNMP环境"
 	root_use
 	clear
 	echo -e "${yellow}LDNMP环境未安装，开始安装LDNMP环境...${white}"
@@ -3997,7 +4214,7 @@ ldnmp_install_all() {
 # Nginx环境安装
 nginx_install_all() {
 	cd ~
-	send_stats "安装nginx环境"
+	# "安装nginx环境"
 	root_use
 	clear
 	echo -e "${yellow}nginx未安装，开始安装nginx环境...${white}"
@@ -4019,7 +4236,7 @@ nginx_install_all() {
 # LDNMP环境检测
 ldnmp_install_status() {
 	if ! docker inspect "php" &>/dev/null; then
-		send_stats "请先安装LDNMP环境"
+		# "请先安装LDNMP环境"
 		ldnmp_install_all
 	fi
 }
@@ -4027,7 +4244,7 @@ ldnmp_install_status() {
 # Nginx环境检测
 nginx_install_status() {
 	if ! docker inspect "nginx" &>/dev/null; then
-		send_stats "请先安装nginx环境"
+		# "请先安装nginx环境"
 		nginx_install_all
 	fi
 }
@@ -4056,7 +4273,7 @@ ldnmp_wp() {
 	# wordpress
 	webname="WordPress"
 	yuming="${1:-}"
-	send_stats "安装$webname"
+	# "安装$webname"
 	echo "开始部署 $webname"
 	if [ -z "$yuming" ]; then
 		add_yuming
@@ -4096,7 +4313,7 @@ ldnmp_Proxy() {
 	reverseproxy="${2:-}"
 	port="${3:-}"
 
-	send_stats "安装$webname"
+	# "安装$webname"
 	echo "开始部署 $webname"
 	if [ -z "$yuming" ]; then
 		add_yuming
@@ -4129,7 +4346,7 @@ ldnmp_Proxy_backend() {
 	yuming="${1:-}"
 	reverseproxy_port="${2:-}"
 
-	send_stats "安装$webname"
+	# "安装$webname"
 	echo "开始部署 $webname"
 	if [ -z "$yuming" ]; then
 		add_yuming
@@ -4681,13 +4898,19 @@ linux_ldnmp() {
 		ldnmp_Proxy
 		find_container_by_host_port "$port"
 		if [ -z "$docker_name" ]; then
-			close_port "$port"
-			echo "已阻止IP+端口访问该服务"
+			# 询问用户是否确认阻止访问
+			read -p "是否阻止IP+端口访问该服务？[y/N] " confirm
+			# 检查用户输入，仅当输入y或Y时执行关闭操作
+			if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+				close_port "$port"
+				echo "已阻止IP+端口访问该服务"
+			else
+				echo "完成!"
+			fi
 		else
 			ip_address
 			block_container_port "$docker_name" "$ipv4_address"
 		fi
-
 			;;
 
 		24)
@@ -4929,7 +5152,7 @@ linux_ldnmp() {
 		echo "-------------------------"
 		ls -lt /home/*.gz | awk '{print $NF}'
 		echo ""
-		read -e -p  "回车键还原最新的备份，输入备份文件名还原指定的备份，输入0退出：" filename
+		read -e -p  "回车键还原最新的备份,输入备份文件名还原指定的备份，输入0退出：" filename
 
 		if [ "$filename" == "0" ]; then
 			break_end
@@ -5058,7 +5281,7 @@ linux_ldnmp() {
 				docker exec php sh -c 'echo "max_input_time=600" > /usr/local/etc/php/conf.d/max_input_time.ini' > /dev/null 2>&1
 				docker exec php sh -c 'echo "max_input_vars=5000" > /usr/local/etc/php/conf.d/max_input_vars.ini' > /dev/null 2>&1
 
-				fix_phpfpm_con $ldnmp_pods
+				fix_phpfpm_conf $ldnmp_pods
 
 				docker restart $ldnmp_pods > /dev/null 2>&1
 				cp /home/web/docker-compose1.yml /home/web/docker-compose.yml
@@ -7397,9 +7620,9 @@ linux_app() {
 		echo -e "应用市场"
 		docker_tato
 		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}1. ${white}1Panel面板              ${cyan}2. ${white}宝塔面板                  ${cyan}3. ${white}aaPanel面板"
-		echo -e "${cyan}4. ${white}NginxProxyManager面板   ${cyan}5. ${white}OpenList面板              ${cyan}6. ${white}WebTop远程桌面网页版"
-		echo -e "${cyan}7. ${white}哪吒探针                ${cyan}8. ${white}qbittorrent离线下载       ${cyan}9. ${white}Poste.io邮件服务器程序"
+		echo -e "${cyan}1.  ${white}1Panel面板             ${cyan}2.  ${white}宝塔面板                 ${cyan}3.  ${white}aaPanel面板"
+		echo -e "${cyan}4.  ${white}NginxProxyManager面板  ${cyan}5.  ${white}OpenList面板             ${cyan}6.  ${white}WebTop远程桌面网页版"
+		echo -e "${cyan}7.  ${white}哪吒探针               ${cyan}8.  ${white}qbittorrent离线下载      ${cyan}9.  ${white}Poste.io邮件服务器程序"
 		echo -e "${cyan}10. ${white}青龙面板               ${cyan}11. ${white}Code-Server(网页vscode)  ${cyan}12. ${white}Looking Glass(测速面板)"
 		echo -e "${cyan}13. ${white}雷池WAF防火墙面板      ${cyan}14. ${white}onlyoffice在线办公OFFICE ${cyan}15. ${white}UptimeKuma监控工具"
 		echo -e "${cyan}16. ${white}Memos网页备忘录        ${cyan}17. ${white}drawio免费的在线图表软件 ${cyan}18. ${white}Sun-Panel导航面板"
@@ -7510,8 +7733,8 @@ main_menu() {
         echo -e "${cyan}8.   ${white}应用市场"
         echo -e "${cyan}9.   ${white}Dev环境管理"
 		echo -e "${cyan}------------------------${white}"
-		echo -e "${yellow}0.   ${white}退出脚本"
-		echo -e "${green}00.   ${white}更新脚本"
+		echo -e "${yellow}0.     ${white}退出脚本"
+		echo -e "${green}00.    ${white}更新脚本"
 		echo -e "${red}555.   ${white}卸载脚本"
         echo -e "${cyan}------------------------${white}"
 
