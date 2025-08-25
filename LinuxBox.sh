@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="2.0.4"
+version="2.0.5"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
