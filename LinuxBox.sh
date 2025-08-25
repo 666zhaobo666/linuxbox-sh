@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="2.0.5"
+version="2.0.6"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -7453,7 +7453,14 @@ moontv_app(){
 
 	docker_app_install() {
 		read -e -p "设置登录用户名: " admin
-		read -e -p "设置登录用户密码: " admin_password
+		while true; do
+			read -e -p "设置登录用户密码: " admin_password
+			if [ ${#admin_password} -ge 8 ]; then
+				break
+			else
+				echo "密码长度必须大于8位, 请重新输入! "
+			fi
+		done
 		read -e -p "输入授权码: " shouquanma
 
 
