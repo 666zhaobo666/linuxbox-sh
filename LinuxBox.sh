@@ -7464,9 +7464,9 @@ moontv_app(){
 
 		curl -o /home/docker/moontv/docker-compose.yml ${url_proxy}raw.githubusercontent.com/kejilion/docker/main/moontv-docker-compose.yml
 		sed -i "s/3000:3000/${docker_port}:3000/g" /home/docker/moontv/docker-compose.yml
-		sed -i "s/admin/${admin}/g" /home/docker/moontv/docker-compose.yml
 		sed -i "s/USERNAME=admin/USERNAME=${admin}/g" /home/docker/moontv/docker-compose.yml
 		sed -i "s/PASSWORD=admin_password/PASSWORD=${admin_password}/g" /home/docker/moontv/docker-compose.yml
+		sed -i "s/shouquanma/${shouquanma}/g" /home/docker/moontv/docker-compose.yml
 		cd /home/docker/moontv/
 		docker compose up -d
 		clear
