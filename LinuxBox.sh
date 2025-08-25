@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="2.0.3"
+version="2.0.4"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -2902,7 +2902,7 @@ certs_status() {
 	sleep 1
 	local file_path="/etc/letsencrypt/live/$yuming/fullchain.pem"
 	if [ -f "$file_path" ]; then
-		# "域名证书申请成功"
+		echo "域名证书申请成功"
 	else
 		# "域名证书申请失败"
 		echo -e "${red}注意: ${white}证书申请失败，请检查以下可能原因并重试："
