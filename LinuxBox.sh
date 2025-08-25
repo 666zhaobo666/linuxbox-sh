@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="2.0.1"
+version="2.0.2"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -573,7 +573,7 @@ change_ssh_port() {
 
 			break_end
 		elif [[ $new_port -eq 0 ]]; then
-			break
+			break_end
 		else
 			echo "端口号无效，请输入1到65535之间的数字。"
 			## "输入无效SSH端口"
@@ -2432,7 +2432,7 @@ linux_docker() {
 
 	while true; do
 		clear
-		check_docker_app
+		check_docker
 		echo -e "Docker管理"
 		docker_tato
 		echo -e "${cyan}------------------------${white}"
@@ -5932,8 +5932,8 @@ save_iptables_rules() {
 }
 
 
-# 检查Docker应用是否安装
-check_docker_app() {
+# 检查Docker
+check_docker() {
 	if ! command -v docker &>/dev/null; then
 		echo -e "${red}未检测到Docker环境${white}"
 		echo -e "${cyan}------------------------"
@@ -5955,6 +5955,15 @@ check_docker_app() {
 				;;
 		esac
 		return
+	fi
+}
+
+# 检查Docker应用是否安装
+check_docker_app() {
+	if docker ps -a --format '{{.Names}}' | grep -q "$docker_name" >/dev/null 2>&1 ; then
+		check_docker="${gl_lv}已安装${gl_bai}"
+	else
+		check_docker="${gl_hui}未安装${gl_bai}"
 	fi
 }
 
@@ -7233,8 +7242,8 @@ moontv_app(){
 		curl -o /home/docker/moontv/docker-compose.yml ${url_proxy}raw.githubusercontent.com/kejilion/docker/main/moontv-docker-compose.yml
 		sed -i "s/3000:3000/${docker_port}:3000/g" /home/docker/moontv/docker-compose.yml
 		sed -i "s/admin/${admin}/g" /home/docker/moontv/docker-compose.yml
-		sed -i "s/admin_password/${admin_password}/g" /home/docker/moontv/docker-compose.yml
-		sed -i "s/shouquanma/${shouquanma}/g" /home/docker/moontv/docker-compose.yml
+		sed -i "s/USERNAME=admin/USERNAME=${admin}/g" /home/docker/moontv/docker-compose.yml
+		sed -i "s/PASSWORD=admin_password/PASSWORD=${admin_password}/g" /home/docker/moontv/docker-compose.yml
 		cd /home/docker/moontv/
 		docker compose up -d
 		clear
@@ -7331,6 +7340,50 @@ synctv_app(){
 		docker_app
 }
 
+# X-UI面板
+xui_app(){
+	local app_id="31"
+	local path="[ -d "/usr/local/x-ui/" ]"
+	local panelname="xui"
+	local panelpath="https://github.com/FranzKafkaYu/x-ui"
+
+	panel_app_install(){
+		bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh)
+	}
+
+	panel_app_manage(){
+		x-ui
+	}
+
+	panel_app_uninstall() {
+		echo "请通过管理面板卸载, 谢谢！"
+		break_end
+	}
+	panel_manage
+}
+
+# 3X-UI面板
+3xui_app(){
+	local app_id="32"
+	local path="[ -d "/usr/local/x-ui/" ]"
+	local panelname="3xui"
+	local panelpath="https://github.com/MHSanaei/3x-ui"
+
+	panel_app_install(){
+		bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)3
+	}
+
+	panel_app_manage(){
+		x-ui
+	}
+
+	panel_app_uninstall() {
+		echo "请通过管理面板卸载, 谢谢！"
+		break_end
+	}
+	panel_manage
+}
+
 
 
 
@@ -7354,6 +7407,7 @@ linux_app() {
 		echo -e "${cyan}22. ${white}ghproxy(GitHub加速站)  ${cyan}23. ${white}AllinSSL证书管理平台     ${cyan}24. ${white}DDNS-GO"
 		echo -e "${cyan}25. ${white}Lucky                  ${cyan}26. ${white}LibreTV私有影视          ${cyan}27. ${white}MoonTV私有影视"
 		echo -e "${cyan}28. ${white}Melody音乐精灵         ${cyan}29. ${white}Beszel服务器监控         ${cyan}30. ${white}SyncTV一起看片神器"
+		echo -e "${cyan}31. ${white}X-UI面板               ${cyan}32. ${white}3X-UI面板"
 		echo -e "${cyan}------------------------${white}"
 		echo -e "${yellow}0.   ${white}返回主菜单"
 		echo -e "${cyan}------------------------${white}"
@@ -7420,6 +7474,10 @@ linux_app() {
 			beszel_app ;;
 		30)
 			synctv_app ;;
+		31)
+			xui_app ;;
+		32)
+			3xui_app ;;
 		0)
 			break
 			;;
@@ -7468,7 +7526,8 @@ main_menu() {
             7) linux_bbr ;;
             8) linux_app ;;
             9) echo "Dev环境管理(待实现)"; read -n1 -s -r -p "按任意键继续..." ;;
-            0) exit 0 ;;
+            0) 	clear 
+				exit 0 ;;
 			00) update_script ;;
 			555) uninstall_script ;;
             *) echo "无效选择"; sleep 1 ;;
