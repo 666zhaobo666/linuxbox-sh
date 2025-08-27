@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="2.1.1"
+version="2.1.2"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -7617,7 +7617,7 @@ xui_app(){
 # Microsoft 365 E5 Renew X
 e5_renew_x_app(){
 		local app_id="33"
-		local docker_name="e5_renew_x"
+		local docker_name="angry_ellis"
 		local docker_img="mcr.microsoft.com/office/office365"
 		local docker_port=1066
 
