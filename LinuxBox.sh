@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="2.0.6"
+version="2.1.1"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -6011,10 +6011,10 @@ linux_bbr() {
 ###########################
 # 检查panel是否安装
 check_panel_app() {
-	if $path > /dev/null 2>&1; then
+	if $panel_path > /dev/null 2>&1; then
 		check_panel="${green}已安装${white}"
 	else
-		check_panel=""
+		check_panel="${white}未安装${white}"
 	fi
 }
 # 面板管理
@@ -6674,9 +6674,9 @@ docker_app_plus() {
 # 1panel面板
 1panel_app(){
 	local app_id="1"
-	local path="command -v 1pctl"
+	local panel_path="command -v 1pctl"
 	local panelname="1Panel"
-	local panelpath="https://1panel.cn/"
+	local panelurl="https://1panel.cn/"
 
 	panel_app_install(){
 		bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)"
@@ -6696,9 +6696,9 @@ docker_app_plus() {
 # 宝塔面板
 bt_app(){
 	local app_id="2"
-	local path="[ -d "/www/server/panel" ]"
+	local panel_path="[ -d "/www/server/panel" ]"
 	local panelname="宝塔面板"
-	local panelpath="https://www.bt.cn"
+	local panelurl="https://www.bt.cn"
 
 	panel_app_install(){
 		if [ -f /usr/bin/curl ]; then curl -sSO https://download.bt.cn/install/install_panel.sh; else wget -O install_panel.sh https://download.bt.cn/install/install_panel.sh; fi; bash install_panel.sh ed8484bec
@@ -6719,9 +6719,9 @@ bt_app(){
 # aapanel面板
 aapanel_app(){
 	local app_id="3"
-	local path="[ -d "/www/server/panel" ]"
+	local panel_path="[ -d "/www/server/panel" ]"
 	local panelname="aapanel"
-	local panelpath="https://www.aapanel.com/"
+	local panelurl="https://www.aapanel.com/"
 
 	panel_app_install(){
 		URL=https://www.aapanel.com/script/install_pro_en.sh && if [ -f /usr/bin/curl ]; then curl -ksSO $URL ; else wget --no-check-certificate -O install_pro_en.sh $URL; fi; bash install_pro_en.sh aa372544
@@ -7573,9 +7573,9 @@ synctv_app(){
 # X-UI面板
 xui_app(){
 	local app_id="31"
-	local path="[ -d "/usr/local/x-ui/" ]"
+	local panel_path="[ -d "/usr/local/x-ui/" ]"
 	local panelname="xui"
-	local panelpath="https://github.com/FranzKafkaYu/x-ui"
+	local panelurl="https://github.com/FranzKafkaYu/x-ui"
 
 	panel_app_install(){
 		bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh)
@@ -7595,12 +7595,12 @@ xui_app(){
 # 3X-UI面板
 3xui_app(){
 	local app_id="32"
-	local path="[ -d "/usr/local/x-ui/" ]"
+	local panel_path="[ -d "/usr/local/x-ui/" ]"
 	local panelname="3xui"
-	local panelpath="https://github.com/MHSanaei/3x-ui"
+	local panelurl="https://github.com/MHSanaei/3x-ui"
 
 	panel_app_install(){
-		bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)3
+		bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
 	}
 
 	panel_app_manage(){
@@ -7612,6 +7612,37 @@ xui_app(){
 		break_end
 	}
 	panel_manage
+}
+
+# Microsoft 365 E5 Renew X
+e5_renew_x_app(){
+		local app_id="33"
+		local docker_name="e5_renew_x"
+		local docker_img="mcr.microsoft.com/office/office365"
+		local docker_port=1066
+
+		docker_run() {
+		read -e -p "请输入发送邮件的服务邮箱: " send_email
+		read -e -p "请输入服务邮箱的授权码: " token
+		read -e -p "请输入接收邮件的邮箱: " receiver_email
+		read -e -p "请输入Web界面管理员登录密码: " admin_pwd
+
+			docker run -d \
+				-p ${docker_port}:1066 \
+				-e TZ=Asia/Shanghai \
+				-e sender="${send_email}" \
+				-e pwd="${token}" \
+				-e receiver="${receiver_email}" \
+				-e adminpwd="${admin_pwd}" \
+				hanhongyong/ms365-e5-renew-x:pubemail
+		}
+
+		local docker_describe="Microsoft 365 E5 Renew X 一键续订脚本"
+		local docker_url="官网介绍: https://github.com/hongyonghan/Docker_Microsoft365_E5_Renew_X"
+		local docker_use=""
+		local docker_passwd=""
+		local app_size="1"
+		docker_app
 }
 
 
@@ -7637,7 +7668,7 @@ linux_app() {
 		echo -e "${cyan}22. ${white}ghproxy(GitHub加速站)  ${cyan}23. ${white}AllinSSL证书管理平台     ${cyan}24. ${white}DDNS-GO"
 		echo -e "${cyan}25. ${white}Lucky                  ${cyan}26. ${white}LibreTV私有影视          ${cyan}27. ${white}MoonTV私有影视"
 		echo -e "${cyan}28. ${white}Melody音乐精灵         ${cyan}29. ${white}Beszel服务器监控         ${cyan}30. ${white}SyncTV一起看片神器"
-		echo -e "${cyan}31. ${white}X-UI面板               ${cyan}32. ${white}3X-UI面板"
+		echo -e "${cyan}31. ${white}X-UI面板               ${cyan}32. ${white}3X-UI面板                ${cyan}33. ${white}Microsoft 365 E5 Renew X"
 		echo -e "${cyan}------------------------${white}"
 		echo -e "${yellow}0.   ${white}返回主菜单"
 		echo -e "${cyan}------------------------${white}"
@@ -7708,6 +7739,8 @@ linux_app() {
 			xui_app ;;
 		32)
 			3xui_app ;;
+		33)
+			e5_renew_x_app ;;
 		0)
 			break
 			;;
