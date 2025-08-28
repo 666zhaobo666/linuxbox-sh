@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="3.0.2"
+version="3.0.3"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -7841,7 +7841,7 @@ python_management() {
             3) list_installed_versions ;;
             4) uninstall_python_version ;;
             0) 
-                send_stats "脚本PY管理-退出"
+                #  "脚本PY管理-退出"
                 break_end
                 return ;;
             *) 
@@ -7855,7 +7855,7 @@ ensure_pyenv_installed() {
     # 检查pyenv是否已安装
     if ! command -v pyenv &>/dev/null; then
         echo "正在安装pyenv..."
-        send_stats "pyenv安装"
+        #  "pyenv安装"
         
         # 安装依赖包
         install_pyenv_dependencies
@@ -7956,7 +7956,7 @@ EOF
 
 # 安装指定版本的Python
 install_python_version() {
-    send_stats "py版本管理-安装"
+    #  "py版本管理-安装"
     
     read -e -p "输入你要安装的Python版本号（例如: 3.12.0，输入0取消）: " py_new_v
     
@@ -7986,7 +7986,7 @@ install_python_version() {
         # 显示当前版本
         local VERSION=$(python -V 2>&1 | awk '{print $2}')
         echo -e "安装成功! 当前Python版本号: ${yellow}$VERSION${white}"
-        send_stats "脚本PY版本切换-$py_new_v"
+        #  "脚本PY版本切换-$py_new_v"
     else
         echo "错误: Python $py_new_v安装失败"
     fi
@@ -7996,7 +7996,7 @@ install_python_version() {
 
 # 切换已安装的Python版本
 switch_python_version() {
-    send_stats "py版本管理-切换"
+    #  "py版本管理-切换"
     
     echo "已安装的Python版本:"
     pyenv versions
@@ -8022,14 +8022,14 @@ switch_python_version() {
     # 显示当前版本
     local VERSION=$(python -V 2>&1 | awk '{print $2}')
     echo -e "切换成功! 当前Python版本号: ${yellow}$VERSION${white}"
-    send_stats "脚本PY版本切换-$py_version"
+    #  "脚本PY版本切换-$py_version"
     
     read -n1 -s -r -p "按任意键继续..."
 }
 
 # 查看已安装的Python版本
 list_installed_versions() {
-    send_stats "py版本管理-查看已安装版本"
+    #  "py版本管理-查看已安装版本"
     
     echo "已安装的Python版本:"
     echo "---------------------"
@@ -8042,7 +8042,7 @@ list_installed_versions() {
 
 # 卸载指定Python版本
 uninstall_python_version() {
-    send_stats "py版本管理-卸载"
+    #  "py版本管理-卸载"
     
     echo "已安装的Python版本:"
     pyenv versions
@@ -8067,7 +8067,7 @@ uninstall_python_version() {
     
     if [ $? -eq 0 ]; then
         echo "Python $py_version已成功卸载"
-        send_stats "脚本PY版本卸载-$py_version"
+        #  "脚本PY版本卸载-$py_version"
     else
         echo "错误: 卸载Python $py_version失败"
     fi
