@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="2.1.2"
+version="2.1.3"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -36,7 +36,7 @@ detect_region() {
     )
     
     for service in "${ip_services[@]}"; do
-        # 超时3秒，静默模式获取地区代码
+        # 超时3秒, 静默模式获取地区代码
         local country=$(curl -s --connect-timeout 3 "$service" | tr '[:lower:]' '[:upper:]')
         if [ -n "$country" ] && [ ${#country} -eq 2 ]; then
             region="$country"
@@ -46,7 +46,7 @@ detect_region() {
     done
     
     # 所有服务失败时使用默认值
-    echo "无法检测地区，使用默认值: $region"
+    echo "无法检测地区, 使用默认值: $region"
     return 1
 }
 ## url加速服务
@@ -91,7 +91,7 @@ CheckFirstRun() {
 		fi
 		cp -f ./LinuxBox.sh /usr/local/bin/${key} > /dev/null 2>&1
 		chmod +x /usr/local/bin/${key} > /dev/null 2>&1
-		echo -e "${cyan}安装完成！${white}"
+		echo -e "${cyan}安装完成!${white}"
 		echo -e "命令行输入${yellow} ${key} ${cyan}可快速启动脚本${white}"
 		rm -f ./LinuxBox.sh
 		break_end
@@ -110,7 +110,7 @@ UserLicenseAgreement() {
 	echo -e "${pink}-----------------------------${white}"
 	echo -e "${yellow}此脚本基于自用开发${white}"
 	echo -e "${yellow}请尽量通过选择脚本选项退出${white}"
-	echo -e "${yellow}如有问题，后果自负！${white}"
+	echo -e "${yellow}如有问题, 后果自负!${white}"
 	echo -e "${pink}-----------------------------${white}"
 	read -r -p "是否同意以上条款？(y/n): " user_input
 
@@ -129,7 +129,7 @@ UserLicenseAgreement() {
 ## 卸载脚本
 uninstall_script() {
 	clear
-	echo -e "${red}警告: 你即将卸载LinuxBox脚本工具箱！${white}"
+	echo -e "${red}警告: 你即将卸载LinuxBox脚本工具箱!${white}"
 	read -r -p "是否确认卸载？(y/n): " confirm
 	if [[ "$confirm" =~ ^[Yy]$ ]]; then
 		# 删除脚本文件
@@ -149,7 +149,7 @@ uninstall_script() {
 		echo -e "${green}LinuxBox脚本工具箱已成功卸载!${white}"
 		exit 0
 	else
-		echo "卸载已取消。"
+		echo "卸载已取消."
 		sleep 1
 	fi
 }
@@ -193,7 +193,7 @@ update_script() {
 			break_end
 			exit 0
         else
-            echo "更新失败，恢复备份..."
+            echo "更新失败, 恢复备份..."
             mv /usr/local/bin/${key}.bak /usr/local/bin/${key}
             break_end
 			return 1
@@ -207,7 +207,7 @@ update_script() {
 
 ######################################################################
 ########################## 系统systemctl管理 ##########################
-# 通用 systemctl 函数，适用于各种发行版
+# 通用 systemctl 函数, 适用于各种发行版
 systemctl() {
 	local COMMAND="$1"
 	local SERVICE_NAME="$2"
@@ -222,36 +222,36 @@ systemctl() {
 restart() {
 	systemctl restart "$1"
 	if [ $? -eq 0 ]; then
-		echo "$1 服务已重启。"
+		echo "$1 服务已重启."
 	else
-		echo "错误：重启 $1 服务失败。"
+		echo "错误：重启 $1 服务失败."
 	fi
 }
 # 启动服务
 start() {
 	systemctl start "$1"
 	if [ $? -eq 0 ]; then
-		echo "$1 服务已启动。"
+		echo "$1 服务已启动."
 	else
-		echo "错误：启动 $1 服务失败。"
+		echo "错误：启动 $1 服务失败."
 	fi
 }
 # 停止服务
 stop() {
 	systemctl stop "$1"
 	if [ $? -eq 0 ]; then
-		echo "$1 服务已停止。"
+		echo "$1 服务已停止."
 	else
-		echo "错误：停止 $1 服务失败。"
+		echo "错误：停止 $1 服务失败."
 	fi
 }
 # 查看服务状态
 status() {
 	systemctl status "$1"
 	if [ $? -eq 0 ]; then
-		echo "$1 服务状态已显示。"
+		echo "$1 服务状态已显示."
 	else
-		echo "错误：无法显示 $1 服务状态。"
+		echo "错误：无法显示 $1 服务状态."
 	fi
 }
 # 启用服务
@@ -263,7 +263,7 @@ enable() {
     /bin/systemctl enable "$SERVICE_NAME"
 	fi
 
-	echo "$SERVICE_NAME 已设置为开机自启。"
+	echo "$SERVICE_NAME 已设置为开机自启."
 }
 # 关闭服务
 disable() {
@@ -274,7 +274,7 @@ disable() {
     /bin/systemctl disable "$SERVICE_NAME"
 	fi
 
-	echo "$SERVICE_NAME 已设置为禁止开机自启。"
+	echo "$SERVICE_NAME 已设置为禁止开机自启."
 }
 
 
@@ -282,7 +282,7 @@ disable() {
 ########################### 全局函数 ###########################
 ## 脚本依赖检测
 dependency_check(){
-	echo -e "${cyan}正在进行依赖检测，请稍后......"
+	echo -e "${cyan}正在进行依赖检测, 请稍后......"
 	if ! command -v curl &>/dev/null; then
 		install curl
 	fi
@@ -417,7 +417,7 @@ detect_os() {
 ##  检查root权限
 root_use() {
 	clear
-	[ "$EUID" -ne 0 ] && echo -e "${yellow}提示: ${white}该功能需要root用户才能运行！" && break_end && return_to_menu
+	[ "$EUID" -ne 0 ] && echo -e "${yellow}提示: ${white}该功能需要root用户才能运行!" && break_end && return_to_menu
 }
 
 ## 检查磁盘空间
@@ -427,10 +427,10 @@ check_disk_space() {
 	available_space_mb=$(df -m / | awk 'NR==2 {print $4}')
 
 	if [ $available_space_mb -lt $required_space_mb ]; then
-		echo -e "${yellow}提示: ${white}磁盘空间不足！"
+		echo -e "${yellow}提示: ${white}磁盘空间不足!"
 		echo "当前可用空间: $((available_space_mb/1024))G"
 		echo "最小需求空间: ${required_gb}G"
-		echo "无法继续安装，请清理磁盘空间后重试。"
+		echo "无法继续安装, 请清理磁盘空间后重试."
 		break_end
 		return_to_menu
 	fi
@@ -476,7 +476,7 @@ system_info() {
     echo -e "${cyan}运行时长:     ${white}$(uptime -p | cut -d' ' -f2-)"
     echo -e "${cyan}-------------${white}"
     echo -e "${green}操作完成${white}"
-    read -n1 -s -r -p "按任意键继续..."
+    break_end
     clear
 }
 
@@ -491,23 +491,48 @@ pause() {
 # ------------- 功能实现 -------------
 # 1. 设置本脚本启动快捷键
 set_script_shortcut() {
-    clear
-    echo -e "${blue}设置脚本启动快捷键${white}"
-    read -e -p "请输入脚本路径（默认：$(pwd)/$(basename $0)）: " script_path
-    script_path=${script_path:-$(pwd)/$(basename $0)}
-    
-    read -e -p "请设置快捷键别名（如sysadmin）: " alias_name
-    [ -z "$alias_name" ] && { echo -e "${red}别名不能为空！${white}"; pause; return; }
-
-    # 写入配置文件
-    config_file="$HOME/.bashrc"
-    [ -f "$HOME/.zshrc" ] && config_file="$HOME/.zshrc"  # 优先zsh
-    
-    echo "alias $alias_name='sudo $script_path'" >> "$config_file"
-    source "$config_file"
-    
-    echo -e "${green}快捷键设置完成！可直接输入 $alias_name 启动脚本${white}"
-    pause
+	clear
+	root_use
+	
+	# 检查原脚本文件是否存在
+	if [ ! -f "/usr/local/bin/$key" ]; then
+		echo "错误：原脚本文件 /usr/local/bin/$key 不存在！"
+		break_end
+		return 1
+	fi
+	
+	read -e -p "请输入你的快捷按键（输入0退出）: " new_key
+	if [ "$new_key" == "0" ]; then
+		break_end
+		return 0
+	fi
+	
+	# 检查输入是否为空
+	if [ -z "$new_key" ]; then
+		echo "错误：快捷键不能为空！"
+		break_end
+		return 1
+	fi
+	
+	# 检查新快捷键是否已存在
+	if [ -f "/usr/local/bin/$new_key" ]; then
+		read -p "警告：快捷键 $new_key 已存在，是否覆盖？(y/n) " confirm
+		if [ "$confirm" != "y" ]; then
+			echo "操作已取消"
+			break_end
+			return 0
+		fi
+	fi
+	
+	# 第一步：先修改原文件中的 key 变量（此时文件仍叫 $key）
+	sed -i "s/key=\"$key\"/key=\"$new_key\"/g; s/key='$key'/key='$new_key'/g" "/usr/local/bin/$key"
+	
+	# 第二步：重命名文件（从 $key 改为 $new_key）
+	mv -f "/usr/local/bin/$key" "/usr/local/bin/$new_key"
+	
+	echo -e "快捷键已设置为: $new_key"
+	echo -e "请用新的快捷键进入脚本，即将退出..."
+	exit 0  # 退出当前脚本，让用户用新快捷键重新启动
 }
 
 # 2. 修改登录密码（当前用户）
@@ -555,7 +580,7 @@ change_ssh_port() {
 	echo -e "当前的 SSH 端口号是:  ${yellow}$current_port ${white}"
 
 	echo -e "${pink}------------------------${white}"
-	echo "端口号范围1到65535之间的数字。（输入0退出）"
+	echo "端口号范围1到65535之间的数字.（输入0退出）"
 
 	# 提示用户输入新的 SSH 端口号
 	read -e -p "请输入新的 SSH 端口号: " new_port
@@ -582,12 +607,12 @@ change_ssh_port() {
 		elif [[ $new_port -eq 0 ]]; then
 			break_end
 		else
-			echo "端口号无效，请输入1到65535之间的数字。"
+			echo "端口号无效, 请输入1到65535之间的数字."
 			## "输入无效SSH端口"
 			break_end
 		fi
 	else
-		echo "输入无效，请输入数字。"
+		echo "输入无效, 请输入数字."
 		## "输入无效SSH端口"
 		break_end
 	fi
@@ -882,7 +907,7 @@ user_management() {
 			useradd -m -s /bin/bash "$new_username"
 			passwd "$new_username"
 
-			echo "操作已完成。"
+			echo "操作已完成."
 				;;
 
 			2)
@@ -898,7 +923,7 @@ user_management() {
 
 			install sudo
 
-			echo "操作已完成。"
+			echo "操作已完成."
 
 				;;
 			3)
@@ -921,7 +946,7 @@ user_management() {
 				;;
 
 			*)
-				break  # 跳出循环，退出菜单
+				break  # 跳出循环, 退出菜单
 				;;
 		esac
 	done
@@ -1025,7 +1050,7 @@ modify_hostname() {
 				echo "$new_hostname" > /etc/hostname
 				hostname "$new_hostname"
 			else
-				# 其他系统，如 Debian, Ubuntu, CentOS 等
+				# 其他系统, 如 Debian, Ubuntu, CentOS 等
 				hostnamectl set-hostname "$new_hostname"
 				sed -i "s/$current_hostname/$new_hostname/g" /etc/hostname
 				systemctl restart systemd-hostnamed
@@ -1047,7 +1072,7 @@ modify_hostname() {
 			## "主机名已更改"
 			break_end
 		else
-			echo "已退出，未更改主机名。"
+			echo "已退出, 未更改主机名."
 			break
 		fi
 	done
@@ -1118,15 +1143,15 @@ cron_job_management() {
 						(crontab -l ; echo "0 0 $day * * $newquest") | crontab - > /dev/null 2>&1
 						;;
 					2)
-						read -e -p "选择周几执行任务？ (0-6，0代表星期日): " weekday
+						read -e -p "选择周几执行任务？ (0-6, 0代表星期日): " weekday
 						(crontab -l ; echo "0 0 * * $weekday $newquest") | crontab - > /dev/null 2>&1
 						;;
 					3)
-						read -e -p "选择每天几点执行任务？（小时，0-23）: " hour
+						read -e -p "选择每天几点执行任务？（小时, 0-23）: " hour
 						(crontab -l ; echo "0 $hour * * * $newquest") | crontab - > /dev/null 2>&1
 						;;
 					4)
-						read -e -p "输入每小时的第几分钟执行任务？（分钟，0-60）: " minute
+						read -e -p "输入每小时的第几分钟执行任务？（分钟, 0-60）: " minute
 						(crontab -l ; echo "$minute * * * * $newquest") | crontab - > /dev/null 2>&1
 						;;
 					*)
@@ -1142,7 +1167,7 @@ cron_job_management() {
 				crontab -e
 				;;
 			*)
-				break  # 跳出循环，退出菜单
+				break  # 跳出循环, 退出菜单
 				;;
 		esac
 	done
@@ -1155,7 +1180,7 @@ file_manager() {
     check_compress_tools() {
         local tool=$1
         if ! command -v $tool &> /dev/null; then
-            echo -e "${red}错误：未安装 $tool，请先安装（例如: sudo apt install $tool 或 sudo yum install $tool）${white}"
+            echo -e "${red}错误：未安装 $tool, 请先安装（例如: sudo apt install $tool 或 sudo yum install $tool）${white}"
             return 1
         fi
         return 0
@@ -1290,7 +1315,7 @@ file_manager() {
                 fi
                 
                 echo -e "\n${cyan}支持的压缩格式:${white}"
-                echo "1. tar.gz（推荐，跨平台）"
+                echo "1. tar.gz（推荐, 跨平台）"
                 echo "2. zip（Windows兼容）"
                 echo "3. 7z（高压缩率）"
                 read -p "请选择压缩格式(1-3): " compress_type
@@ -1302,7 +1327,7 @@ file_manager() {
                     1)
                         # tar.gz 依赖 tar
                         if ! command -v tar &>/dev/null; then
-                            echo -e "${cyan}检测到 tar 未安装，开始安装...${white}"
+                            echo -e "${cyan}检测到 tar 未安装, 开始安装...${white}"
                             install tar
                         fi
                         tar -zcvf "$current_dir/$dst.tar.gz" -C "$current_dir" "$src"
@@ -1311,17 +1336,17 @@ file_manager() {
                     2)
                         # zip 依赖 zip
                         if ! command -v zip &>/dev/null; then
-                            echo -e "${cyan}检测到 zip 未安装，开始安装...${white}"
+                            echo -e "${cyan}检测到 zip 未安装, 开始安装...${white}"
                             install zip
                         fi
                         zip -r "$current_dir/$dst.zip" "$current_dir/$src"
                         echo -e "${green}压缩完成: $dst.zip${white}"
                         ;;
                     3)
-                        # 7z 依赖 7z，不同系统包名可能有差异，这里用 7z 作为参数调用 install
+                        # 7z 依赖 7z, 不同系统包名可能有差异, 这里用 7z 作为参数调用 install
                         if ! command -v 7z &>/dev/null; then
-                            echo -e "${cyan}检测到 7z 未安装，开始安装...${white}"
-                            install p7zip  # 常见发行版中 7z 一般由 p7zip 包提供，若不行可根据实际调整
+                            echo -e "${cyan}检测到 7z 未安装, 开始安装...${white}"
+                            install p7zip  # 常见发行版中 7z 一般由 p7zip 包提供, 若不行可根据实际调整
                         fi
                         7z a "$current_dir/$dst.7z" "$current_dir/$src"
                         echo -e "${green}压缩完成: $dst.7z${white}"
@@ -1344,7 +1369,7 @@ file_manager() {
                 case $ext in
                     gz|tar.gz)
                         if ! command -v tar &>/dev/null; then
-                            echo -e "${cyan}检测到 tar 未安装，开始安装...${white}"
+                            echo -e "${cyan}检测到 tar 未安装, 开始安装...${white}"
                             install tar
                         fi
                         tar -zxvf "$current_dir/$archive" -C "$current_dir"
@@ -1352,7 +1377,7 @@ file_manager() {
                         ;;
                     zip)
                         if ! command -v unzip &>/dev/null; then
-                            echo -e "${cyan}检测到 unzip 未安装，开始安装...${white}"
+                            echo -e "${cyan}检测到 unzip 未安装, 开始安装...${white}"
                             install unzip
                         fi
                         unzip "$current_dir/$archive" -d "$current_dir"
@@ -1360,7 +1385,7 @@ file_manager() {
                         ;;
                     7z)
                         if ! command -v 7z &>/dev/null; then
-                            echo -e "${cyan}检测到 7z 未安装，开始安装...${white}"
+                            echo -e "${cyan}检测到 7z 未安装, 开始安装...${white}"
                             install p7zip
                         fi
                         7z x "$current_dir/$archive" -o"$current_dir"
@@ -1408,7 +1433,7 @@ file_manager() {
                 return
                 ;;
             *)
-                echo -e "${red}无效选择，请输入0-16之间的数字${white}"; pause ;;
+                echo -e "${red}无效选择, 请输入0-16之间的数字${white}"; pause ;;
         esac
     done
 }
@@ -1427,7 +1452,7 @@ update_locale() {
 				locale-gen
 				echo "LANG=${lang}" > /etc/default/locale
 				export LANG=${lang}
-				echo -e "${green}系统语言已经修改为: $lang 重新连接SSH生效。${white}"
+				echo -e "${green}系统语言已经修改为: $lang 重新连接SSH生效.${white}"
 				hash -r
 				break_end
 
@@ -1436,7 +1461,7 @@ update_locale() {
 				install glibc-langpack-zh
 				localectl set-locale LANG=${lang}
 				echo "LANG=${lang}" | tee /etc/locale.conf
-				echo -e "${green}系统语言已经修改为: $lang 重新连接SSH生效。${white}"
+				echo -e "${green}系统语言已经修改为: $lang 重新连接SSH生效.${white}"
 				hash -r
 				break_end
 				;;
@@ -1446,7 +1471,7 @@ update_locale() {
 				;;
 		esac
 	else
-		echo "不支持的系统，无法识别系统类型。"
+		echo "不支持的系统, 无法识别系统类型."
 		break_end
 	fi
 }
@@ -1498,7 +1523,7 @@ linux_trash() {
 
 		clear
 		echo -e "当前回收站 ${trash_status}"
-		echo -e "启用后rm删除的文件先进入回收站，防止误删重要文件！"
+		echo -e "启用后rm删除的文件先进入回收站, 防止误删重要文件!"
 		echo -e "${pink}------------------------------------------------${white}"
 		ls -l --color=auto "$TRASH_DIR" 2>/dev/null || echo "回收站为空"
 		echo -e "${pink}------------------------${white}"
@@ -1515,7 +1540,7 @@ linux_trash() {
 			sed -i '/alias rm/d' "$bashrc_profile"
 			echo "alias rm='trash-put'" >> "$bashrc_profile"
 			source "$bashrc_profile"
-			echo "回收站已启用，删除的文件将移至回收站。"
+			echo "回收站已启用, 删除的文件将移至回收站."
 			break_end
 			;;
 		2)
@@ -1523,23 +1548,23 @@ linux_trash() {
 			sed -i '/alias rm/d' "$bashrc_profile"
 			echo "alias rm='rm -i'" >> "$bashrc_profile"
 			source "$bashrc_profile"
-			echo "回收站已关闭，文件将直接删除。"
+			echo "回收站已关闭, 文件将直接删除."
 			break_end
 			;;
 		3)
 			read -e -p "输入要还原的文件名: " file_to_restore
 			if [ -e "$TRASH_DIR/$file_to_restore" ]; then
 			mv "$TRASH_DIR/$file_to_restore" "$HOME/"
-			echo "$file_to_restore 已还原到主目录。"
+			echo "$file_to_restore 已还原到主目录."
 			else
-			echo "文件不存在。"
+			echo "文件不存在."
 			fi
 			;;
 		4)
 			read -e -p "确认清空回收站？[y/n]: " confirm
 			if [[ "$confirm" == "y" ]]; then
 			trash-empty
-			echo "回收站已清空。"
+			echo "回收站已清空."
 			fi
 			;;
 		*)
@@ -1554,7 +1579,7 @@ ssh_manager() {
 	CONFIG_FILE="$HOME/.ssh_connections"
 	KEY_DIR="$HOME/.ssh/ssh_manager_keys"
 
-	# 检查配置文件和密钥目录是否存在，如果不存在则创建
+	# 检查配置文件和密钥目录是否存在, 如果不存在则创建
 	if [[ ! -f "$CONFIG_FILE" ]]; then
 		touch "$CONFIG_FILE"
 	fi
@@ -1580,7 +1605,7 @@ ssh_manager() {
 			2) use_connection ;;
 			3) delete_connection ;;
 			0) break ;;
-			*) echo "无效的选择，请重试。" ;;
+			*) echo "无效的选择, 请重试." ;;
 		esac
 	done
 }
@@ -1598,13 +1623,13 @@ mount_partition() {
 
 	# 检查分区是否存在
 	if ! lsblk -o NAME | grep -w "$PARTITION" > /dev/null; then
-		echo "分区不存在！"
+		echo "分区不存在!"
 		return
 	fi
 
 	# 检查分区是否已经挂载
 	if lsblk -o MOUNTPOINT | grep -w "$PARTITION" > /dev/null; then
-		echo "分区已经挂载！"
+		echo "分区已经挂载!"
 		return
 	fi
 
@@ -1618,7 +1643,7 @@ mount_partition() {
 	if [ $? -eq 0 ]; then
 		echo "分区挂载成功: $MOUNT_POINT"
 	else
-		echo "分区挂载失败！"
+		echo "分区挂载失败!"
 		rmdir "$MOUNT_POINT"
 	fi
 }
@@ -1630,7 +1655,7 @@ unmount_partition() {
 	# 检查分区是否已经挂载
 	MOUNT_POINT=$(lsblk -o MOUNTPOINT | grep -w "$PARTITION")
 	if [ -z "$MOUNT_POINT" ]; then
-		echo "分区未挂载！"
+		echo "分区未挂载!"
 		return
 	fi
 
@@ -1641,7 +1666,7 @@ unmount_partition() {
 		echo "分区卸载成功: $MOUNT_POINT"
 		rmdir "$MOUNT_POINT"
 	else
-		echo "分区卸载失败！"
+		echo "分区卸载失败!"
 	fi
 }
 
@@ -1657,13 +1682,13 @@ format_partition() {
 
 	# 检查分区是否存在
 	if ! lsblk -o NAME | grep -w "$PARTITION" > /dev/null; then
-		echo "分区不存在！"
+		echo "分区不存在!"
 		return
 	fi
 
 	# 检查分区是否已经挂载
 	if lsblk -o MOUNTPOINT | grep -w "$PARTITION" > /dev/null; then
-		echo "分区已经挂载，请先卸载！"
+		echo "分区已经挂载, 请先卸载!"
 		return
 	fi
 
@@ -1680,13 +1705,13 @@ format_partition() {
 		2) FS_TYPE="xfs" ;;
 		3) FS_TYPE="ntfs" ;;
 		4) FS_TYPE="vfat" ;;
-		*) echo "无效的选择！"; return ;;
+		*) echo "无效的选择!"; return ;;
 	esac
 
 	# 确认格式化
 	read -e -p "确认格式化分区 /dev/$PARTITION 为 $FS_TYPE 吗？(y/n): " CONFIRM
 	if [ "$CONFIRM" != "y" ]; then
-		echo "操作已取消。"
+		echo "操作已取消."
 		return
 	fi
 
@@ -1695,9 +1720,9 @@ format_partition() {
 	mkfs.$FS_TYPE "/dev/$PARTITION"
 
 	if [ $? -eq 0 ]; then
-		echo "分区格式化成功！"
+		echo "分区格式化成功!"
 	else
-		echo "分区格式化失败！"
+		echo "分区格式化失败!"
 	fi
 }
 
@@ -1707,7 +1732,7 @@ check_partition() {
 
 	# 检查分区是否存在
 	if ! lsblk -o NAME | grep -w "$PARTITION" > /dev/null; then
-		echo "分区不存在！"
+		echo "分区不存在!"
 		return
 	fi
 
@@ -1721,7 +1746,7 @@ disk_manager() {
 	while true; do
 		clear
 		echo "硬盘分区管理"
-		echo -e "${yellow}该功能内部测试阶段，请勿在生产环境使用。${white}"
+		echo -e "${yellow}该功能内部测试阶段, 请勿在生产环境使用.${white}"
 		echo -e "${pink}------------------------${white}"
 		list_partitions
 		echo -e "${pink}------------------------${white}"
@@ -1780,7 +1805,7 @@ else
 	echo "${bianse}" >> ~/.profile
 	# source ~/.profile
 fi
-echo -e "${green}变更完成。重新连接SSH后可查看变化！${white}"
+echo -e "${green}变更完成.重新连接SSH后可查看变化!${white}"
 
 hash -r
 break_end
@@ -1893,7 +1918,7 @@ linux_tools() {
             22) cmd_bookmark ;;
             23) cmd_line_beautify_tool ;;
             0) return ;;
-            *) echo -e "${red}无效的输入，请重新选择！${white}"; pause ;;
+            *) echo -e "${red}无效的输入, 请重新选择!${white}"; sleep 1 ;;
         esac
     done
 }
@@ -2133,7 +2158,7 @@ while true; do
 			[Nn])
 				;;
 			  *)
-				echo "无效的选择，请输入 Y 或 N。"
+				echo "无效的选择, 请输入 Y 或 N."
 				;;
 			esac
 			;;
@@ -2198,7 +2223,7 @@ while true; do
 			;;
 
 		*)
-			break  # 跳出循环，退出菜单
+			break  # 跳出循环, 退出菜单
 			;;
 	esac
 done
@@ -2254,12 +2279,12 @@ while true; do
 				[Nn])
 				;;
 			  *)
-				echo "无效的选择，请输入 Y 或 N。"
+				echo "无效的选择, 请输入 Y 或 N."
 				;;
 			esac
 			;;
 		*)
-			break  # 跳出循环，退出菜单
+			break  # 跳出循环, 退出菜单
 			;;
 	esac
 done
@@ -2273,7 +2298,7 @@ docker_ipv6_on() {
 	local CONFIG_FILE="/etc/docker/daemon.json"
 	local REQUIred_IPV6_CONFIG='{"ipv6": true, "fixed-cidr-v6": "2001:db8:1::/64"}'
 
-	# 检查配置文件是否存在，如果不存在则创建文件并写入默认设置
+	# 检查配置文件是否存在, 如果不存在则创建文件并写入默认设置
 	if [ ! -f "$CONFIG_FILE" ]; then
 		echo "$REQUIred_IPV6_CONFIG" | jq . > "$CONFIG_FILE"
 		restart docker
@@ -2284,7 +2309,7 @@ docker_ipv6_on() {
 		# 检查当前配置是否已经有 ipv6 设置
 		local CURRENT_IPV6=$(echo "$ORIGINAL_CONFIG" | jq '.ipv6 // false')
 
-		# 更新配置，开启 IPv6
+		# 更新配置, 开启 IPv6
 		if [[ "$CURRENT_IPV6" == "false" ]]; then
 			UPDATED_CONFIG=$(echo "$ORIGINAL_CONFIG" | jq '. + {ipv6: true, "fixed-cidr-v6": "2001:db8:1::/64"}')
 		else
@@ -2368,7 +2393,7 @@ install_add_docker_guanfang() {
 install_add_docker() {
     echo -e "${yellow}正在安装 Docker 环境...${white}"
     
-    # 统一处理依赖（以 Debian/Ubuntu 为例，其他系统需适配）
+    # 统一处理依赖（以 Debian/Ubuntu 为例, 其他系统需适配）
     if command -v apt &> /dev/null; then
         sudo apt update
         sudo apt install -y apt-transport-https ca-certificates curl gnupg lsb-release
@@ -2385,7 +2410,7 @@ install_docker() {
     if ! command -v docker &> /dev/null; then
         install_add_docker
     else
-        echo -e "${yellow}Docker 已安装，跳过安装流程${white}"
+        echo -e "${yellow}Docker 已安装, 跳过安装流程${white}"
     fi
 }
 
@@ -2429,7 +2454,7 @@ uninstall_docker() {
             echo -e "${white}已取消 Docker 卸载操作${white}"
             ;;
         *)
-            echo -e "${red}无效的选择，请输入 Y 或 N${white}"
+            echo -e "${red}无效的选择, 请输入 Y 或 N${white}"
             ;;
     esac
 }
@@ -2578,7 +2603,7 @@ linux_docker() {
 							;;
 
 						*)
-							break  # 跳出循环，退出菜单
+							break  # 跳出循环, 退出菜单
 							;;
 					esac
 				done
@@ -2627,13 +2652,13 @@ linux_docker() {
 							[Nn])
 								;;
 							*)
-								echo "无效的选择，请输入 Y 或 N。"
+								echo "无效的选择, 请输入 Y 或 N."
 								;;
 							esac
 							;;
 
 						*)
-							break  # 跳出循环，退出菜单
+							break  # 跳出循环, 退出菜单
 							;;
 					esac
 				done
@@ -2641,7 +2666,7 @@ linux_docker() {
 			7)
 				clear
 				## "Docker清理"
-				read -e -p "$(echo -e "${yellow}提示: ${white}将清理无用的镜像容器网络，包括停止的容器，确定清理吗？(Y/N): ")" choice
+				read -e -p "$(echo -e "${yellow}提示: ${white}将清理无用的镜像容器网络, 包括停止的容器, 确定清理吗？(Y/N): ")" choice
 				case "$choice" in
 				[Yy])
 					docker system prune -af --volumes
@@ -2649,7 +2674,7 @@ linux_docker() {
 				[Nn])
 					;;
 				*)
-					echo "无效的选择，请输入 Y 或 N。"
+					echo "无效的选择, 请输入 Y 或 N."
 					;;
 				esac
 				;;
@@ -2851,7 +2876,7 @@ install_ssltls_text() {
 
 # 添加SSL证书
 add_ssl() {
-	echo -e "${yellow}快速申请SSL证书，过期前自动续签${white}"
+	echo -e "${yellow}快速申请SSL证书, 过期前自动续签${white}"
 	yuming="${1:-}"
 	if [ -z "$yuming" ]; then
 		add_yuming
@@ -2905,11 +2930,11 @@ certs_status() {
 		echo "域名证书申请成功"
 	else
 		# "域名证书申请失败"
-		echo -e "${red}注意: ${white}证书申请失败，请检查以下可能原因并重试："
+		echo -e "${red}注意: ${white}证书申请失败, 请检查以下可能原因并重试："
 		echo -e "1. 域名拼写错误 ➠ 请检查域名输入是否正确"
 		echo -e "2. DNS解析问题 ➠ 确认域名已正确解析到本服务器IP"
 		echo -e "3. 网络配置问题 ➠ 如使用Cloudflare Warp等虚拟网络请暂时关闭"
-		echo -e "4. 防火墙限制 ➠ 检查80/443端口是否开放，确保验证可访问"
+		echo -e "4. 防火墙限制 ➠ 检查80/443端口是否开放, 确保验证可访问"
 		echo -e "5. 申请次数超限 ➠ Let's Encrypt有每周限额(5次/域名/周)"
 		echo -e "6. 国内备案限制 ➠ 中国大陆环境请确认域名是否备案"
 		break_end
@@ -3041,7 +3066,7 @@ cf_purge_cache() {
 	# 提示用户是否清理缓存
 	read -e -p "需要清理 Cloudflare 的缓存吗？（y/n）: " answer
 	if [[ "$answer" == "y" ]]; then
-		echo "CF信息保存在$CONFIG_FILE，可以后期修改CF信息"
+		echo "CF信息保存在$CONFIG_FILE, 可以后期修改CF信息"
 		read -e -p "请输入你的 API_TOKEN: " API_TOKEN
 		read -e -p "请输入你的CF用户名: " EMAIL
 		read -e -p "请输入 zone_id（多个用空格分隔）: " -a ZONE_IDS
@@ -3061,7 +3086,7 @@ cf_purge_cache() {
 	--data '{"purge_everything":true}'
 	done
 
-	echo "缓存清除请求已发送完毕。"
+	echo "缓存清除请求已发送完毕."
 }
 
 
@@ -3079,7 +3104,7 @@ web_del() {
 	# "删除站点数据"
 	yuming_list="${1:-}"
 	if [ -z "$yuming_list" ]; then
-		read -e -p "删除站点数据，请输入你的域名（多个域名用空格隔开）: " yuming_list
+		read -e -p "删除站点数据, 请输入你的域名（多个域名用空格隔开）: " yuming_list
 		if [[ -z "$yuming_list" ]]; then
 			return
 		fi
@@ -3096,7 +3121,7 @@ web_del() {
 		dbname=$(echo "$yuming" | sed -e 's/[^A-Za-z0-9]/_/g')
 		dbrootpasswd=$(grep -oP 'MYSQL_ROOT_PASSWORD:\s*\K.*' /home/web/docker-compose.yml | tr -d '[:space:]')
 
-		# 删除数据库前检查是否存在，避免报错
+		# 删除数据库前检查是否存在, 避免报错
 		echo "正在删除数据库: $dbname"
 		docker exec mysql mysql -u root -p"$dbrootpasswd" -e "DROP DATABASE ${dbname};" > /dev/null 2>&1
 	done
@@ -3167,8 +3192,8 @@ nginx_http_on() {
 
 # WP_MEMORY_LIMIT
 patch_wp_memory_limit() {
-	local MEMORY_LIMIT="${1:-256M}"      # 第一个参数，默认256M
-	local MAX_MEMORY_LIMIT="${2:-256M}"  # 第二个参数，默认256M
+	local MEMORY_LIMIT="${1:-256M}"      # 第一个参数, 默认256M
+	local MAX_MEMORY_LIMIT="${2:-256M}"  # 第二个参数, 默认256M
 	local TARGET_DIR="/home/web/html"    # 路径写死
 
 	find "$TARGET_DIR" -type f -name "wp-config.php" | while read -r FILE; do
@@ -3176,7 +3201,7 @@ patch_wp_memory_limit() {
 	sed -i "/define(['\"]WP_MEMORY_LIMIT['\"].*/d" "$FILE"
 	sed -i "/define(['\"]WP_MAX_MEMORY_LIMIT['\"].*/d" "$FILE"
 
-	# 插入新定义，放在含 "Happy publishing" 的行前
+	# 插入新定义, 放在含 "Happy publishing" 的行前
 	awk -v insert="define('WP_MEMORY_LIMIT', '$MEMORY_LIMIT');\ndefine('WP_MAX_MEMORY_LIMIT', '$MAX_MEMORY_LIMIT');" \
 	'
 		/Happy publishing/ {
@@ -3191,9 +3216,9 @@ patch_wp_memory_limit() {
 
 # WP_DEBUG
 patch_wp_debug() {
-	local DEBUG="${1:-false}"           # 第一个参数，默认false
-	local DEBUG_DISPLAY="${2:-false}"   # 第二个参数，默认false
-	local DEBUG_LOG="${3:-false}"       # 第三个参数，默认false
+	local DEBUG="${1:-false}"           # 第一个参数, 默认false
+	local DEBUG_DISPLAY="${2:-false}"   # 第二个参数, 默认false
+	local DEBUG_LOG="${3:-false}"       # 第三个参数, 默认false
 	local TARGET_DIR="/home/web/html"   # 路径写死
 
 	find "$TARGET_DIR" -type f -name "wp-config.php" | while read -r FILE; do
@@ -3202,7 +3227,7 @@ patch_wp_debug() {
 	sed -i "/define(['\"]WP_DEBUG_DISPLAY['\"].*/d" "$FILE"
 	sed -i "/define(['\"]WP_DEBUG_LOG['\"].*/d" "$FILE"
 
-	# 插入新定义，放在含 "Happy publishing" 的行前
+	# 插入新定义, 放在含 "Happy publishing" 的行前
 	awk -v insert="define('WP_DEBUG_DISPLAY', $DEBUG_DISPLAY);\ndefine('WP_DEBUG_LOG', $DEBUG_LOG);" \
 	'
 		/Happy publishing/ {
@@ -3503,7 +3528,7 @@ web_security() {
 
 				21)
 					# "cloudflare模式"
-					echo "到cf后台右上角我的个人资料，选择左侧API令牌，获取Global API Key"
+					echo "到cf后台右上角我的个人资料, 选择左侧API令牌, 获取Global API Key"
 					echo "https://dash.cloudflare.com/login"
 					read -e -p "输入CF的账号: " cfuser
 					read -e -p "输入CF的Global API Key: " cftoken
@@ -3521,15 +3546,15 @@ web_security() {
 					sed -i "s/APIKEY00000/$cftoken/g" /path/to/fail2ban/config/fail2ban/action.d/cloudflare-docker.conf
 					f2b_status
 
-					echo "已配置cloudflare模式，可在cf后台，站点-安全性-事件中查看拦截记录"
+					echo "已配置cloudflare模式, 可在cf后台, 站点-安全性-事件中查看拦截记录"
 					;;
 
 				22)
 					# "高负载开启5秒盾"
-					echo -e "${yellow}网站每5分钟自动检测，当达检测到高负载会自动开盾，低负载也会自动关闭5秒盾。${white}"
+					echo -e "${yellow}网站每5分钟自动检测, 当达检测到高负载会自动开盾, 低负载也会自动关闭5秒盾.${white}"
 					echo "--------------"
 					echo "获取CF参数: "
-					echo -e "到cf后台右上角我的个人资料，选择左侧API令牌，获取${yellow}Global API Key${white}"
+					echo -e "到cf后台右上角我的个人资料, 选择左侧API令牌, 获取${yellow}Global API Key${white}"
 					echo -e "到cf后台域名概要页面右下方获取${yellow}区域ID${white}"
 					echo "https://dash.cloudflare.com/login"
 					echo "--------------"
@@ -3554,7 +3579,7 @@ web_security() {
 						(crontab -l 2>/dev/null; echo "$cron_job") | crontab -
 						echo "高负载自动开盾脚本已添加"
 					else
-						echo "自动开盾脚本已存在，无需添加"
+						echo "自动开盾脚本已存在, 无需添加"
 					fi
 
 					;;
@@ -3766,19 +3791,19 @@ check_nginx_compression() {
 
 # 网站搭建优化函数
 optimize_web_server() {
-	echo -e "${gl_lv}切换到网站搭建优化模式...${gl_bai}"
+	echo -e "${green}切换到网站搭建优化模式...${white}"
 
-	echo -e "${gl_lv}优化文件描述符...${gl_bai}"
+	echo -e "${green}优化文件描述符...${white}"
 	ulimit -n 65535
 
-	echo -e "${gl_lv}优化虚拟内存...${gl_bai}"
+	echo -e "${green}优化虚拟内存...${white}"
 	sysctl -w vm.swappiness=10 2>/dev/null
 	sysctl -w vm.dirty_ratio=20 2>/dev/null
 	sysctl -w vm.dirty_background_ratio=10 2>/dev/null
 	sysctl -w vm.overcommit_memory=1 2>/dev/null
 	sysctl -w vm.min_free_kbytes=65536 2>/dev/null
 
-	echo -e "${gl_lv}优化网络设置...${gl_bai}"
+	echo -e "${green}优化网络设置...${white}"
 	sysctl -w net.core.rmem_max=16777216 2>/dev/null
 	sysctl -w net.core.wmem_max=16777216 2>/dev/null
 	sysctl -w net.core.netdev_max_backlog=5000 2>/dev/null
@@ -3790,14 +3815,14 @@ optimize_web_server() {
 	sysctl -w net.ipv4.tcp_tw_reuse=1 2>/dev/null
 	sysctl -w net.ipv4.ip_local_port_range='1024 65535' 2>/dev/null
 
-	echo -e "${gl_lv}优化缓存管理...${gl_bai}"
+	echo -e "${green}优化缓存管理...${white}"
 	sysctl -w vm.vfs_cache_pressure=50 2>/dev/null
 
-	echo -e "${gl_lv}优化CPU设置...${gl_bai}"
+	echo -e "${green}优化CPU设置...${white}"
 	sysctl -w kernel.sched_autogroup_enabled=0 2>/dev/null
 
-	echo -e "${gl_lv}其他优化...${gl_bai}"
-	# 禁用透明大页面，减少延迟
+	echo -e "${green}其他优化...${white}"
+	# 禁用透明大页面, 减少延迟
 	echo never > /sys/kernel/mm/transparent_hugepage/enabled
 	# 禁用 NUMA balancing
 	sysctl -w kernel.numa_balancing=0 2>/dev/null
@@ -3805,19 +3830,19 @@ optimize_web_server() {
 
 # 均衡模式优化函数
 optimize_balanced() {
-	echo -e "${gl_lv}切换到均衡模式...${gl_bai}"
+	echo -e "${green}切换到均衡模式...${white}"
 
-	echo -e "${gl_lv}优化文件描述符...${gl_bai}"
+	echo -e "${green}优化文件描述符...${white}"
 	ulimit -n 32768
 
-	echo -e "${gl_lv}优化虚拟内存...${gl_bai}"
+	echo -e "${green}优化虚拟内存...${white}"
 	sysctl -w vm.swappiness=30 2>/dev/null
 	sysctl -w vm.dirty_ratio=20 2>/dev/null
 	sysctl -w vm.dirty_background_ratio=10 2>/dev/null
 	sysctl -w vm.overcommit_memory=0 2>/dev/null
 	sysctl -w vm.min_free_kbytes=32768 2>/dev/null
 
-	echo -e "${gl_lv}优化网络设置...${gl_bai}"
+	echo -e "${green}优化网络设置...${white}"
 	sysctl -w net.core.rmem_max=8388608 2>/dev/null
 	sysctl -w net.core.wmem_max=8388608 2>/dev/null
 	sysctl -w net.core.netdev_max_backlog=125000 2>/dev/null
@@ -3829,13 +3854,13 @@ optimize_balanced() {
 	sysctl -w net.ipv4.tcp_tw_reuse=1 2>/dev/null
 	sysctl -w net.ipv4.ip_local_port_range='1024 49151' 2>/dev/null
 
-	echo -e "${gl_lv}优化缓存管理...${gl_bai}"
+	echo -e "${green}优化缓存管理...${white}"
 	sysctl -w vm.vfs_cache_pressure=75 2>/dev/null
 
-	echo -e "${gl_lv}优化CPU设置...${gl_bai}"
+	echo -e "${green}优化CPU设置...${white}"
 	sysctl -w kernel.sched_autogroup_enabled=1 2>/dev/null
 
-	echo -e "${gl_lv}其他优化...${gl_bai}"
+	echo -e "${green}其他优化...${white}"
 	# 还原透明大页面
 	echo always > /sys/kernel/mm/transparent_hugepage/enabled
 	# 还原 NUMA balancing
@@ -4040,7 +4065,7 @@ ldnmp_web_status() {
 
 			2)
 				#  "更换站点域名"
-				echo -e "${red}强烈建议: ${white}先备份好全站数据再更换站点域名！"
+				echo -e "${red}强烈建议: ${white}先备份好全站数据再更换站点域名!"
 				read -e -p "请输入旧域名: " oddyuming
 				read -e -p "请输入新域名: " yuming
 				install_certbot
@@ -4121,7 +4146,7 @@ ldnmp_web_status() {
 
 			8)
 				#  "编辑站点配置"
-				read -e -p "编辑站点配置，请输入你要编辑的域名: " yuming
+				read -e -p "编辑站点配置, 请输入你要编辑的域名: " yuming
 				install nano
 				nano /home/web/conf.d/$yuming.conf
 				docker exec nginx nginx -s reload
@@ -4142,7 +4167,7 @@ ldnmp_web_status() {
 
 				;;
 			*)
-				break  # 跳出循环，退出菜单
+				break  # 跳出循环, 退出菜单
 				;;
 		esac
 	done
@@ -4189,7 +4214,7 @@ ldnmp_install_status_one() {
 	if docker inspect "php" &>/dev/null; then
 		clear
 		# "无法再次安装LDNMP环境"
-		echo -e "${yellow}提示: ${white}建站环境已安装。无需再次安装！"
+		echo -e "${yellow}提示: ${white}建站环境已安装.无需再次安装!"
 		break_end
 		linux_ldnmp
 	fi
@@ -4201,7 +4226,7 @@ ldnmp_install_all() {
 	# "安装LDNMP环境"
 	root_use
 	clear
-	echo -e "${yellow}LDNMP环境未安装，开始安装LDNMP环境...${white}"
+	echo -e "${yellow}LDNMP环境未安装, 开始安装LDNMP环境...${white}"
 	check_disk_space 3
 	check_port
 	dependency_check
@@ -4217,7 +4242,7 @@ nginx_install_all() {
 	# "安装nginx环境"
 	root_use
 	clear
-	echo -e "${yellow}nginx未安装，开始安装nginx环境...${white}"
+	echo -e "${yellow}nginx未安装, 开始安装nginx环境...${white}"
 	check_disk_space 1
 	check_port
 	dependency_check
@@ -4252,7 +4277,7 @@ nginx_install_status() {
 # 	Web_ON
 ldnmp_web_on() {
 	clear
-	echo "您的 $webname 搭建好了！"
+	echo "您的 $webname 搭建好了!"
 	echo "https://$yuming"
 	echo "------------------------"
 	echo "$webname 安装信息如下: "
@@ -4261,7 +4286,7 @@ ldnmp_web_on() {
 # Nginx
 nginx_web_on() {
 	clear
-	echo "您的 $webname 搭建好了！"
+	echo "您的 $webname 搭建好了!"
 	echo "https://$yuming"
 
 }
@@ -4608,7 +4633,7 @@ linux_ldnmp() {
 		echo "密码: admin"
 		echo "------------------------"
 		echo "登录时右上角如果出现红色error0请使用如下命令: "
-		echo "我也很气愤独角数卡为啥这么麻烦，会有这样的问题！"
+		echo "我也很气愤独角数卡为啥这么麻烦, 会有这样的问题!"
 		echo "sed -i 's/ADMIN_HTTPS=false/ADMIN_HTTPS=true/g' /home/web/html/$yuming/dujiaoka/.env"
 
 			;;
@@ -4760,8 +4785,8 @@ linux_ldnmp() {
 		clear
 		echo -e "[${yellow}1/6${white}] 上传PHP源码"
 		echo "-------------"
-		echo "目前只允许上传zip格式的源码包，请将源码包放到/home/web/html/${yuming}目录下"
-		read -e -p "也可以输入下载链接，远程下载源码包，直接回车将跳过远程下载： " url_download
+		echo "目前只允许上传zip格式的源码包, 请将源码包放到/home/web/html/${yuming}目录下"
+		read -e -p "也可以输入下载链接, 远程下载源码包, 直接回车将跳过远程下载： " url_download
 
 		if [ -n "$url_download" ]; then
 			wget "$url_download"
@@ -4776,7 +4801,7 @@ linux_ldnmp() {
 		# find "$(realpath .)" -name "index.php" -print
 		find "$(realpath .)" -name "index.php" -print | xargs -I {} dirname {}
 
-		read -e -p "请输入index.php的路径，类似（/home/web/html/$yuming/wordpress/）： " index_lujing
+		read -e -p "请输入index.php的路径, 类似（/home/web/html/$yuming/wordpress/）： " index_lujing
 
 		sed -i "s#root /var/www/html/$yuming/#root $index_lujing#g" /home/web/conf.d/$yuming.conf
 		sed -i "s#/home/web/#/var/www/#g" /home/web/conf.d/$yuming.conf
@@ -4795,7 +4820,7 @@ linux_ldnmp() {
 			local PHP_Version="php74"
 			;;
 			*)
-			echo "无效的选择，请重新输入。"
+			echo "无效的选择, 请重新输入."
 			;;
 		esac
 
@@ -4806,7 +4831,7 @@ linux_ldnmp() {
 		echo "已经安装的扩展"
 		docker exec php php -m
 
-		read -e -p "$(echo -e "输入需要安装的扩展名称，如 ${yellow}SourceGuardian imap ftp${white} 等等。直接回车将跳过安装 ： ")" php_extensions
+		read -e -p "$(echo -e "输入需要安装的扩展名称, 如 ${yellow}SourceGuardian imap ftp${white} 等等.直接回车将跳过安装 ： ")" php_extensions
 		if [ -n "$php_extensions" ]; then
 			docker exec $PHP_Version install-php-extensions $php_extensions
 		fi
@@ -4815,7 +4840,7 @@ linux_ldnmp() {
 		clear
 		echo -e "[${yellow}5/6${white}] 编辑站点配置"
 		echo "-------------"
-		echo "按任意键继续，可以详细设置站点配置，如伪静态等内容"
+		echo "按任意键继续, 可以详细设置站点配置, 如伪静态等内容"
 		read -n 1 -s -r -p ""
 		install nano
 		nano /home/web/conf.d/$yuming.conf
@@ -4830,8 +4855,8 @@ linux_ldnmp() {
 				echo
 				;;
 			2)
-				echo "数据库备份必须是.gz结尾的压缩包。请放到/home/目录下，支持宝塔/1panel备份数据导入。"
-				read -e -p "也可以输入下载链接，远程下载备份数据，直接回车将跳过远程下载： " url_download_db
+				echo "数据库备份必须是.gz结尾的压缩包.请放到/home/目录下, 支持宝塔/1panel备份数据导入."
+				read -e -p "也可以输入下载链接, 远程下载备份数据, 直接回车将跳过远程下载： " url_download_db
 
 				cd /home/
 				if [ -n "$url_download_db" ]; then
@@ -4900,7 +4925,7 @@ linux_ldnmp() {
 		if [ -z "$docker_name" ]; then
 			# 询问用户是否确认阻止访问
 			read -p "是否阻止IP+端口访问该服务？[y/N] " confirm
-			# 检查用户输入，仅当输入y或Y时执行关闭操作
+			# 检查用户输入, 仅当输入y或Y时执行关闭操作
 			if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
 				close_port "$port"
 				echo "已阻止IP+端口访问该服务"
@@ -5035,8 +5060,8 @@ linux_ldnmp() {
 		clear
 		echo -e "[${yellow}1/2${white}] 上传静态源码"
 		echo "-------------"
-		echo "目前只允许上传zip格式的源码包，请将源码包放到/home/web/html/${yuming}目录下"
-		read -e -p "也可以输入下载链接，远程下载源码包，直接回车将跳过远程下载： " url_download
+		echo "目前只允许上传zip格式的源码包, 请将源码包放到/home/web/html/${yuming}目录下"
+		read -e -p "也可以输入下载链接, 远程下载源码包, 直接回车将跳过远程下载： " url_download
 
 		if [ -n "$url_download" ]; then
 			wget "$url_download"
@@ -5051,7 +5076,7 @@ linux_ldnmp() {
 		# find "$(realpath .)" -name "index.html" -print
 		find "$(realpath .)" -name "index.html" -print | xargs -I {} dirname {}
 
-		read -e -p "请输入index.html的路径，类似（/home/web/html/$yuming/index/）： " index_lujing
+		read -e -p "请输入index.html的路径, 类似（/home/web/html/$yuming/index/）： " index_lujing
 
 		sed -i "s#root /var/www/html/$yuming/#root $index_lujing#g" /home/web/conf.d/$yuming.conf
 		sed -i "s#/home/web/#/var/www/#g" /home/web/conf.d/$yuming.conf
@@ -5084,7 +5109,7 @@ linux_ldnmp() {
 			[Yy])
 				read -e -p "请输入远端服务器IP:  " remote_ip
 				if [ -z "$remote_ip" ]; then
-				echo "错误: 请输入远端服务器IP。"
+				echo "错误: 请输入远端服务器IP."
 				continue
 				fi
 				local latest_tar=$(ls -t /home/*.tar.gz | head -1)
@@ -5092,9 +5117,9 @@ linux_ldnmp() {
 				ssh-keygen -f "/root/.ssh/known_hosts" -R "$remote_ip"
 				sleep 2  # 添加等待时间
 				scp -o StrictHostKeyChecking=no "$latest_tar" "root@$remote_ip:/home/"
-				echo "文件已传送至远程服务器home目录。"
+				echo "文件已传送至远程服务器home目录."
 				else
-				echo "未找到要传送的文件。"
+				echo "未找到要传送的文件."
 				fi
 				break
 				;;
@@ -5102,7 +5127,7 @@ linux_ldnmp() {
 				break
 				;;
 			*)
-				echo "无效的选择，请输入 Y 或 N。"
+				echo "无效的选择, 请输入 Y 或 N."
 				;;
 			esac
 		done
@@ -5128,12 +5153,12 @@ linux_ldnmp() {
 		case $dingshi in
 			1)
 				check_crontab_installed
-				read -e -p "选择每周备份的星期几 (0-6，0代表星期日): " weekday
+				read -e -p "选择每周备份的星期几 (0-6, 0代表星期日): " weekday
 				(crontab -l ; echo "0 0 * * $weekday ./${useip}_beifen.sh") | crontab - > /dev/null 2>&1
 				;;
 			2)
 				check_crontab_installed
-				read -e -p "选择每天备份的时间（小时，0-23）: " hour
+				read -e -p "选择每天备份的时间（小时, 0-23）: " hour
 				(crontab -l ; echo "0 $hour * * * ./${useip}_beifen.sh") | crontab - > /dev/null 2>&1
 				;;
 			*)
@@ -5152,14 +5177,14 @@ linux_ldnmp() {
 		echo "-------------------------"
 		ls -lt /home/*.gz | awk '{print $NF}'
 		echo ""
-		read -e -p  "回车键还原最新的备份,输入备份文件名还原指定的备份，输入0退出：" filename
+		read -e -p  "回车键还原最新的备份,输入备份文件名还原指定的备份, 输入0退出：" filename
 
 		if [ "$filename" == "0" ]; then
 			break_end
 			linux_ldnmp
 		fi
 
-		# 如果用户没有输入文件名，使用最新的压缩包
+		# 如果用户没有输入文件名, 使用最新的压缩包
 		if [ -z "$filename" ]; then
 			local filename=$(ls -t /home/*.tar.gz | head -1)
 		fi
@@ -5178,7 +5203,7 @@ linux_ldnmp() {
 			install_certbot
 			install_ldnmp
 		else
-			echo "没有找到压缩包。"
+			echo "没有找到压缩包."
 		fi
 
 		;;
@@ -5302,7 +5327,7 @@ linux_ldnmp() {
 
 					;;
 				5)
-					read -e -p "$(echo -e "${yellow}提示: ${white}长时间不更新环境的用户，请慎重更新LDNMP环境，会有数据库更新失败的风险。确定更新LDNMP环境吗？(Y/N): ")" choice
+					read -e -p "$(echo -e "${yellow}提示: ${white}长时间不更新环境的用户, 请慎重更新LDNMP环境, 会有数据库更新失败的风险.确定更新LDNMP环境吗？(Y/N): ")" choice
 					case "$choice" in
 					[Yy])
 						#  "完整更新LDNMP环境"
@@ -5330,7 +5355,7 @@ linux_ldnmp() {
 		38)
 			root_use
 			#  "卸载LDNMP环境"
-			read -e -p "$(echo -e "${red}强烈建议：${white}先备份全部网站数据，再卸载LDNMP环境。确定删除所有网站数据吗？(Y/N): ")" choice
+			read -e -p "$(echo -e "${red}强烈建议：${white}先备份全部网站数据, 再卸载LDNMP环境.确定删除所有网站数据吗？(Y/N): ")" choice
 			case "$choice" in
 			[Yy])
 				cd /home/web/
@@ -5343,7 +5368,7 @@ linux_ldnmp() {
 
 				;;
 			*)
-				echo "无效的选择，请输入 Y 或 N。"
+				echo "无效的选择, 请输入 Y 或 N."
 				;;
 			esac
 			;;
@@ -5468,7 +5493,7 @@ manage_country_rules() {
 
     # 检查ipset是否安装
     if ! command -v ipset >/dev/null 2>&1; then
-        echo -e "${yellow}检测到未安装ipset，正在安装...${white}"
+        echo -e "${yellow}检测到未安装ipset, 正在安装...${white}"
         install ipset || return 1
     fi
 
@@ -5500,7 +5525,7 @@ manage_country_rules() {
                 sudo ipset add $ipset_name $ip 2>/dev/null
             done
             
-            # 先默认拒绝所有，再允许国家IP+基础端口
+            # 先默认拒绝所有, 再允许国家IP+基础端口
             if [ "$firewall" = "firewalld" ]; then
                 sudo firewall-cmd --permanent --set-default-zone=drop
                 sudo firewall-cmd --permanent --add-rich-rule="rule family=ipv4 source ipset=$ipset_name accept"
@@ -5647,7 +5672,7 @@ firewalld_panel() {
                 sudo firewall-cmd --permanent --set-default-zone=public
                 sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family=ipv4 source address=0.0.0.0/0 accept'
                 sudo firewall-cmd --reload
-                echo -e "${yellow}警告: 已开放所有端口，安全性降低${white}"
+                echo -e "${yellow}警告: 已开放所有端口, 安全性降低${white}"
                 pause
                 ;;
                 
@@ -5734,7 +5759,7 @@ firewalld_panel() {
 				;;
                 
             *)
-                echo -e "${red}无效选择，请重试${white}"
+                echo -e "${red}无效选择, 请重试${white}"
                 pause
                 ;;
         esac
@@ -5810,7 +5835,7 @@ iptables_panel() {
                 sudo iptables -F INPUT
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
-                echo -e "${yellow}警告: 已开放所有端口，安全性降低${white}"
+                echo -e "${yellow}警告: 已开放所有端口, 安全性降低${white}"
                 pause
                 ;;
                 
@@ -5882,19 +5907,19 @@ iptables_panel() {
                 ;;
                 
             15)  # 阻止指定国家IP
-                read -p "请输入国家代码 (如CN/US，大写): " country
+                read -p "请输入国家代码 (如CN/US, 大写): " country
                 manage_country_rules "iptables" "block" $country
                 pause
                 ;;
                 
             16)  # 仅允许指定国家IP
-                read -p "请输入国家代码 (如CN/US，大写): " country
+                read -p "请输入国家代码 (如CN/US, 大写): " country
                 manage_country_rules "iptables" "allow" $country
                 pause
                 ;;
                 
             17)  # 解除指定国家IP限制
-                read -p "请输入国家代码 (如CN/US，大写): " country
+                read -p "请输入国家代码 (如CN/US, 大写): " country
                 manage_country_rules "iptables" "unblock" $country
                 pause
                 ;;
@@ -5908,7 +5933,7 @@ iptables_panel() {
                 ;;
                 
             *)
-                echo -e "${red}无效选择，请重试${white}"
+                echo -e "${red}无效选择, 请重试${white}"
                 pause
                 ;;
         esac
@@ -5989,7 +6014,7 @@ linux_bbr() {
 				server_reboot
 					;;
 				*)
-					break  # 跳出循环，退出菜单
+					break  # 跳出循环, 退出菜单
 					;;
 
 			esac
@@ -6023,7 +6048,7 @@ panel_manage() {
 		clear
 		check_panel_app
 		echo -e "$panelname $check_panel"
-		echo "${panelname}是一款时下流行且强大的运维管理面板。"
+		echo "${panelname}是一款时下流行且强大的运维管理面板."
 		echo "官网介绍: $panelurl "
 
 		echo ""
@@ -6136,11 +6161,11 @@ install_crontab() {
 				;;
 		esac
 	else
-		echo "无法确定操作系统。"
+		echo "无法确定操作系统."
 		return
 	fi
 
-	echo -e "${green}crontab 已安装且 cron 服务正在运行。${white}"
+	echo -e "${green}crontab 已安装且 cron 服务正在运行.${white}"
 }
 
 # 保存 iptables 规则
@@ -6184,9 +6209,9 @@ check_docker() {
 # 检查Docker应用是否安装
 check_docker_app() {
 	if docker ps -a --format '{{.Names}}' | grep -q "$docker_name" >/dev/null 2>&1 ; then
-		check_docker="${gl_lv}已安装${gl_bai}"
+		check_docker="${green}已安装${white}"
 	else
-		check_docker="${gl_hui}未安装${gl_bai}"
+		check_docker="${grey}未安装${white}"
 	fi
 }
 
@@ -6374,7 +6399,7 @@ block_host_port() {
 	local allowed_ip=$2
 
 	if [[ -z "$port" || -z "$allowed_ip" ]]; then
-		echo "错误：请提供端口号和允许访问的 IP。"
+		echo "错误：请提供端口号和允许访问的 IP."
 		echo "用法: block_host_port <端口号> <允许的IP>"
 		return 1
 	fi
@@ -6426,7 +6451,7 @@ clear_host_port_rules() {
 	local allowed_ip=$2
 
 	if [[ -z "$port" || -z "$allowed_ip" ]]; then
-		echo "错误：请提供端口号和允许访问的 IP。"
+		echo "错误：请提供端口号和允许访问的 IP."
 		echo "用法: clear_host_port_rules <端口号> <允许的IP>"
 		return 1
 	fi
@@ -6519,7 +6544,7 @@ while true; do
 	case $choice in
 		1)
 			check_disk_space $app_size
-			read -e -p "输入应用对外服务端口，回车默认使用${docker_port}端口: " app_port
+			read -e -p "输入应用对外服务端口, 回车默认使用${docker_port}端口: " app_port
 			local app_port=${app_port:-${docker_port}}
 			local docker_port=$app_port
 
@@ -6621,7 +6646,7 @@ docker_app_plus() {
 		case $choice in
 			1)
 				check_disk_space $app_size
-				read -e -p "输入应用对外服务端口，回车默认使用${docker_port}端口: " app_port
+				read -e -p "输入应用对外服务端口, 回车默认使用${docker_port}端口: " app_port
 				local app_port=${app_port:-${docker_port}}
 				local docker_port=$app_port
 				install jq
@@ -6758,7 +6783,7 @@ npm_app(){
 				$docker_img
 		}
 
-		local docker_describe="一个Nginx反向代理工具面板，不支持添加域名访问。"
+		local docker_describe="一个Nginx反向代理工具面板, 不支持添加域名访问."
 		local docker_url="官网介绍: https://nginxproxymanager.com/"
 		local docker_use="echo \"初始用户名: admin@example.com\""
 		local docker_passwd="echo \"初始密码: changeme\""
@@ -6786,7 +6811,7 @@ openlist_app(){
 				openlistteam/openlist:latest-aria2
 		}
 
-		local docker_describe="一个支持多种存储，支持网页浏览和 WebDAV 的文件列表程序，由 gin 和 Solidjs 驱动"
+		local docker_describe="一个支持多种存储, 支持网页浏览和 WebDAV 的文件列表程序, 由 gin 和 Solidjs 驱动"
 		local docker_url="官网介绍: https://github.com/OpenListTeam/OpenList"
 		local docker_use="docker exec -it openlist ./openlist admin random"
 		local docker_passwd=""
@@ -6823,7 +6848,7 @@ webtop_app(){
 				lscr.io/linuxserver/webtop:ubuntu-kde
 		}
 
-		local docker_describe="webtop基于Ubuntu的容器。若IP无法访问，请添加域名访问。"
+		local docker_describe="webtop基于Ubuntu的容器.若IP无法访问, 请添加域名访问."
 		local docker_url="官网介绍: https://docs.linuxserver.io/images/docker-webtop/"
 		local docker_use=""
 		local docker_passwd=""
@@ -6918,7 +6943,7 @@ poste_mail_app(){
 
 		clear
 		echo -e "邮局服务 $check_docker $update_status"
-		echo "poste.io 是一个开源的邮件服务器解决方案，"
+		echo "poste.io 是一个开源的邮件服务器解决方案, "
 		echo "官网: https://poste.io/"
 
 		echo ""
@@ -7146,7 +7171,7 @@ safeline_app(){
 				docker compose down --rmi all
 
 				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-				echo "如果你是默认安装目录那现在项目已经卸载。如果你是自定义安装目录你需要到安装目录下自行执行:"
+				echo "如果你是默认安装目录那现在项目已经卸载.如果你是自定义安装目录你需要到安装目录下自行执行:"
 				echo "docker compose down && docker compose down --rmi all"
 				;;
 			*)
@@ -7173,7 +7198,7 @@ onlyoffice_app(){
 				onlyoffice/documentserver
 	}
 
-	local docker_describe="onlyoffice是一款开源的在线office工具, 太强大了！"
+	local docker_describe="onlyoffice是一款开源的在线office工具, 太强大了!"
 	local docker_url="官网介绍: https://www.onlyoffice.com/"
 	local docker_use=""
 	local docker_passwd=""
@@ -7235,7 +7260,7 @@ drawio_app(){
 		docker run -d --restart=always --name drawio -p ${docker_port}:8080 -v /home/docker/drawio:/var/lib/drawio jgraph/drawio
 	}
 
-	local docker_describe="这是一个强大图表绘制软件。思维导图，拓扑图，流程图，都能画"
+	local docker_describe="这是一个强大图表绘制软件.思维导图, 拓扑图, 流程图, 都能画"
 	local docker_url="官网介绍: https://www.drawio.com/"
 	local docker_use=""
 	local docker_passwd=""
@@ -7299,7 +7324,7 @@ lobe_chat(){
 			lobehub/lobe-chat
 	}
 
-	local docker_describe="LobeChat聚合市面上主流的AI大模型，ChatGPT/Claude/Gemini/Groq/Ollama"
+	local docker_describe="LobeChat聚合市面上主流的AI大模型, ChatGPT/Claude/Gemini/Groq/Ollama"
 	local docker_url="官网介绍: ${url_proxy}github.com/lobehub/lobe-chat"
 	local docker_use=""
 	local docker_passwd=""
@@ -7318,7 +7343,7 @@ myip_app(){
 		docker run -d -p ${docker_port}:18966 --name myip jason5ng32/myip:latest
 	}
 
-	local docker_describe="是一个多功能IP工具箱，可以查看自己IP信息及连通性，用网页面板呈现"
+	local docker_describe="是一个多功能IP工具箱, 可以查看自己IP信息及连通性, 用网页面板呈现"
 	local docker_url="官网介绍: ${url_proxy}github.com/jason5ng32/MyIP/blob/main/README_ZH.md"
 	local docker_use=""
 	local docker_passwd=""
@@ -7341,7 +7366,7 @@ ghproxy_app(){
 		-v /home/docker/ghproxy/config:/data/ghproxy/config wjqserver/ghproxy:latest
 	}
 
-	local docker_describe="使用Go实现的GHProxy, 用于加速部分地区Github仓库的拉取。"
+	local docker_describe="使用Go实现的GHProxy, 用于加速部分地区Github仓库的拉取."
 	local docker_url="官网介绍: https://github.com/WJQSERVER-STUDIO/ghproxy"
 	local docker_use=""
 	local docker_passwd=""
@@ -7384,7 +7409,7 @@ ddnsgo_app(){
 			jeessy/ddns-go
 	}
 
-	local docker_describe="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商，实现动态域名解析。"
+	local docker_describe="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
 	local docker_url="官网介绍: https://github.com/jeessy2/ddns-go"
 	local docker_use=""
 	local docker_passwd=""
@@ -7407,7 +7432,7 @@ lucky_app(){
 		gdy666/lucky
 	}
 
-	local docker_describe="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商，实现动态域名解析。"
+	local docker_describe="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
 	local docker_url="官网介绍: https://github.com/gdy666/lucky"
 	local docker_use=""
 	local docker_passwd=""
@@ -7513,7 +7538,7 @@ melody_app(){
 			foamzou/melody:latest
 	}
 
-	local docker_describe="你的音乐精灵，旨在帮助你更好地管理音乐。"
+	local docker_describe="你的音乐精灵, 旨在帮助你更好地管理音乐."
 	local docker_url="官网介绍: https://github.com/foamzou/melody"
 	local docker_use=""
 	local docker_passwd=""
@@ -7562,7 +7587,7 @@ synctv_app(){
 				synctvorg/synctv
 		}
 
-		local docker_describe="远程一起观看电影和直播的程序。它提供了同步观影、直播、聊天等功能"
+		local docker_describe="远程一起观看电影和直播的程序.它提供了同步观影、直播、聊天等功能"
 		local docker_url="官网介绍: https://github.com/synctv-org/synctv"
 		local docker_use="echo \"初始账号和密码: root  登陆后请及时修改登录密码\""
 		local docker_passwd=""
@@ -7586,7 +7611,7 @@ xui_app(){
 	}
 
 	panel_app_uninstall() {
-		echo "请通过管理面板卸载, 谢谢！"
+		echo "请通过管理面板卸载, 谢谢!"
 		break_end
 	}
 	panel_manage
@@ -7608,7 +7633,7 @@ xui_app(){
 	}
 
 	panel_app_uninstall() {
-		echo "请通过管理面板卸载, 谢谢！"
+		echo "请通过管理面板卸载, 谢谢!"
 		break_end
 	}
 	panel_manage
@@ -7745,11 +7770,20 @@ linux_app() {
 			break
 			;;
 		*)
-			echo -e "${red}无效选择，请重试${white}"
+			echo -e "${red}无效选择, 请重试${white}"
 			pause
 			;;
 		esac
 	done
+}
+
+
+#############################################################################
+############################### 九、Dev环境管理###############################
+# Dev环境管理主菜单
+dev_env_management() {
+	echo -e "目前该功能改在开发中, 敬请期待..."
+	break_end
 }
 
 
@@ -7760,7 +7794,7 @@ main_menu() {
     while true; do
 		clear
 		echo -e "${cyan}LinuxBox脚本工具箱 V$version${white}"
-        echo -e "命令行输入${yellow} j ${cyan}可快速启动脚本${white}"
+        echo -e "命令行输入${yellow} $key ${cyan}可快速启动脚本${white}"
 		echo -e ""
         echo -e "${cyan}------------------------${white}"
         echo -e "${cyan}1.   ${white}系统信息查询"
@@ -7788,7 +7822,7 @@ main_menu() {
             6) linux_firewall ;;
             7) linux_bbr ;;
             8) linux_app ;;
-            9) echo "Dev环境管理(待实现)"; read -n1 -s -r -p "按任意键继续..." ;;
+            9) dev_env_management ;;
             0) 	clear 
 				exit 0 ;;
 			00) update_script ;;
