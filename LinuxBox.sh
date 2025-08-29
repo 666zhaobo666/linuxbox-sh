@@ -2221,9 +2221,10 @@ while true; do
 			check_docker_app_ip
 			break_end
 			;;
-
+		0)
+			break ;;
 		*)
-			break  # 跳出循环, 退出菜单
+			echo -e "${red}请输入正确的选项! ${white}"
 			;;
 	esac
 done
@@ -7788,7 +7789,8 @@ dev_env_management() {
 	echo -e ""
 	echo -e "${cyan}------------------------${white}"
 	echo -e "${cyan}1.   ${white}Python管理"
-	echo -e "${cyan}2.   ${white}敬请期待......"
+	echo -e "${cyan}2.   ${white}数据库管理"
+	echo -e "${cyan}3.   ${white}敬请期待......"
 	echo -e "${cyan}------------------------${white}"
 	echo -e "${yellow}0.   ${white}返回主菜单"
 	echo -e "${cyan}------------------------${white}"
@@ -7796,7 +7798,7 @@ dev_env_management() {
 	read -e -p "请选择功能编号: " choice
 	case $choice in
 		1) python_management ;;
-
+		2) db_management ;;
 		0) return_to_menu ;;
 		*) echo "无效选择"; sleep 1 ;;
         esac
@@ -8074,6 +8076,119 @@ uninstall_python_version() {
     
     read -n1 -s -r -p "按任意键继续..."
 }
+
+##############################
+######### 数据库 管理 ########
+##############################
+db_management() {
+    clear
+    while true; do
+		clear
+		echo -e "${yellow}数据库管理工具${white}"
+		echo -e ""
+        echo -e "${cyan}------------------------${white}"
+        echo -e "${cyan}1.   ${white}MySQL数据库"
+		echo -e "${cyan}2.   ${white}敬请期待..."
+
+		echo -e "${cyan}------------------------${white}"
+		echo -e "${yellow}0.     ${white}返回主菜单"
+        echo -e "${cyan}------------------------${white}"
+
+        read -e -p "请选择功能编号: " choice
+        case $choice in
+            1) mysql_server_app ;;
+            0) return_to_menu ;;
+            *) echo "无效选择"; sleep 1 ;;
+        esac
+    done
+}
+
+# MySQL数据库管理
+mysql_server_app(){
+    local app_id="mysql"
+	local docker_name="mysql"
+    local docker_img="mysql"
+    local docker_port=3306
+    local version=""
+	# 定义常用MySQL版本
+    local common_versions=("5.6" "5.7" "8.0" "latest")
+
+    docker_run() {
+		# 显示版本选择提示
+		echo "常用MySQL版本:"
+		for i in "${!common_versions[@]}"; do
+			echo "$((i+1)). ${common_versions[$i]}"
+		done
+
+		read -e -p "请输入要安装的MySQL版本(直接输入版本号或序号):" input_version
+
+		# 处理用户输入（支持序号或直接输入版本号）
+		if [[ "$input_version" =~ ^[0-9]+$ ]] && [ $input_version -le ${#common_versions[@]} ]; then
+			version=${common_versions[$((input_version-1))]}
+		else
+			version=$input_version
+		fi
+
+		# 根据版本生成容器名称（移除小数点）
+		# local version_suffix=$(echo $version | tr -d '.')
+		local version_suffix=$(echo $version)
+		docker_name="${docker_name}${version_suffix}"
+		app_id="${app_id}${version_suffix}"
+        # 设置MySQL的root密码，建议替换为强密码
+		read -e -p "请输入MySQL数据库ROOT密码: " input_passwd
+        local mysql_root_password=$input_passwd
+        
+        docker run -d \
+			-p ${docker_port}:3306 \
+            --restart=always \
+            --name ${docker_name} \
+            -v /home/docker/${docker_name}/data:/var/lib/mysql \
+            -v /home/docker/${docker_name}/conf:/etc/mysql/conf.d \
+            -v /home/docker/${docker_name}/logs:/var/log/mysql \
+            -e MYSQL_ROOT_PASSWORD=${mysql_root_password} \
+            ${docker_img}:${version}
+		sed -i "s/PASSWORD=admin_password/PASSWORD=${admin_password}/g" /home/docker/moontv/docker-compose.yml
+		sed -i "s/shouquanma/${shouquanma}/g" /home/docker/moontv/docker-compose.yml
+    }
+
+	# 提取所有mysql版本号并处理格式
+	local mysql_versions=$(grep -oE 'mysql([0-9]+\.?[0-9]*)' /home/docker/appno.txt | sed 's/mysql//' | tr '\n' ',' | sed 's/,$//')
+	if [ -z "$mysql_versions" ]; then
+		echo -e "${red}未安装MySQL任何版本! 即将进入安装...${white}"
+		echo -e "${cyan}按回车键继续...${white}"
+		read -n 1 -s -r -p ""
+		clear
+		docker_app
+	else
+		clear
+		echo -e "${cyan}已安装的MySQL版本: ${white}$mysql_versions"
+		read -e -p "请输入要管理的MySQL版本(直接输入版本号, 如:5.6, 如果想安装新的版本, 请直接输入 0):" version
+		if [[ "$version" == "0" ]]; then
+			docker_app
+		elif [[ ",${mysql_versions}," == *",${version},"* ]]; then
+			docker_name="${docker_name}${version}"
+			app_id="${app_id}${version}"
+			docker_img="${docker_img}:${version}"
+			local docker_describe="MySQL Server"
+			local docker_url="官网介绍: https://hub.docker.com/_/mysql"
+			local docker_use=""
+			local docker_passwd=""
+			local app_size="1"
+			docker_app
+		else
+			echo -e "${red}请输入正确的版本号!${white}"
+			sleep 1
+		fi
+	fi
+}
+
+
+
+
+
+
+
+
 
 ##############################
 ########### Others ###########
