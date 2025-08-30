@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="3.0.5"
+version="3.0.6"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -8219,7 +8219,8 @@ db_management() {
 		echo -e ""
         echo -e "${pink}------------------------${white}"
         echo -e "${cyan}1.${white} MySQL数据库"
-		echo -e "${cyan}2.${white} 敬请期待..."
+		echo -e "${cyan}2.${white} PostgreSQL数据库"
+		echo -e "${cyan}3.${white} 敬请期待..."
 
 		echo -e "${pink}------------------------${white}"
 		echo -e "${yellow}0.${white} 返回主菜单"
@@ -8228,6 +8229,7 @@ db_management() {
         read -e -p "请选择功能编号: " choice
         case $choice in
             1) mysql_server_app ;;
+            2) postgres_server_app ;;
             0) return_to_menu ;;
             *) 
 				echo -e "${red}无效选择, 请重新输入 !${white}"
@@ -8251,7 +8253,7 @@ mysql_server_app(){
 		# 显示版本选择提示
 		echo "常用MySQL版本:"
 		for i in "${!common_versions[@]}"; do
-			echo "$((i+1)). ${common_versions[$i]}"
+			echo "$((i+1)). ${yellow}${common_versions[$i]}${white}"
 		done
 
 		read -e -p "请输入要安装的MySQL版本(直接输入版本号或序号):" input_version
@@ -8316,10 +8318,91 @@ mysql_server_app(){
 	fi
 }
 
+# PostgreSQL数据库管理
+postgres_server_app() {
+    local app_id="postgres"
+    local docker_name="postgres"
+    local docker_img="postgres"
+    local docker_port=5432
+    local version=""
+    # 定义常用PostgreSQL版本
+    local common_versions=("12" "13" "14" "15" "16" "latest")
 
+    docker_run() {
+        # 显示版本选择提示
+        echo "常用PostgreSQL版本:"
+        for i in "${!common_versions[@]}"; do
+            echo "$((i+1)). ${yellow}${common_versions[$i]}${white}"
+        done
 
+        read -e -p "请输入要安装的PostgreSQL版本(直接输入版本号或序号):" input_version
 
+        # 处理用户输入（支持序号或直接输入版本号）
+        if [[ "$input_version" =~ ^[0-9]+$ ]] && [ $input_version -le ${#common_versions[@]} ]; then
+            version=${common_versions[$((input_version-1))]}
+        else
+            version=$input_version
+        fi
 
+        # 设置容器名称和应用ID
+        local version_suffix=$(echo $version)
+        docker_name="${docker_name}${version_suffix}"
+        app_id="${app_id}${version_suffix}"
+        
+        # 设置PostgreSQL的超级用户密码
+        read -e -p "请输入PostgreSQL数据库postgres用户密码: " input_passwd
+        local postgres_password=$input_passwd
+        
+        # 设置默认数据库名称
+        read -e -p "请输入默认数据库名称(默认:postgres): " input_dbname
+        local postgres_dbname=${input_dbname:-postgres}
+
+        # 创建并启动PostgreSQL容器
+        docker run -d \
+            -p ${docker_port}:5432 \
+            --restart=always \
+            --name ${docker_name} \
+            -v /home/docker/${docker_name}/data:/var/lib/postgresql/data \
+            -v /home/docker/${docker_name}/conf:/etc/postgresql \
+            -v /home/docker/${docker_name}/logs:/var/log/postgresql \
+            -e POSTGRES_PASSWORD=${postgres_password} \
+            -e POSTGRES_DB=${postgres_dbname} \
+            ${docker_img}:${version}
+        
+        # 如果有需要，这里可以添加额外的配置文件修改
+        # sed -i "s/PASSWORD=admin_password/PASSWORD=${admin_password}/g" /path/to/config
+    }
+
+    # 提取所有已安装的PostgreSQL版本号
+    local postgres_versions=$(grep -oE 'postgres.*' /home/docker/appno.txt | sed 's/postgres//' | tr '\n' ',' | sed 's/,$//')
+    if [ -z "$postgres_versions" ]; then
+        echo -e "${red}未安装PostgreSQL任何版本! 即将进入安装...${white}"
+        echo -e "${cyan}按回车键继续...${white}"
+        read -n 1 -s -r -p ""
+        clear
+        docker_app
+    else
+        clear
+        echo -e "${cyan}已安装的PostgreSQL版本: ${white}$postgres_versions"
+        read -e -p "请输入要管理的PostgreSQL版本(直接输入版本号, 如:14, 如果想安装新的版本, 请直接输入 0):" version
+        if [[ "$version" == "0" ]]; then
+            docker_app
+        elif [[ ",${postgres_versions}," == *",${version},"* ]]; then
+            docker_name="${docker_name}${version}"
+            app_id="${app_id}${version}"
+            docker_img="${docker_img}:${version}"
+            local docker_describe="PostgreSQL Server"
+            local docker_url="官网介绍: https://hub.docker.com/_/postgres"
+            local docker_use=""
+            local docker_passwd=""
+            local app_size="1"
+            docker_app
+        else
+            echo -e "${red}请输入正确的版本号!${white}"
+            sleep 1
+        fi
+    fi
+}
 
 
 
