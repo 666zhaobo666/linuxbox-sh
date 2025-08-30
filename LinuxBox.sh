@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="3.0.4"
+version="3.0.5"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -92,6 +92,7 @@ CheckFirstRun() {
 		cp -f ./LinuxBox.sh /usr/local/bin/${key} > /dev/null 2>&1
 		chmod +x /usr/local/bin/${key} > /dev/null 2>&1
 		echo -e "${cyan}安装完成!${white}"
+		echo -e "${yellow}---------${white}"
 		echo -e "命令行输入${yellow} ${key} ${cyan}可快速启动脚本${white}"
 		rm -f ./LinuxBox.sh
 		break_end
@@ -445,36 +446,37 @@ error_exit() {
 ###########################################################################
 ########################### 一、系统信息查询模块 ###########################
 system_info() {
-    echo "系统信息查询"
-    echo -e "${pink}-------------${white}"
+	clear
+    echo -e "${green}=====系统信息查询=====${white}"
+    echo -e ""
     echo -e "${cyan}主机名:       ${white}$(hostname)"
     echo -e "${cyan}系统版本:     ${white}$(cat /etc/os-release | grep PRETTY_NAME | cut -d= -f2 | tr -d '"')"
     echo -e "${cyan}Linux版本:    ${white}$(uname -r)"
-    echo -e "${pink}-------------${white}"
+    echo -e "${pink}------------------------------------------------------${white}"
     echo -e "${cyan}CPU架构:      ${white}$(uname -m)"
     echo -e "${cyan}CPU型号:      ${white}$(lscpu | grep 'Model name' | awk -F: '{print $2}' | xargs)"
     echo -e "${cyan}CPU核心数:    ${white}$(nproc)"
     echo -e "${cyan}CPU频率:      ${white}$(lscpu | grep 'MHz' | awk '{print $2/1000 " GHz"}')"
-    echo -e "${pink}-------------${white}"
+    echo -e "${pink}------------------------------------------------------${white}"
     echo -e "${cyan}CPU占用:      ${white}$(top -bn1 | grep 'Cpu(s)' | awk '{print $2}')%"
     echo -e "${cyan}系统负载:     ${white}$(uptime | awk -F'load average:' '{print $2}' | xargs)"
     echo -e "${cyan}物理内存:     ${white}$(free -m | awk '/Mem:/ {printf "%0.2f/%0.2fM (%0.2f%%)", $3, $2, $3/$2*100}')"
     echo -e "${cyan}虚拟内存:     ${white}$(free -m | awk '/Swap:/ {printf "%0.2f/%0.2fM (%0.2f%%)", $3, $2, ($2==0?0:$3/$2*100)}')"
     echo -e "${cyan}硬盘占用:     ${white}$(df -h / | awk 'NR==2{print $3"/"$2" ("$5")"}')"
-    echo -e "${pink}-------------${white}"
+    echo -e "${pink}------------------------------------------------------${white}"
     echo -e "${cyan}总接收:       ${white}$(cat /proc/net/dev | awk '/eth|ens|eno|enp|wlan/ {rx+=$2} END {printf "%.2fG", rx/1024/1024/1024}')"
     echo -e "${cyan}总发送:       ${white}$(cat /proc/net/dev | awk '/eth|ens|eno|enp|wlan/ {tx+=$10} END {printf "%.2fG", tx/1024/1024/1024}')"
-    echo -e "${pink}-------------${white}"
+    echo -e "${pink}------------------------------------------------------${white}"
     echo -e "${cyan}网络算法:     ${white}$(sysctl net.ipv4.tcp_congestion_control | awk -F= '{print $2}' | xargs)"
-    echo -e "${pink}-------------${white}"
+    echo -e "${pink}------------------------------------------------------${white}"
     echo -e "${cyan}运营商:       ${white}$(curl -s ipinfo.io/org)"
     echo -e "${cyan}IPv4地址:     ${white}$(hostname -I | awk '{print $1}')"
     echo -e "${cyan}DNS地址:      ${white}$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}' | xargs)"
     echo -e "${cyan}地理位置:     ${white}$(curl -s ipinfo.io/city), $(curl -s ipinfo.io/country)"
     echo -e "${cyan}系统时间:     ${white}$(date '+%Z %Y-%m-%d %I:%M %p')"
-    echo -e "${pink}-------------${white}"
+    echo -e "${pink}------------------------------------------------------${white}"
     echo -e "${cyan}运行时长:     ${white}$(uptime -p | cut -d' ' -f2-)"
-    echo -e "${cyan}-------------${white}"
+    echo -e "${pink}------------------------------------------------------${white}"
     echo -e "${green}操作完成${white}"
     break_end
     clear
@@ -482,12 +484,6 @@ system_info() {
 
 ###########################################################################
 ########################### 二、系统工具合集 ###############################
-# 依赖函数：操作暂停
-pause() {
-    read -p $'\n'"按回车键继续..." -n 1 -r
-    echo -e "\n"
-}
-
 # ------------- 功能实现 -------------
 # 1. 设置本脚本启动快捷键
 set_script_shortcut() {
@@ -501,7 +497,7 @@ set_script_shortcut() {
 		return 1
 	fi
 	
-	read -e -p "请输入你的快捷按键（输入0退出）: " new_key
+	read -e -p "请输入你的选择(输入0退出): " new_key
 	if [ "$new_key" == "0" ]; then
 		break_end
 		return 0
@@ -516,7 +512,7 @@ set_script_shortcut() {
 	
 	# 检查新快捷键是否已存在
 	if [ -f "/usr/local/bin/$new_key" ]; then
-		read -p "警告：快捷键 $new_key 已存在，是否覆盖？(y/n) " confirm
+		read -p "警告：快捷键 $new_key 已存在, 是否覆盖？(y/n) " confirm
 		if [ "$confirm" != "y" ]; then
 			echo "操作已取消"
 			break_end
@@ -531,8 +527,8 @@ set_script_shortcut() {
 	mv -f "/usr/local/bin/$key" "/usr/local/bin/$new_key"
 	
 	echo -e "快捷键已设置为: $new_key"
-	echo -e "请用新的快捷键进入脚本，即将退出..."
-	exit 0  # 退出当前脚本，让用户用新快捷键重新启动
+	echo -e "请用新的快捷键进入脚本, 即将退出..."
+	exit 0  # 退出当前脚本, 让用户用新快捷键重新启动
 }
 
 # 2. 修改登录密码（当前用户）
@@ -547,7 +543,7 @@ change_user_password() {
     else
         echo -e "${red}密码修改失败${white}"
     fi
-    pause
+    break_end
 }
 
 # 3. 修改root登录密码
@@ -564,7 +560,7 @@ change_root_password() {
     else
         echo -e "${red}root密码修改失败${white}"
     fi
-    pause
+    break_end
 }
 
 # 4. 修改ssh连接端口
@@ -580,7 +576,7 @@ change_ssh_port() {
 	echo -e "当前的 SSH 端口号是:  ${yellow}$current_port ${white}"
 
 	echo -e "${pink}------------------------${white}"
-	echo "端口号范围1到65535之间的数字.（输入0退出）"
+	echo "端口号范围1到65535之间的数字.(输入0退出)"
 
 	# 提示用户输入新的 SSH 端口号
 	read -e -p "请输入新的 SSH 端口号: " new_port
@@ -616,7 +612,6 @@ change_ssh_port() {
 		## "输入无效SSH端口"
 		break_end
 	fi
-	pause
 }
 
 # 5. 打开/关闭ssh密码登录
@@ -632,7 +627,7 @@ ssh_password_login() {
         if [ "$confirm" = "y" ]; then
             sudo sed -i "s/^PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
             sudo systemctl restart sshd || sudo systemctl restart ssh
-            echo -e "${green}已关闭SSH密码登录（请确保密钥登录可用）${white}"
+            echo -e "${green}已关闭SSH密码登录(请确保密钥登录可用)${white}"
         fi
     else
         echo "当前状态：禁止密码登录"
@@ -643,7 +638,7 @@ ssh_password_login() {
             echo -e "${green}已开启SSH密码登录${white}"
         fi
     fi
-    pause
+    break_end
 }
 
 # 6. 打开/关闭ssh root登录
@@ -671,7 +666,7 @@ ssh_root_login() {
             echo -e "${green}已允许SSH root登录${white}"
         fi
     fi
-    pause
+    break_end
 }
 
 # 7. 优化DNS地址
@@ -693,7 +688,7 @@ optimize_dns() {
 		echo " v6: 2400:3200::1 2400:da00::6666"
 		echo "3. 手动编辑DNS配置"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " Limiting
 		case "$Limiting" in
@@ -718,8 +713,12 @@ optimize_dns() {
 			nano /etc/resolv.conf
 			## "手动编辑DNS配置"
 			;;
+		0)
+			break # 返回上一级菜单
+			;;
 		*)
-			break
+			echo -e "${red}无效选择, 请重新输入 !${white}"
+			sleep 1
 			;;
 		esac
 	done
@@ -743,7 +742,7 @@ change_ip_priority() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. IPv4 优先          2. IPv6 优先          3. IPv6 修复工具"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "选择优先的网络: " choice
 
@@ -766,8 +765,12 @@ change_ip_priority() {
 				## "ipv6修复"
 				;;
 
+			0)
+				break # 返回上一级菜单
+				;;
 			*)
-				break
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
 				;;
 		esac
 	done
@@ -777,7 +780,7 @@ change_ip_priority() {
 linux_port() {
     clear
 	ss -tulnape
-	pause
+	break_end
 }
 
 # 10. 修改虚拟内存大小
@@ -838,35 +841,39 @@ modify_swap_size() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. 分配1024M         2. 分配2048M         3. 分配4096M         4. 自定义大小"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " choice
 
 		case "$choice" in
 			1)
-			## "已设置1G虚拟内存"
-			add_swap 1024
+				## "已设置1G虚拟内存"
+				add_swap 1024
 
 			;;
 			2)
-			## "已设置2G虚拟内存"
-			add_swap 2048
+				## "已设置2G虚拟内存"
+				add_swap 2048
 
 			;;
 			3)
-			## "已设置4G虚拟内存"
-			add_swap 4096
+				## "已设置4G虚拟内存"
+				add_swap 4096
 
 			;;
 
 			4)
-			read -e -p "请输入虚拟内存大小（单位M）: " new_swap
-			add_swap "$new_swap"
+				read -e -p "请输入虚拟内存大小（单位M）: " new_swap
+				add_swap "$new_swap"
 			;;
 
+			0)
+				break # 返回上一级菜单
+				;;
 			*)
-			break
-			;;
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
 		esac
 	done
 }
@@ -888,13 +895,13 @@ user_management() {
 		echo ""
 		echo "账户操作"
 		echo -e "${pink}------------------------------------------${white}"
-		echo "1. 创建普通账户             2. 创建高级账户"
+		echo -e "1. 创建普通账户             2. 创建高级账户"
 		echo -e "${pink}------------------------------------------${white}"
-		echo "3. 赋予最高权限             4. 取消最高权限"
+		echo -e "3. 赋予最高权限             4. 取消最高权限"
 		echo -e "${pink}------------------------------------------${white}"
-		echo "5. 删除账号"
+		echo -e "5. 删除账号"
 		echo -e "${pink}------------------------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
@@ -1001,7 +1008,7 @@ adjust_timezone() {
 		echo -e "${pink}------------------------${white}"
 		echo "31. UTC全球标准时间"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
@@ -1029,7 +1036,13 @@ adjust_timezone() {
 			25) set_timedate America/Sao_Paulo ;;
 			26) set_timedate America/Argentina/Buenos_Aires ;;
 			31) set_timedate UTC ;;
-			*) break ;;
+			0)
+				break # 返回上一级菜单
+				;;
+			*)
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
 		esac
 	done
 }
@@ -1080,35 +1093,40 @@ modify_hostname() {
 
 # 14. 切换系统更新源
 switch_update_source() {
-	root_use
-	clear
-	echo "选择更新源区域"
-	echo "接入LinuxMirrors切换系统更新源"
-	echo -e "${pink}------------------------${white}"
-	echo "1. 中国大陆【默认】          2. 中国大陆【教育网】          3. 海外地区"
-	echo -e "${pink}------------------------${white}"
-	echo "0. 返回上一级选单"
-	echo -e "${pink}------------------------${white}"
-	read -e -p "输入你的选择: " choice
+	while true; do
+		root_use
+		clear
+		echo "选择更新源区域"
+		echo "接入LinuxMirrors切换系统更新源"
+		echo -e "${pink}------------------------${white}"
+		echo "1. 中国大陆【默认】          2. 中国大陆【教育网】          3. 海外地区"
+		echo -e "${pink}------------------------${white}"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${pink}------------------------${white}"
+		read -e -p "输入你的选择: " choice
 
-	case $choice in
-		1)
-			#  "中国大陆默认源"
-			bash <(curl -sSL https://linuxmirrors.cn/main.sh)
-			;;
-		2)
-			#  "中国大陆教育源"
-			bash <(curl -sSL https://linuxmirrors.cn/main.sh) --edu
-			;;
-		3)
-			#  "海外源"
-			bash <(curl -sSL https://linuxmirrors.cn/main.sh) --abroad
-			;;
-		*)
-			echo "已取消"
-			;;
-
-	esac
+		case $choice in
+			1)
+				#  "中国大陆默认源"
+				bash <(curl -sSL https://linuxmirrors.cn/main.sh)
+				;;
+			2)
+				#  "中国大陆教育源"
+				bash <(curl -sSL https://linuxmirrors.cn/main.sh) --edu
+				;;
+			3)
+				#  "海外源"
+				bash <(curl -sSL https://linuxmirrors.cn/main.sh) --abroad
+				;;
+			0)
+				break # 返回上一级菜单
+				;;
+			*)
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
+		esac
+	done
 }
 
 # 15. 定时任务管理
@@ -1124,7 +1142,7 @@ cron_job_management() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. 添加定时任务              2. 删除定时任务              3. 编辑定时任务"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
@@ -1154,8 +1172,12 @@ cron_job_management() {
 						read -e -p "输入每小时的第几分钟执行任务？（分钟, 0-60）: " minute
 						(crontab -l ; echo "$minute * * * * $newquest") | crontab - > /dev/null 2>&1
 						;;
+					0)
+						break # 返回上一级菜单
+						;;
 					*)
-						break  # 跳出
+						echo -e "${red}无效选择, 请重新输入 !${white}"
+						sleep 1
 						;;
 				esac
 				;;
@@ -1166,8 +1188,12 @@ cron_job_management() {
 			3)
 				crontab -e
 				;;
+			0)
+				break # 返回上一级菜单
+				;;
 			*)
-				break  # 跳出循环, 退出菜单
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
 				;;
 		esac
 	done
@@ -1192,31 +1218,33 @@ file_manager() {
         echo -e "${cyan}目录内容:${white}"
         ls -la --color=auto "$current_dir"
 
-        echo -e "\n${yellow}功能菜单:${white}"
+        echo -e "\n${green}功能菜单:${white}"
         echo "1. 进入目录		2. 创建目录		3. 重命名目录		4. 删除目录"
         echo "5. 修改目录权限		6. 返回上一级目录"
-		echo -e "${cyan}-------------${white}"
+		echo -e "${pink}--------------------------------------------------------------------------------------${white}"
         echo "7. 创建文件		8. 编辑文件		9. 重命名文件		10. 删除文件"
 		echo "11. 修改文件权限"
-		echo -e "${cyan}-------------${white}"
+		echo -e "${pink}--------------------------------------------------------------------------------------${white}"
         echo "12. 压缩文件目录	13. 解压文件目录	14. 复制文件目录	15. 移动文件目录"
-        echo "16. 传输文件至远程服务器（scp）"
-        echo "0. 退出文件管理器"
+        echo "16. 传输文件至远程服务器(scp)"
+		echo -e "${pink}--------------------------------------------------------------------------------------${white}"
+        echo -e "${yellow}0. 退出文件管理器${white}"
+		echo -e "${pink}--------------------------------------------------------------------------------------${white}"
 
-        read -e -p "请选择功能: " file_choice
+        read -e -p "请选择功能编号: " file_choice
         case $file_choice in
             1)  # 进入目录
                 read -p "请输入目录名: " subdir
                 if [ -d "$current_dir/$subdir" ]; then
                     current_dir="$current_dir/$subdir"
                 else
-                    echo -e "${red}目录不存在${white}"; pause
+                    echo -e "${red}目录不存在${white}"; break_end
                 fi
                 ;;
             2)  # 创建目录
                 read -p "请输入新目录名: " newdir
                 mkdir -p "$current_dir/$newdir"
-                echo -e "${green}目录创建成功${white}"; pause
+                echo -e "${green}目录创建成功${white}"; break_end
                 ;;
             3)  # 重命名目录
                 read -p "请输入原目录名: " oldname
@@ -1227,7 +1255,7 @@ file_manager() {
                 else
                     echo -e "${red}目录不存在${white}"
                 fi
-                pause
+                break_end
                 ;;
             4)  # 删除目录
                 read -p "请输入要删除的目录名: " delname
@@ -1240,7 +1268,7 @@ file_manager() {
                 else
                     echo -e "${red}目录不存在${white}"
                 fi
-                pause
+                break_end
                 ;;
             5)  # 修改目录权限
                 read -p "请输入目标目录名: " target
@@ -1251,26 +1279,26 @@ file_manager() {
                 else
                     echo -e "${red}目录不存在${white}"
                 fi
-                pause
+                break_end
                 ;;
             6)  # 返回上一级目录
                 if [ "$current_dir" != "/" ]; then
                     current_dir=$(dirname "$current_dir")
                 else
-                    echo -e "${yellow}已在根目录${white}"; pause
+                    echo -e "${yellow}已在根目录${white}"; break_end
                 fi
                 ;;
             7)  # 创建文件
                 read -p "请输入文件名: " filename
                 touch "$current_dir/$filename"
-                echo -e "${green}文件创建成功${white}"; pause
+                echo -e "${green}文件创建成功${white}"; break_end
                 ;;
             8)  # 编辑文件（nano）
                 read -p "请输入文件名: " filename
                 if [ -f "$current_dir/$filename" ]; then
                     nano "$current_dir/$filename"
                 else
-                    echo -e "${red}文件不存在${white}"; pause
+                    echo -e "${red}文件不存在${white}"; break_end
                 fi
                 ;;
             9)  # 重命名文件
@@ -1282,7 +1310,7 @@ file_manager() {
                 else
                     echo -e "${red}文件不存在${white}"
                 fi
-                pause
+                break_end
                 ;;
             10)  # 删除文件
                 read -p "请输入要删除的文件名: " delname
@@ -1295,7 +1323,7 @@ file_manager() {
                 else
                     echo -e "${red}文件不存在${white}"
                 fi
-                pause
+                break_end
                 ;;
             11)  # 修改文件权限
                 read -p "请输入目标文件名: " target
@@ -1306,12 +1334,12 @@ file_manager() {
                 else
                     echo -e "${red}文件不存在${white}"
                 fi
-                pause
+                break_end
                 ;;
             12)  # 压缩文件/目录（多格式选择）
                 read -p "请输入要压缩的名称: " src
                 if [ ! -e "$current_dir/$src" ]; then
-                    echo -e "${red}目标不存在${white}"; pause; break
+                    echo -e "${red}目标不存在${white}"; break_end; break
                 fi
                 
                 echo -e "\n${cyan}支持的压缩格式:${white}"
@@ -1352,15 +1380,16 @@ file_manager() {
                         echo -e "${green}压缩完成: $dst.7z${white}"
                         ;;
                     *)
-                        echo -e "${red}无效的格式选择${white}"; success=0
-                        ;;
+						echo -e "${red}无效选择, 请重新输入 !${white}"
+						sleep 1
+						;;
                 esac
-                pause
+                break_end
                 ;;
             13)  # 解压文件（自动识别格式）
                 read -p "请输入要解压的文件名: " archive
                 if [ ! -f "$current_dir/$archive" ]; then
-                    echo -e "${red}压缩文件不存在${white}"; pause; break
+                    echo -e "${red}压缩文件不存在${white}"; break_end; break
                 fi
                 
                 local ext="${archive##*.}"
@@ -1392,10 +1421,10 @@ file_manager() {
                         echo -e "${green}解压完成${white}"
                         ;;
                     *)
-                        echo -e "${red}不支持的压缩格式（仅支持tar.gz/zip/7z）${white}"; success=0
+                        echo -e "${red}不支持的压缩格式(仅支持tar.gz/zip/7z)${white}"; success=0
                         ;;
                 esac
-                pause
+                break_end
                 ;;
             14)  # 复制文件/目录
                 read -p "请输入源名称: " src
@@ -1406,7 +1435,7 @@ file_manager() {
                 else
                     echo -e "${red}源不存在${white}"
                 fi
-                pause
+                break_end
                 ;;
             15)  # 移动文件/目录
                 read -p "请输入源名称: " src
@@ -1417,23 +1446,25 @@ file_manager() {
                 else
                     echo -e "${red}源不存在${white}"
                 fi
-                pause
+                break_end
                 ;;
             16)  # 传输文件至远程服务器（scp）
                 read -p "请输入要传输的文件: " file
                 if [ -f "$current_dir/$file" ]; then
-                    read -p "请输入远程地址（user@host:path）: " remote
+                    read -p "请输入远程地址(user@host:path): " remote
                     scp "$current_dir/$file" "$remote" && echo -e "${green}传输完成${white}"
                 else
                     echo -e "${red}文件不存在${white}"
                 fi
-                pause
+                break_end
                 ;;
             0)  # 退出文件管理器
-                return
+                return 0
                 ;;
             *)
-                echo -e "${red}无效选择, 请输入0-16之间的数字${white}"; pause ;;
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
         esac
     done
 }
@@ -1484,9 +1515,9 @@ switch_system_language() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. 英文          2. 简体中文          3. 繁体中文"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
-		read -e -p "输入你的选择: " choice
+		read -e -p "请输入你的选择: " choice
 
 		case $choice in
 			1)
@@ -1530,7 +1561,7 @@ linux_trash() {
 		echo "1. 启用回收站          2. 关闭回收站"
 		echo "3. 还原内容            4. 清空回收站"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
@@ -1597,7 +1628,7 @@ ssh_manager() {
 		list_connections
 		echo "1. 创建新连接        2. 使用连接        3. 删除连接"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " choice
 		case $choice in
@@ -1605,7 +1636,10 @@ ssh_manager() {
 			2) use_connection ;;
 			3) delete_connection ;;
 			0) break ;;
-			*) echo "无效的选择, 请重试." ;;
+			*) 
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
 		esac
 	done
 }
@@ -1705,7 +1739,10 @@ format_partition() {
 		2) FS_TYPE="xfs" ;;
 		3) FS_TYPE="ntfs" ;;
 		4) FS_TYPE="vfat" ;;
-		*) echo "无效的选择!"; return ;;
+		*) 
+			echo -e "${red}无效选择, 请重新输入 !${white}"
+			return 
+			;;
 	esac
 
 	# 确认格式化
@@ -1753,7 +1790,7 @@ disk_manager() {
 		echo "1. 挂载分区        2. 卸载分区        3. 查看已挂载分区"
 		echo "4. 格式化分区      5. 检查分区状态"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " choice
 		case $choice in
@@ -1825,7 +1862,7 @@ cmd_line_beautify_tool() {
 		echo -e "6. \033[1;33mroot \033[1;34mlocalhost \033[1;35m~ \033[0m${white}#"
 		echo -e "7. root localhost ~ #"
 		echo -e "${pink}------------------------${white}"
-		echo "${yellow}0. 返回上一级选单${white}"
+		echo "${yellow}0. 返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
@@ -1873,24 +1910,26 @@ cmd_line_beautify_tool() {
 linux_tools() {
     while true; do
         clear
-        echo -e "${green}===== 系统工具菜单目录 =====${white}"
+        echo -e "${green}===== 系统工具菜单 =====${white}"
+		echo ""
         echo -e "${cyan}1.  ${white}设置脚本启动快捷键          ${cyan}2.  ${white}修改用户登录密码"
         echo -e "${cyan}3.  ${white}修改root登录密码            ${cyan}4.  ${white}修改ssh连接端口"
         echo -e "${cyan}5.  ${white}打开/关闭ssh密码登录        ${cyan}6.  ${white}打开/关闭ssh root登录"
         echo -e "${cyan}7.  ${white}优化DNS地址                 ${cyan}8.  ${white}切换优先ipv4/ipv6"
         echo -e "${cyan}9.  ${white}查看端口占用状态            ${cyan}10. ${white}修改虚拟内存大小"
-		echo -e "------------------------------------${white}"
+		echo -e "${pink}--------------------------------------------------------${white}"
         echo -e "${cyan}11. ${white}用户管理			${cyan}12. ${white}系统时区调整"
         echo -e "${cyan}13. ${white}修改主机名			${cyan}14. ${white}切换系统更新源"
         echo -e "${cyan}15. ${white}定时任务管理		${cyan}16. ${white}文件管理器"
         echo -e "${cyan}17. ${white}切换系统语言		${cyan}18. ${white}设置系统回收站"
         echo -e "${cyan}19. ${white}ssh远程连接工具		${cyan}20. ${white}硬盘分区管理工具"
-		echo -e "--------------------------${white}"
+		echo -e "${pink}--------------------------------------------------------${white}"
         echo -e "${cyan}21. ${white}命令行历史记录		${cyan}22. ${white}命令收藏夹"
         echo -e "${cyan}23. ${white}命令行美化工具"
-        echo -e "------------------------------${white}"
-        echo -e "${yellow}0.  ${yellow}返回上一级菜单"
-        echo -e "${purple}请输入你的选择: ${white}\c"
+        echo -e "${pink}--------------------------------------------------------${white}"
+        echo -e "${yellow}0.${white}  ${white}返回上一级菜单${white}"
+		echo -e "${pink}--------------------------------------------------------${white}"
+        echo -e "${white}请输入你的选择: ${white}\c"
         read choice
 
         case $choice in
@@ -1918,7 +1957,10 @@ linux_tools() {
             22) cmd_bookmark ;;
             23) cmd_line_beautify_tool ;;
             0) return ;;
-            *) echo -e "${red}无效的输入, 请重新选择!${white}"; sleep 1 ;;
+            *) 
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
         esac
     done
 }
@@ -1928,16 +1970,16 @@ linux_tools() {
 network_tools() {
 	while true; do
 		clear
-		echo -e "测试脚本合集"
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}IP及解锁状态检测"
+        echo -e "${green}===== 测试脚本菜单 =====${white}"
+		echo ""
+		echo -e "${yellow}IP及解锁状态检测"
 		echo -e "${cyan}1.   ${white}ChatGPT 解锁状态检测"
 		echo -e "${cyan}2.   ${white}Region 流媒体解锁测试"
 		echo -e "${cyan}3.   ${white}yeahwu 流媒体解锁检测"
 		echo -e "${cyan}4.   ${white}xykt IP质量体检脚本 ${yellow}★${white}"
 
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}网络线路测速"
+		echo -e "${pink}------------------------------------${white}"
+		echo -e "${yellow}网络线路测速"
 		echo -e "${cyan}11.  ${white}besttrace 三网回程延迟路由测试"
 		echo -e "${cyan}12.  ${white}mtr_trace 三网回程线路测试"
 		echo -e "${cyan}13.  ${white}Superspeed 三网测速"
@@ -1947,18 +1989,18 @@ network_tools() {
 		echo -e "${cyan}17.  ${white}i-abc 多功能测速脚本"
 		echo -e "${cyan}18.  ${white}NetQuality 网络质量体检脚本 ${yellow}★${white}"
 
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}硬件性能测试"
+		echo -e "${pink}------------------------------------${white}"
+		echo -e "${yellow}硬件性能测试"
 		echo -e "${cyan}21.  ${white}yabs 性能测试"
 		echo -e "${cyan}22.  ${white}icu/gb5 CPU性能测试脚本"
 
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}综合性测试"
+		echo -e "${pink}------------------------------------${white}"
+		echo -e "${yellow}综合性测试"
 		echo -e "${cyan}31.  ${white}bench 性能测试"
 		echo -e "${cyan}32.  ${white}spiritysdx 融合怪测评 ${yellow}★${white}"
-		echo -e "${cyan}------------------------${white}"
+		echo -e "${pink}------------------------------------${white}"
 		echo -e "${yellow}0.   ${white}返回主菜单"
-		echo -e "${cyan}------------------------${white}"
+		echo -e "${pink}------------------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
 		case $sub_choice in
@@ -2079,12 +2121,11 @@ network_tools() {
 			0)
 				return_to_menu
 				;;
-		  *)
-				echo "无效的输入!"
+			*)
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
 				;;
 		esac
-		break_end
-
 	done
 }
 
@@ -2094,25 +2135,25 @@ network_tools() {
 docker_ps() {
 while true; do
 	clear
-	echo "Docker容器列表"
+	echo -e "${green}Docker容器列表${white}"
 	docker ps -a --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Ports}}"
 	echo ""
-	echo "容器操作"
-	echo -e "${pink}------------------------${white}"
+	echo -e "${yellow}容器操作${white}"
+	echo -e "${pink}-------------------------------------------${white}"
 	echo "1. 创建新的容器"
-	echo -e "${pink}------------------------${white}"
-	echo "2. 启动指定容器             6. 启动所有容器"
-	echo "3. 停止指定容器             7. 停止所有容器"
-	echo "4. 删除指定容器             8. 删除所有容器"
-	echo "5. 重启指定容器             9. 重启所有容器"
-	echo -e "${pink}------------------------${white}"
-	echo "11. 进入指定容器           12. 查看容器日志"
-	echo "13. 查看容器网络           14. 查看容器占用"
-	echo -e "${pink}------------------------${white}"
-	echo "15. 开启容器端口访问       16. 关闭容器端口访问"
-	echo -e "${pink}------------------------${white}"
-	echo "0. 返回上一级选单"
-	echo -e "${pink}------------------------${white}"
+	echo -e "${pink}-------------------------------------------${white}"
+	echo -e "${cyan}2.${white}  启动指定容器            ${cyan}6.${white} 启动所有容器"
+	echo -e "${cyan}3.${white}  停止指定容器            ${cyan}7.${white} 停止所有容器"
+	echo -e "${cyan}4.${white}  删除指定容器            ${cyan}8.${white} 删除所有容器"
+	echo -e "${cyan}5.${white}  重启指定容器            ${cyan}9.${white} 重启所有容器"
+	echo -e "${pink}-------------------------------------------${white}"
+	echo -e "${cyan}11.${white} 进入指定容器           ${cyan}12.${white} 查看容器日志"
+	echo -e "${cyan}13.${white} 查看容器网络           ${cyan}14.${white} 查看容器占用"
+	echo -e "${pink}-------------------------------------------${white}"
+	echo -e "${cyan}15.${white} 开启容器端口访问       ${cyan}16.${white} 关闭容器端口访问"
+	echo -e "${pink}-------------------------------------------${white}"
+	echo -e "${yellow}0.${white} 返回上一级菜单"
+	echo -e "${pink}-------------------------------------------${white}"
 	read -e -p "请输入你的选择: " sub_choice
 	case $sub_choice in
 		1)
@@ -2158,7 +2199,8 @@ while true; do
 			[Nn])
 				;;
 			  *)
-				echo "无效的选择, 请输入 Y 或 N."
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
 				;;
 			esac
 			;;
@@ -2235,16 +2277,16 @@ docker_image() {
 while true; do
 	clear
 	## "Docker镜像管理"
-	echo "Docker镜像列表"
+	echo -e "${green}Docker镜像列表${white}"
 	docker image ls
 	echo ""
-	echo "镜像操作"
-	echo -e "${pink}------------------------${white}"
-	echo "1. 获取指定镜像             3. 删除指定镜像"
-	echo "2. 更新指定镜像             4. 删除所有镜像"
-	echo -e "${pink}------------------------${white}"
-	echo "0. 返回上一级选单"
-	echo -e "${pink}------------------------${white}"
+	echo -e "${yellow}镜像操作${white}"
+	echo -e "${pink}-------------------------------------------${white}"
+	echo -e "${cyan}1.${white} 获取指定镜像            ${cyan}3.${white} 删除指定镜像"
+	echo -e "${cyan}2.${white} 更新指定镜像            ${cyan}4.${white} 删除所有镜像"
+	echo -e "${pink}-------------------------------------------${white}"
+	echo -e "${yellow}0.${white} 返回上一级菜单"
+	echo -e "${pink}-------------------------------------------${white}"
 	read -e -p "请输入你的选择: " sub_choice
 	case $sub_choice in
 		1)
@@ -2280,12 +2322,16 @@ while true; do
 				[Nn])
 				;;
 			  *)
-				echo "无效的选择, 请输入 Y 或 N."
+				echo -e "${red}无效选择, 请输入Y或N !${white}"
 				;;
 			esac
 			;;
+		0)
+			break # 返回上一级菜单
+			;;
 		*)
-			break  # 跳出循环, 退出菜单
+			echo -e "${red}无效选择, 请重新输入 !${white}"
+			sleep 1
 			;;
 	esac
 done
@@ -2466,30 +2512,30 @@ linux_docker() {
 	while true; do
 		clear
 		check_docker
-		echo -e "Docker管理"
+		echo -e "${green}===== Docker管理菜单 =====${white}"
 		docker_tato
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}1.   ${white}安装更新Docker环境 ${yellow}★${white}"
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}2.   ${white}查看Docker全局状态 ${yellow}★${white}"
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}3.   ${white}Docker容器管理 ${yellow}★${white}"
-		echo -e "${cyan}4.   ${white}Docker镜像管理"
-		echo -e "${cyan}5.   ${white}Docker网络管理"
-		echo -e "${cyan}6.   ${white}Docker卷管理"
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}7.   ${white}清理无用的docker容器和镜像网络数据卷"
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}8.   ${white}更换Docker源"
-		echo -e "${cyan}9.   ${white}编辑daemon.json文件"
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}11.  ${white}开启Docker-ipv6访问"
-		echo -e "${cyan}12.  ${white}关闭Docker-ipv6访问"
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}20.  ${white}卸载Docker环境"
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${cyan}0.   ${white}返回主菜单"
-		echo -e "${cyan}------------------------${white}"
+		echo -e "${pink}---------------------------------------------${white}"
+		echo -e "${cyan}1.  ${white}安装更新Docker环境 ${yellow}★${white}"
+		echo -e "${pink}---------------------------------------------${white}"
+		echo -e "${cyan}2.  ${white}查看Docker全局状态 ${yellow}★${white}"
+		echo -e "${pink}---------------------------------------------${white}"
+		echo -e "${cyan}3.  ${white}Docker容器管理 ${yellow}★${white}"
+		echo -e "${cyan}4.  ${white}Docker镜像管理"
+		echo -e "${cyan}5.  ${white}Docker网络管理"
+		echo -e "${cyan}6.  ${white}Docker卷管理"
+		echo -e "${pink}---------------------------------------------${white}"
+		echo -e "${cyan}7.  ${white}清理无用的docker容器和镜像网络数据卷"
+		echo -e "${pink}---------------------------------------------${white}"
+		echo -e "${cyan}8.  ${white}更换Docker源"
+		echo -e "${cyan}9.  ${white}编辑daemon.json文件"
+		echo -e "${pink}---------------------------------------------${white}"
+		echo -e "${cyan}11. ${white}开启Docker-ipv6访问"
+		echo -e "${cyan}12. ${white}关闭Docker-ipv6访问"
+		echo -e "${pink}---------------------------------------------${white}"
+		echo -e "${cyan}20. ${white}卸载Docker环境"
+		echo -e "${pink}---------------------------------------------${white}"
+		echo -e "${yellow}0.  ${white}返回主菜单"
+		echo -e "${pink}---------------------------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
 		case $sub_choice in
@@ -2536,12 +2582,11 @@ linux_docker() {
 				while true; do
 					clear
 					## "Docker网络管理"
-					echo "Docker网络列表"
+					echo -e "${green}Docker网络列表${white}"
 					echo -e "${pink}------------------------------------------------------------${white}"
 					docker network ls
-					echo ""
-
 					echo -e "${pink}------------------------------------------------------------${white}"
+
 					container_ids=$(docker ps -q)
 					printf "%-25s %-25s %-25s\n" "容器名称" "网络名称" "IP地址"
 
@@ -2560,14 +2605,14 @@ linux_docker() {
 					done
 
 					echo ""
-					echo "网络操作"
+					echo -e "${yellow}网络操作${white}"
 					echo -e "${pink}------------------------${white}"
-					echo "1. 创建网络"
-					echo "2. 加入网络"
-					echo "3. 退出网络"
-					echo "4. 删除网络"
+					echo -e "${cyan}1.${white} 创建网络"
+					echo -e "${cyan}2.${white} 加入网络"
+					echo -e "${cyan}3.${white} 退出网络"
+					echo -e "${cyan}4.${white} 删除网络"
 					echo -e "${pink}------------------------${white}"
-					echo "0. 返回上一级选单"
+					echo -e "${yellow}0.${white} 返回上一级菜单"
 					echo -e "${pink}------------------------${white}"
 					read -e -p "请输入你的选择: " sub_choice
 
@@ -2603,8 +2648,12 @@ linux_docker() {
 							docker network rm $dockernetwork
 							;;
 
+						0)
+							break # 返回上一级菜单
+							;;
 						*)
-							break  # 跳出循环, 退出菜单
+							echo -e "${red}无效选择, 请重新输入 !${white}"
+							sleep 1
 							;;
 					esac
 				done
@@ -2614,16 +2663,16 @@ linux_docker() {
 				while true; do
 					clear
 					## "Docker卷管理"
-					echo "Docker卷列表"
+					echo -e "${green}Docker卷列表${white}"
 					docker volume ls
 					echo ""
-					echo "卷操作"
+					echo -e "${yellow}卷操作${white}"
 					echo -e "${pink}------------------------${white}"
-					echo "1. 创建新卷"
-					echo "2. 删除指定卷"
-					echo "3. 删除所有卷"
+					echo -e "${cyan}1.${white} 创建新卷"
+					echo -e "${cyan}2.${white} 删除指定卷"
+					echo -e "${cyan}3.${white} 删除所有卷"
 					echo -e "${pink}------------------------${white}"
-					echo "0. 返回上一级选单"
+					echo -e "${yellow}0.${white} 返回上一级菜单"
 					echo -e "${pink}------------------------${white}"
 					read -e -p "请输入你的选择: " sub_choice
 
@@ -2658,8 +2707,12 @@ linux_docker() {
 							esac
 							;;
 
+						0)
+							break # 返回上一级菜单
+							;;
 						*)
-							break  # 跳出循环, 退出菜单
+							echo -e "${red}无效选择, 请重新输入 !${white}"
+							sleep 1
 							;;
 					esac
 				done
@@ -2676,6 +2729,7 @@ linux_docker() {
 					;;
 				*)
 					echo "无效的选择, 请输入 Y 或 N."
+					sleep 1
 					;;
 				esac
 				;;
@@ -2687,9 +2741,9 @@ linux_docker() {
 
 			9)
 				clear
-				install nano
-				mkdir -p /etc/docker && nano /etc/docker/daemon.json
-				restart docker
+				install vim
+				mkdir -p /etc/docker && sudo vim /etc/docker/daemon.json
+				sudo systemctl restart docker
 				;;
 
 			11)
@@ -2712,11 +2766,10 @@ linux_docker() {
 				return_to_menu
 				;;
 			*)
-				echo "无效的输入!"
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
 				;;
 		esac
-		break_end
-
 	done
 }
 #############################################################################
@@ -3451,7 +3504,7 @@ web_security() {
 			echo "------------------------"
 			echo "9. 卸载防御程序"
 			echo "------------------------"
-			echo "0. 返回上一级选单"
+			echo -e "${yellow}0.     ${white}返回上一级菜单"
 			echo "------------------------"
 			read -e -p "请输入你的选择: " sub_choice
 			case $sub_choice in
@@ -3610,7 +3663,6 @@ web_security() {
 					;;
 			esac
 	fi
-	break_end
 	done
 }
 
@@ -3883,7 +3935,7 @@ web_optimization() {
 		echo "5. 开启br压缩            6. 关闭br压缩"
 		echo "7. 开启zstd压缩          8. 关闭zstd压缩"
 		echo "------------------------"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo "------------------------"
 		read -e -p "请输入你的选择: " sub_choice
 		case $sub_choice in
@@ -3994,7 +4046,6 @@ web_optimization() {
 				;;
 		esac
 		break_end
-
 	done
 }
 
@@ -4050,7 +4101,7 @@ ldnmp_web_status() {
 		echo "------------------------"
 		echo "20. 删除指定站点数据"
 		echo "------------------------"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo "------------------------"
 		read -e -p "请输入你的选择: " sub_choice
 		case $sub_choice in
@@ -4189,8 +4240,8 @@ local db_output="${green}${db_count}${white}"
 
 if command -v docker &>/dev/null; then
 	if docker ps --filter "name=nginx" --filter "status=running" | grep -q nginx; then
-		echo -e "${yellow}------------------------"
 		echo -e "${green}环境已安装${white}  站点: $output  数据库: $db_output"
+		echo -e "${pink}------------------------------------------------------------------------${white}"
 	fi
 fi
 
@@ -4444,30 +4495,29 @@ check_port() {
 linux_ldnmp() {
 	while true; do
 		clear
-		# #  "LDNMP建站"
-		echo -e "${yellow}LDNMP建站"
+		echo -e "${green}===== LDNMP建站菜单 =====${white}"
+		echo ""
 		ldnmp_tato
-		echo -e "${yellow}------------------------"
-		echo -e "${yellow}1.   ${white}安装LDNMP环境 ${yellow}★${white}                   ${yellow}2.   ${white}安装WordPress ${yellow}★${white}"
-		echo -e "${yellow}3.   ${white}安装Discuz论坛                    ${yellow}4.   ${white}安装可道云桌面"
-		echo -e "${yellow}5.   ${white}安装苹果CMS影视站                 ${yellow}6.   ${white}安装独角数发卡网"
-		echo -e "${yellow}7.   ${white}安装flarum论坛网站                ${yellow}8.   ${white}安装typecho轻量博客网站"
-		echo -e "${yellow}9.   ${white}安装LinkStack共享链接平台         ${yellow}20.  ${white}自定义动态站点"
-		echo -e "${yellow}------------------------"
-		echo -e "${yellow}21.  ${white}仅安装nginx ${yellow}★${white}                     ${yellow}22.  ${white}站点重定向"
-		echo -e "${yellow}23.  ${white}站点反向代理-IP+端口 ${yellow}★${white}            ${yellow}24.  ${white}站点反向代理-域名"
-		echo -e "${yellow}25.  ${white}安装Bitwarden密码管理平台         ${yellow}26.  ${white}安装Halo博客网站"
-		echo -e "${yellow}27.  ${white}安装AI绘画提示词生成器            ${yellow}28.  ${white}站点反向代理-负载均衡"
-		echo -e "${yellow}30.  ${white}自定义静态站点"
-		echo -e "${yellow}------------------------"
-		echo -e "${yellow}31.  ${white}站点数据管理 ${yellow}★${white}                    ${yellow}32.  ${white}备份全站数据"
-		echo -e "${yellow}33.  ${white}定时远程备份                      ${yellow}34.  ${white}还原全站数据"
-		echo -e "${yellow}------------------------"
-		echo -e "${yellow}35.  ${white}防护LDNMP环境                     ${yellow}36.  ${white}优化LDNMP环境"
-		echo -e "${yellow}37.  ${white}更新LDNMP环境                     ${yellow}38.  ${white}卸载LDNMP环境"
-		echo -e "${yellow}------------------------"
+		echo -e "${cyan}1.   ${white}安装LDNMP环境 ${yellow}★${white}                   ${yellow}2.   ${white}安装WordPress ${yellow}★${white}"
+		echo -e "${cyan}3.   ${white}安装Discuz论坛                    ${cyan}4.   ${white}安装可道云桌面"
+		echo -e "${cyan}5.   ${white}安装苹果CMS影视站                 ${cyan}6.   ${white}安装独角数发卡网"
+		echo -e "${cyan}7.   ${white}安装flarum论坛网站                ${cyan}8.   ${white}安装typecho轻量博客网站"
+		echo -e "${cyan}9.   ${white}安装LinkStack共享链接平台         ${cyan}20.  ${white}自定义动态站点"
+		echo -e "${pink}------------------------------------------------------------------------${white}"
+		echo -e "${cyan}21.  ${white}仅安装nginx ${yellow}★${white}                     ${cyan}22.  ${white}站点重定向"
+		echo -e "${cyan}23.  ${white}站点反向代理-IP+端口 ${yellow}★${white}            ${cyan}24.  ${white}站点反向代理-域名"
+		echo -e "${cyan}25.  ${white}安装Bitwarden密码管理平台         ${cyan}26.  ${white}安装Halo博客网站"
+		echo -e "${cyan}27.  ${white}安装AI绘画提示词生成器            ${cyan}28.  ${white}站点反向代理-负载均衡"
+		echo -e "${cyan}30.  ${white}自定义静态站点"
+		echo -e "${pink}------------------------------------------------------------------------${white}"
+		echo -e "${cyan}31.  ${white}站点数据管理 ${yellow}★${white}                    ${cyan}32.  ${white}备份全站数据"
+		echo -e "${cyan}33.  ${white}定时远程备份                      ${cyan}34.  ${white}还原全站数据"
+		echo -e "${pink}------------------------------------------------------------------------${white}"
+		echo -e "${cyan}35.  ${white}防护LDNMP环境                     ${cyan}36.  ${white}优化LDNMP环境"
+		echo -e "${cyan}37.  ${white}更新LDNMP环境                     ${cyan}38.  ${white}卸载LDNMP环境"
+		echo -e "${pink}------------------------------------------------------------------------${white}"
 		echo -e "${yellow}0.   ${white}返回主菜单"
-		echo -e "${yellow}------------------------${white}"
+		echo -e "${pink}------------------------------------------------------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
 		case $sub_choice in
@@ -4802,7 +4852,7 @@ linux_ldnmp() {
 		# find "$(realpath .)" -name "index.php" -print
 		find "$(realpath .)" -name "index.php" -print | xargs -I {} dirname {}
 
-		read -e -p "请输入index.php的路径, 类似（/home/web/html/$yuming/wordpress/）： " index_lujing
+		read -e -p "请输入index.php的路径, 类似（/home/web/html/$yuming/wordpress/): " index_lujing
 
 		sed -i "s#root /var/www/html/$yuming/#root $index_lujing#g" /home/web/conf.d/$yuming.conf
 		sed -i "s#/home/web/#/var/www/#g" /home/web/conf.d/$yuming.conf
@@ -4813,16 +4863,17 @@ linux_ldnmp() {
 		read -e -p "1. php最新版 | 2. php7.4 : " pho_v
 		case "$pho_v" in
 			1)
-			sed -i "s#php:9000#php:9000#g" /home/web/conf.d/$yuming.conf
-			local PHP_Version="php"
-			;;
+				sed -i "s#php:9000#php:9000#g" /home/web/conf.d/$yuming.conf
+				local PHP_Version="php"
+				;;
 			2)
-			sed -i "s#php:9000#php74:9000#g" /home/web/conf.d/$yuming.conf
-			local PHP_Version="php74"
-			;;
+				sed -i "s#php:9000#php74:9000#g" /home/web/conf.d/$yuming.conf
+				local PHP_Version="php74"
+				;;
 			*)
-			echo "无效的选择, 请重新输入."
-			;;
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
 		esac
 
 
@@ -5128,7 +5179,8 @@ linux_ldnmp() {
 				break
 				;;
 			*)
-				echo "无效的选择, 请输入 Y 或 N."
+				echo -e "${red}无效选择, 请输入Y或N !${white}"
+				sleep 1
 				;;
 			esac
 		done
@@ -5224,10 +5276,10 @@ linux_ldnmp() {
 			clear
 			#  "更新LDNMP环境"
 			echo "更新LDNMP环境"
-			echo "------------------------"
+			echo -e "${pink}------------------------${white}"
 			ldnmp_v
 			echo "发现新版本的组件"
-			echo "------------------------"
+			echo -e "${pink}------------------------${white}"
 			check_docker_image_update nginx
 			if [ -n "$update_status" ]; then
 				echo -e "${yellow}nginx $update_status${white}"
@@ -5244,14 +5296,14 @@ linux_ldnmp() {
 			if [ -n "$update_status" ]; then
 				echo -e "${yellow}redis $update_status${white}"
 			fi
-			echo "------------------------"
+			echo -e "${pink}------------------------${white}"
 			echo
 			echo "1. 更新nginx               2. 更新mysql              3. 更新php              4. 更新redis"
-			echo "------------------------"
+			echo -e "${pink}------------------------${white}"
 			echo "5. 更新完整环境"
-			echo "------------------------"
-			echo "0. 返回上一级选单"
-			echo "------------------------"
+			echo -e "${pink}------------------------${white}"
+			echo -e "${yellow}0.     ${white}返回上一级菜单"
+			echo -e "${pink}------------------------${white}"
 			read -e -p "请输入你的选择: " sub_choice
 			case $sub_choice in
 				1)
@@ -5369,7 +5421,8 @@ linux_ldnmp() {
 
 				;;
 			*)
-				echo "无效的选择, 请输入 Y 或 N."
+				echo -e "${red}无效选择, 请输入Y或N !${white}"
+				sleep 1
 				;;
 			esac
 			;;
@@ -5379,9 +5432,10 @@ linux_ldnmp() {
 		;;
 
 		*)
-			echo "无效的输入!"
+			echo -e "${red}无效选择, 请重新输入 !${white}"
+			sleep 1
+			;;
 		esac
-	break_end
 	done
 }
 
@@ -5416,22 +5470,22 @@ install_firewall() {
             sudo systemctl enable iptables 2>/dev/null
             sudo systemctl start iptables 2>/dev/null
             echo -e "${green}iptables 已安装并启动${white}"
-            pause
+            break_end
             ;;
         2)
             install firewalld
             sudo systemctl enable firewalld
             sudo systemctl start firewalld
             echo -e "${green}firewalld 已安装并启动${white}"
-            pause
+            break_end
             ;;
         0)
             return
             ;;
         *)
-            echo -e "${red}无效选择${white}"
-            pause
-            ;;
+			echo -e "${red}无效选择, 请重新输入 !${white}"
+			sleep 1
+			;;
     esac
 }
 
@@ -5481,7 +5535,7 @@ uninstall_firewall() {
     else
         echo -e "${yellow}取消卸载操作${white}"
     fi
-    pause
+    break_end
 }
 
 # 国家IP规则管理（依赖ipset+ipdeny.com IP库）
@@ -5560,7 +5614,8 @@ manage_country_rules() {
             echo -e "${green}已解除$country国家IP限制${white}"
             ;;
         *)
-            echo -e "${red}无效操作（仅支持block/allow/unblock）${white}"
+            echo -e "${red}无效操作(仅支持block/allow/unblock)${white}"
+			sleep 1
             ;;
     esac
 }
@@ -5613,28 +5668,28 @@ disable_ddos_defense() {
 firewalld_panel() {
     while true; do
         clear
-        echo -e "${blue}===== firewalld 高级防火墙管理 ====="${white}
-        echo -e "${cyan}高级防火墙管理${white}"
-        echo -e "${cyan}------------------------${white}"
+        echo -e "${green}===== firewalld 高级防火墙管理 =====${white}"
+		echo -e ""
+        echo -e "${pink}------------------------------------------------${white}"
         echo -e "${yellow}Chain INPUT (policy $(sudo firewall-cmd --get-default-zone | awk '{if ($1 == "drop") print "DROP"; else print "ACCEPT"}'))${white}"
-        echo -e "${cyan}------------------------${white}"
-        
-        echo "1.  开放指定端口                 2.  关闭指定端口"
-        echo "3.  开放所有端口                 4.  关闭所有端口"
-        echo -e "${cyan}------------------------${white}"
-        echo "5.  IP白名单                     6.  IP黑名单"
-        echo "7.  清除指定IP"
-        echo -e "${cyan}------------------------${white}"
-        echo "11. 允许PING                     12. 禁止PING"
-        echo -e "${cyan}------------------------${white}"
-        echo "13. 启动DDOS防御                 14. 关闭DDOS防御"
-        echo -e "${cyan}------------------------${white}"
-        echo "15. 阻止指定国家IP               16. 仅允许指定国家IP"
-        echo "17. 解除指定国家IP限制"
-        echo -e "${cyan}------------------------${white}"
-        echo -e "${red}99. 卸载防火墙${white}"
-        echo -e "${yellow}0.  返回上一级选单${white}"
-        echo -e "${cyan}------------------------${white}"
+        echo -e "${pink}------------------------------------------------${white}"
+
+        echo -e "${cyan}1.${white} 开放指定端口                 ${cyan}2.${white} 关闭指定端口"
+        echo -e "${cyan}3.${white} 开放所有端口                 ${cyan}4.${white} 关闭所有端口"
+        echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${cyan}5.${white} IP白名单                     ${cyan}6.${white} IP黑名单"
+        echo -e "${cyan}7.${white} 清除指定IP"
+        echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${cyan}11.${white} 允许PING                     ${cyan}12.${white} 禁止PING"
+        echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${cyan}13.${white} 启动DDOS防御                 ${cyan}14.${white} 关闭DDOS防御"
+        echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${cyan}15.${white} 阻止指定国家IP               ${cyan}16.${white} 仅允许指定国家IP"
+        echo -e "${cyan}17.${white} 解除指定国家IP限制"
+        echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${red}99.${white} ${white}卸载防火墙${white}"
+        echo -e "${yellow}0.${white} ${white}返回上一级菜单${white}"
+        echo -e "${pink}------------------------------------------------${white}"
         
         read -p "请输入你的选择: " choice
         
@@ -5651,7 +5706,7 @@ firewalld_panel() {
                 fi
                 sudo firewall-cmd --reload
                 echo -e "${green}端口 $port ($proto) 已开放${white}"
-                pause
+                break_end
                 ;;
                 
             2)  # 关闭指定端口
@@ -5666,7 +5721,7 @@ firewalld_panel() {
                 fi
                 sudo firewall-cmd --reload
                 echo -e "${green}端口 $port ($proto) 已关闭${white}"
-                pause
+                break_end
                 ;;
                 
             3)  # 开放所有端口
@@ -5674,14 +5729,14 @@ firewalld_panel() {
                 sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family=ipv4 source address=0.0.0.0/0 accept'
                 sudo firewall-cmd --reload
                 echo -e "${yellow}警告: 已开放所有端口, 安全性降低${white}"
-                pause
+                break_end
                 ;;
                 
             4)  # 关闭所有端口
                 sudo firewall-cmd --permanent --set-default-zone=drop
                 sudo firewall-cmd --reload
                 echo -e "${green}已设置默认拒绝所有流量${white}"
-                pause
+                break_end
                 ;;
                 
             5)  # IP白名单
@@ -5689,7 +5744,7 @@ firewalld_panel() {
                 sudo firewall-cmd --permanent --add-rich-rule="rule family=ipv4 source address=$ip accept"
                 sudo firewall-cmd --reload
                 echo -e "${green}IP $ip 已添加到白名单${white}"
-                pause
+                break_end
                 ;;
                 
             6)  # IP黑名单
@@ -5697,7 +5752,7 @@ firewalld_panel() {
                 sudo firewall-cmd --permanent --add-rich-rule="rule family=ipv4 source address=$ip drop"
                 sudo firewall-cmd --reload
                 echo -e "${green}IP $ip 已添加到黑名单${white}"
-                pause
+                break_end
                 ;;
                 
             7)  # 清除指定IP
@@ -5706,49 +5761,49 @@ firewalld_panel() {
                 sudo firewall-cmd --permanent --remove-rich-rule="rule family=ipv4 source address=$ip drop" 2>/dev/null
                 sudo firewall-cmd --reload
                 echo -e "${green}IP $ip 的规则已清除${white}"
-                pause
+                break_end
                 ;;
                 
             11)  # 允许PING
                 sudo firewall-cmd --permanent --remove-icmp-block=echo-request
                 sudo firewall-cmd --reload
                 echo -e "${green}已允许PING${white}"
-                pause
+                break_end
                 ;;
                 
             12)  # 禁止PING
                 sudo firewall-cmd --permanent --add-icmp-block=echo-request
                 sudo firewall-cmd --reload
                 echo -e "${green}已禁止PING${white}"
-                pause
+                break_end
                 ;;
                 
             13)  # 启动DDOS防御
                 enable_ddos_defense "firewalld"
-                pause
+                break_end
                 ;;
                 
             14)  # 关闭DDOS防御
                 disable_ddos_defense "firewalld"
-                pause
+                break_end
                 ;;
                 
             15)  # 阻止指定国家IP
                 read -p "请输入国家代码 (如CN/US, 大写): " country
                 manage_country_rules "firewalld" "block" $country
-                pause
+                break_end
                 ;;
                 
             16)  # 仅允许指定国家IP
                 read -p "请输入国家代码 (如CN/US, 大写): " country
                 manage_country_rules "firewalld" "allow" $country
-                pause
+                break_end
                 ;;
                 
             17)  # 解除指定国家IP限制
                 read -p "请输入国家代码 (如CN/US, 大写): " country
                 manage_country_rules "firewalld" "unblock" $country
-                pause
+                break_end
                 ;;
                 
             99)  # 卸载防火墙
@@ -5760,9 +5815,9 @@ firewalld_panel() {
 				;;
                 
             *)
-                echo -e "${red}无效选择, 请重试${white}"
-                pause
-                ;;
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
         esac
     done
 }
@@ -5771,28 +5826,28 @@ firewalld_panel() {
 iptables_panel() {
     while true; do
         clear
-        echo -e "${blue}===== iptables 高级防火墙管理 ====="${white}
-        echo -e "${cyan}高级防火墙管理${white}"
-        echo -e "${cyan}------------------------${white}"
+        echo -e "${green}===== iptables 高级防火墙管理 ====="${white}
+        echo -e ""
+        echo -e "${pink}------------------------------------------------${white}"
         echo -e "${yellow}Chain INPUT (policy $(sudo iptables -L INPUT -n | head -n 1 | awk '{print $4}'))${white}"
-        echo -e "${cyan}------------------------${white}"
-        
-        echo "1.  开放指定端口                 2.  关闭指定端口"
-        echo "3.  开放所有端口                 4.  关闭所有端口"
-        echo -e "${cyan}------------------------${white}"
-        echo "5.  IP白名单                     6.  IP黑名单"
-        echo "7.  清除指定IP"
-        echo -e "${cyan}------------------------${white}"
-        echo "11. 允许PING                     12. 禁止PING"
-        echo -e "${cyan}------------------------${white}"
-        echo "13. 启动DDOS防御                 14. 关闭DDOS防御"
-        echo -e "${cyan}------------------------${white}"
-        echo "15. 阻止指定国家IP               16. 仅允许指定国家IP"
-        echo "17. 解除指定国家IP限制"
-        echo -e "${cyan}------------------------${white}"
-        echo -e "${red}99. 卸载防火墙${white}"
-        echo -e "${yellow}0.  返回上一级选单${white}"
-        echo -e "${cyan}------------------------${white}"
+        echo -e "${pink}------------------------------------------------${white}"
+
+        echo -e "${cyan}1.${white} 开放指定端口                 ${cyan}2.${white} 关闭指定端口"
+        echo -e "${cyan}3.${white} 开放所有端口                 ${cyan}4.${white} 关闭所有端口"
+        echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${cyan}5.${white} IP白名单                     ${cyan}6.${white} IP黑名单"
+        echo -e "${cyan}7.${white} 清除指定IP"
+        echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${cyan}11.${white} 允许PING                     ${cyan}12.${white} 禁止PING"
+        echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${cyan}13.${white} 启动DDOS防御                 ${cyan}14.${white} 关闭DDOS防御"
+        echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${cyan}15.${white} 阻止指定国家IP               ${cyan}16.${white} 仅允许指定国家IP"
+        echo -e "${cyan}17.${white} 解除指定国家IP限制"
+		echo -e "${pink}------------------------------------------------${white}"
+        echo -e "${red}99.${white} ${white}卸载防火墙${white}"
+        echo -e "${yellow}0.${white} ${white}返回上一级菜单${white}"
+        echo -e "${pink}------------------------------------------------${white}"
         
         read -p "请输入你的选择: " choice
         
@@ -5810,7 +5865,7 @@ iptables_panel() {
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
                 echo -e "${green}端口 $port ($proto) 已开放${white}"
-                pause
+                break_end
                 ;;
                 
             2)  # 关闭指定端口
@@ -5828,7 +5883,7 @@ iptables_panel() {
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
                 echo -e "${green}端口 $port ($proto) 已关闭${white}"
-                pause
+                break_end
                 ;;
                 
             3)  # 开放所有端口
@@ -5837,7 +5892,7 @@ iptables_panel() {
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
                 echo -e "${yellow}警告: 已开放所有端口, 安全性降低${white}"
-                pause
+                break_end
                 ;;
                 
             4)  # 关闭所有端口
@@ -5847,7 +5902,7 @@ iptables_panel() {
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
                 echo -e "${green}已设置默认拒绝所有流量${white}"
-                pause
+                break_end
                 ;;
                 
             5)  # IP白名单
@@ -5856,7 +5911,7 @@ iptables_panel() {
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
                 echo -e "${green}IP $ip 已添加到白名单${white}"
-                pause
+                break_end
                 ;;
                 
             6)  # IP黑名单
@@ -5865,7 +5920,7 @@ iptables_panel() {
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
                 echo -e "${green}IP $ip 已添加到黑名单${white}"
-                pause
+                break_end
                 ;;
                 
             7)  # 清除指定IP
@@ -5876,7 +5931,7 @@ iptables_panel() {
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
                 echo -e "${green}IP $ip 的规则已清除${white}"
-                pause
+                break_end
                 ;;
                 
             11)  # 允许PING
@@ -5885,7 +5940,7 @@ iptables_panel() {
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
                 echo -e "${green}已允许PING${white}"
-                pause
+                break_end
                 ;;
                 
             12)  # 禁止PING
@@ -5894,35 +5949,35 @@ iptables_panel() {
                 sudo iptables-save > /etc/iptables/rules.v4 2>/dev/null
                 sudo service iptables save 2>/dev/null
                 echo -e "${green}已禁止PING${white}"
-                pause
+                break_end
                 ;;
                 
             13)  # 启动DDOS防御
                 enable_ddos_defense "iptables"
-                pause
+                break_end
                 ;;
                 
             14)  # 关闭DDOS防御
                 disable_ddos_defense "iptables"
-                pause
+                break_end
                 ;;
                 
             15)  # 阻止指定国家IP
                 read -p "请输入国家代码 (如CN/US, 大写): " country
                 manage_country_rules "iptables" "block" $country
-                pause
+                break_end
                 ;;
                 
             16)  # 仅允许指定国家IP
                 read -p "请输入国家代码 (如CN/US, 大写): " country
                 manage_country_rules "iptables" "allow" $country
-                pause
+                break_end
                 ;;
                 
             17)  # 解除指定国家IP限制
                 read -p "请输入国家代码 (如CN/US, 大写): " country
                 manage_country_rules "iptables" "unblock" $country
-                pause
+                break_end
                 ;;
 			99)  # 卸载防火墙
                 uninstall_firewall "iptables"
@@ -5934,9 +5989,9 @@ iptables_panel() {
                 ;;
                 
             *)
-                echo -e "${red}无效选择, 请重试${white}"
-                pause
-                ;;
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
         esac
     done
 }
@@ -5948,7 +6003,7 @@ linux_firewall() {
         
         if [ "$firewall" = "none" ]; then
             clear
-            echo -e "${blue}===== 防火墙管理 ====="${white}
+            echo -e "${green}===== 防火墙管理 =====${white}"
             echo -e "${red}未检测到已安装的防火墙${white}"
             echo "1. 安装 iptables"
             echo "2. 安装 firewalld"
@@ -5967,9 +6022,9 @@ linux_firewall() {
                     return
                     ;;
                 *)
-                    echo -e "${red}无效选择${white}"
-                    pause
-                    ;;
+					echo -e "${red}无效选择, 请重新输入 !${white}"
+					sleep 1
+					;;
             esac
         else
             # 根据检测到的防火墙类型进入相应的管理面板
@@ -5995,12 +6050,12 @@ linux_bbr() {
 			local queue_algorithm=$(sysctl -n net.core.default_qdisc)
 			echo "当前TCP阻塞算法: $congestion_algorithm $queue_algorithm"
 
+			echo -e "${green}===== BBR管理 =====${white}"
 			echo ""
-			echo "BBR管理"
 			echo -e "${pink}------------------------${white}"
-			echo "1. 开启BBRv3              2. 关闭BBRv3（会重启）"
+			echo "1. 开启BBRv3              2. 关闭BBRv3(会重启)"
 			echo -e "${pink}------------------------${white}"
-			echo "0. 返回上一级选单"
+			echo -e "${yellow}0.     ${white}返回上一级菜单"
 			echo -e "${pink}------------------------${white}"
 			read -e -p "请输入你的选择: " sub_choice
 
@@ -6014,8 +6069,12 @@ linux_bbr() {
 				sysctl -p
 				server_reboot
 					;;
+				0)
+					break # 返回上一级菜单
+					;;
 				*)
-					break  # 跳出循环, 退出菜单
+					echo -e "${red}无效选择, 请重新输入 !${white}"
+					sleep 1
 					;;
 
 			esac
@@ -6027,7 +6086,6 @@ linux_bbr() {
 		./tcpx.sh
 	fi
 }
-
 
 #############################################################################
 ################################# 八、应用市场 ###############################
@@ -6056,7 +6114,7 @@ panel_manage() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. 安装            2. 管理            3. 卸载"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " choice
 		case $choice in
@@ -6101,7 +6159,6 @@ docker_tato() {
 	local volume_count=$(docker volume ls -q 2>/dev/null | wc -l)
 
 	if command -v docker &> /dev/null; then
-		echo -e "${cyan}------------------------${white}"
 		echo -e "${green}环境已经安装${white}  容器: ${green}$container_count${white}  镜像: ${green}$image_count${white}  网络: ${green}$network_count${white}  卷: ${green}$volume_count${white}"
 	fi
 }
@@ -6199,8 +6256,8 @@ check_docker() {
 				return_to_menu
 				;;
 			*)
-				echo "无效输入!"
-				break_end
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
 				;;
 		esac
 		return
@@ -6209,10 +6266,12 @@ check_docker() {
 
 # 检查Docker应用是否安装
 check_docker_app() {
-	if docker ps -a --format '{{.Names}}' | grep -q "$docker_name" >/dev/null 2>&1 ; then
+	if docker ps -a --format '{{.Names}}' | grep -q "^${docker_name}$" >/dev/null 2>&1 ; then
 		check_docker="${green}已安装${white}"
+		return 0
 	else
 		check_docker="${grey}未安装${white}"
+		return 1
 	fi
 }
 
@@ -6515,183 +6574,252 @@ add_app_id() {
 
 # Docker 应用管理
 docker_app() {
+    while true; do
+        clear
+        # 先执行检查函数, 确定容器状态
+        check_docker_app
+        check_docker_image_update "$docker_name"
+        
+        echo -e "$docker_name $check_docker $update_status"
+        echo "$docker_describe"
+        echo "$docker_url"
+        
+        # 处理端口信息（保持不变）
+        if docker ps -a --format '{{.Names}}' | grep -q "^${docker_name}$" >/dev/null 2>&1; then
+            if [ ! -f "/home/docker/${docker_name}_port.conf" ]; then
+                local docker_port=$(docker port "$docker_name" | head -n1 | awk -F'[:]' '/->/ {print $NF; exit}')
+                docker_port=${docker_port:-0000}
+                echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
+            fi
+            local docker_port=$(cat "/home/docker/${docker_name}_port.conf")
+            check_docker_app_ip
+        fi
+        
+        echo ""
+        echo -e "${cyan}------------------------------------------------------${white}"
 
-while true; do
-	clear
-	check_docker_app
-	check_docker_image_update $docker_name
-	echo -e "$docker_name $check_docker $update_status"
-	echo "$docker_describe"
-	echo "$docker_url"
-	if docker ps -a --format '{{.Names}}' | grep -q "$docker_name" >/dev/null 2>&1; then
-		if [ ! -f "/home/docker/${docker_name}_port.conf" ]; then
-			local docker_port=$(docker port "$docker_name" | head -n1 | awk -F'[:]' '/->/ {print $NF; exit}')
-			docker_port=${docker_port:-0000}
-			echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
-		fi
-		local docker_port=$(cat "/home/docker/${docker_name}_port.conf")
-		check_docker_app_ip
-	fi
-	echo ""
-	echo -e "${pink}------------------------${white}"
-	echo "1. 安装              2. 更新            3. 卸载"
-	echo -e "${pink}------------------------${white}"
-	echo "5. 添加域名访问      6. 删除域名访问"
-	echo "7. 允许IP+端口访问   8. 阻止IP+端口访问"
-	echo -e "${pink}------------------------${white}"
-	echo "0. 返回上一级选单"
-	echo -e "${pink}------------------------${white}"
-	read -e -p "请输入你的选择: " choice
-	case $choice in
-		1)
-			check_disk_space $app_size
-			read -e -p "输入应用对外服务端口, 回车默认使用${docker_port}端口: " app_port
-			local app_port=${app_port:-${docker_port}}
-			local docker_port=$app_port
+		# 根据容器是否存在显示不同菜单
+        if check_docker_app; then  # 容器存在（返回0）
+            echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
+        else  # 容器不存在（返回非0）
+            echo -e "${green}1. 安装${white}"
+        fi
+        
+        echo -e "${pink}------------------------------------------------------${white}"
+        
+        # 仅当容器存在时显示域名和端口相关操作
+        if check_docker_app; then
+            echo -e "5. 添加域名访问      6. 删除域名访问"
+            echo -e "7. 允许IP+端口访问   8. 阻止IP+端口访问"
+            echo -e "${pink}------------------------------------------------------${white}"
+        fi
 
-			install jq
-			install_docker
-			docker_run
-			setup_docker_dir
-			echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
+        echo -e "${yellow}0. 返回上一级菜单${white}"
+        echo -e "${pink}------------------------------------------------------${white}"
+        
+        read -e -p "请输入你的选择: " choice
+        
+        # 根据容器状态限制可执行的选项
+        if check_docker_app; then
+            # 容器存在时允许的操作
+            case $choice in
+                1)  # 更新
+                    docker rm -f "$docker_name"
+                    docker rmi -f "$docker_img"
+                    docker_run
 
-			mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
+                    mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
 
-			clear
-			echo "$docker_name 已经安装完成"
-			check_docker_app_ip
-			echo ""
-			$docker_use
-			$docker_passwd
-			;;
-		2)
-			docker rm -f "$docker_name"
-			docker rmi -f "$docker_img"
-			docker_run
+                    clear
+                    echo "$docker_name 已经更新完成"
+                    check_docker_app_ip
+                    echo ""
+                    $docker_use
+                    $docker_passwd
+                    ;;
+                2)  # 卸载
+                    docker rm -f "$docker_name"
+                    docker rmi -f "$docker_img"
+                    rm -rf "/home/docker/$docker_name"
+                    rm -f /home/docker/${docker_name}_port.conf
 
-			mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
+                    sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+                    echo "应用已卸载"
+                    ;;
+                5)  # 添加域名访问
+                    echo "${docker_name}域名访问设置"
+                    add_yuming
+                    ldnmp_Proxy "${yuming}" 127.0.0.1 "${docker_port}"
+                    block_container_port "$docker_name" "$ipv4_address"
+                    ;;
+                6)  # 删除域名访问
+                    echo "域名格式 example.com 不带https://"
+                    web_del
+                    ;;
+                7)  # 允许IP+端口访问
+                    clear_container_rules "$docker_name" "$ipv4_address"
+                    ;;
+                8)  # 阻止IP+端口访问
+                    block_container_port "$docker_name" "$ipv4_address"
+                    ;;
+                0)  # 返回上一级
+                    break
+                    ;;
+                *)  # 无效选项
+					echo -e "${red}无效选择, 请重新输入 !${white}"
+					sleep 1
+					;;
+            esac
+        else
+            # 容器不存在时仅允许安装和返回操作
+            case $choice in
+                1)  # 全新安装
+                    check_disk_space "$app_size"
+                    read -e -p "输入应用对外服务端口: " app_port
+                    local app_port=${app_port:-8080}  # 提供默认端口
+                    local docker_port=$app_port
 
-			clear
-			echo "$docker_name 已经安装完成"
-			check_docker_app_ip
-			echo ""
-			$docker_use
-			$docker_passwd
-			;;
-		3)
-			docker rm -f "$docker_name"
-			docker rmi -f "$docker_img"
-			rm -rf "/home/docker/$docker_name"
-			rm -f /home/docker/${docker_name}_port.conf
+                    install jq
+                    install_docker
+                    docker_run
+                    setup_docker_dir
+                    echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
 
-			sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-			echo "应用已卸载"
-			;;
+                    mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
 
-		5)
-			echo "${docker_name}域名访问设置"
-			add_yuming
-			ldnmp_Proxy ${yuming} 127.0.0.1 ${docker_port}
-			block_container_port "$docker_name" "$ipv4_address"
-			;;
-
-		6)
-			echo "域名格式 example.com 不带https://"
-			web_del
-			;;
-
-		7)
-			clear_container_rules "$docker_name" "$ipv4_address"
-			;;
-
-		8)
-			block_container_port "$docker_name" "$ipv4_address"
-			;;
-
-		*)
-			break
-			;;
-	esac
-	break_end
-done
+                    clear
+                    echo "$docker_name 已经安装完成"
+                    check_docker_app_ip
+                    echo ""
+                    $docker_use
+                    $docker_passwd
+                    ;;
+                0)  # 返回上一级
+                    break
+                    ;;
+                *)  # 无效选项
+					echo -e "${red}无效选择, 当前只能选择安装或返回 !${white}"
+					sleep 1
+					;;
+            esac
+        fi
+        break_end
+    done
 }
 
-# Docker 应用管理plus
+
+# Docker 应用管理 compose
 docker_app_plus() {
-	while true; do
-		clear
-		check_docker_app
-		check_docker_image_update $docker_name
-		echo -e "$app_name $check_docker $update_status"
-		echo "$app_text"
-		echo "$app_url"
-		if docker ps -a --format '{{.Names}}' | grep -q "$docker_name" >/dev/null 2>&1; then
-			if [ ! -f "/home/docker/${docker_name}_port.conf" ]; then
-				local docker_port=$(docker port "$docker_name" | head -n1 | awk -F'[:]' '/->/ {print $NF; exit}')
-				docker_port=${docker_port:-0000}
-				echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
-			fi
-			local docker_port=$(cat "/home/docker/${docker_name}_port.conf")
-			check_docker_app_ip
-		fi
-		echo ""
-		echo -e "${pink}------------------------${white}"
-		echo "1. 安装             2. 更新             3. 卸载"
-		echo -e "${pink}------------------------${white}"
-		echo "5. 添加域名访问     6. 删除域名访问"
-		echo "7. 允许IP+端口访问  8. 阻止IP+端口访问"
-		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
-		echo -e "${pink}------------------------${white}"
-		read -e -p "输入你的选择: " choice
-		case $choice in
-			1)
-				check_disk_space $app_size
-				read -e -p "输入应用对外服务端口, 回车默认使用${docker_port}端口: " app_port
-				local app_port=${app_port:-${docker_port}}
-				local docker_port=$app_port
-				install jq
-				install_docker
-				docker_app_install
-				setup_docker_dir
-				echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
+    while true; do
+        clear
+        # 先执行检查函数, 确定容器状态
+        check_docker_app
+        check_docker_image_update "$docker_name"
+        
+        echo -e "$app_name $check_docker $update_status"
+        echo "$app_text"
+        echo "$app_url"
+        
+        # 处理端口信息（保持不变）
+        if docker ps -a --format '{{.Names}}' | grep -q "^${docker_name}$" >/dev/null 2>&1; then
+            if [ ! -f "/home/docker/${docker_name}_port.conf" ]; then
+                local docker_port=$(docker port "$docker_name" | head -n1 | awk -F'[:]' '/->/ {print $NF; exit}')
+                docker_port=${docker_port:-0000}
+                echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
+            fi
+            local docker_port=$(cat "/home/docker/${docker_name}_port.conf")
+            check_docker_app_ip
+        fi
+        
+        echo ""
+        echo -e "${cyan}------------------------------------------------------${white}"
+        
+		# 根据容器是否存在显示不同菜单
+        if check_docker_app; then  # 容器存在（返回0）
+            echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
+        else  # 容器不存在（返回非0）
+            echo -e "${green}1. 安装${white}"
+        fi
+        
+        echo -e "${pink}------------------------------------------------------${white}"
+        
+        # 仅当容器存在时显示域名和端口相关操作
+        if check_docker_app; then
+            echo "5. 添加域名访问      6. 删除域名访问"
+            echo "7. 允许IP+端口访问   8. 阻止IP+端口访问"
+            echo -e "${pink}------------------------------------------------------${white}"
+        fi
+        
+        echo -e "${yellow}0. 返回上一级菜单${white}"
+        echo -e "${pink}------------------------------------------------------${white}"
+        
+        read -e -p "输入你的选择: " choice
+        
+        # 根据容器状态限制可执行的选项
+        if check_docker_app; then
+            # 容器存在时允许的操作
+            case $choice in
+                1)  # 更新
+                    docker_app_update
+                    mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
+                    ;;
+                2)  # 卸载
+                    docker_app_uninstall
+                    rm -f /home/docker/${docker_name}_port.conf
+                    sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+                    ;;
+                5)  # 添加域名访问
+                    echo "${docker_name}域名访问设置"
+                    add_yuming
+                    ldnmp_Proxy "${yuming}" 127.0.0.1 "${docker_port}"
+                    block_container_port "$docker_name" "$ipv4_address"
+                    ;;
+                6)  # 删除域名访问
+                    echo "域名格式 example.com 不带https://"
+                    web_del
+                    ;;
+                7)  # 允许IP+端口访问
+                    clear_container_rules "$docker_name" "$ipv4_address"
+                    ;;
+                8)  # 阻止IP+端口访问
+                    block_container_port "$docker_name" "$ipv4_address"
+                    ;;
+                0)  # 返回上一级
+                    break
+                    ;;
+                *)  # 无效选项
+					echo -e "${red}无效选择, 请重新输入 !${white}"
+					sleep 1
+					;;
+            esac
+        else
+            # 容器不存在时仅允许安装和返回操作
+            case $choice in
+                1)  # 全新安装
+                    check_disk_space "$app_size"
+                    read -e -p "输入应用对外服务端口: " app_port
+                    local app_port=${app_port:-8080}  # 提供默认端口（避免未定义）
+                    local docker_port=$app_port
 
-				mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
-				;;
-			2)
-				docker_app_update
+                    install jq
+                    install_docker
+                    docker_app_install
+                    setup_docker_dir
+                    echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
 
-				mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
-				;;
-			3)
-				docker_app_uninstall
-				rm -f /home/docker/${docker_name}_port.conf
-
-				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-
-				;;
-			5)
-				echo "${docker_name}域名访问设置"
-				add_yuming
-				ldnmp_Proxy ${yuming} 127.0.0.1 ${docker_port}
-				block_container_port "$docker_name" "$ipv4_address"
-				;;
-			6)
-				echo "域名格式 example.com 不带https://"
-				web_del
-				;;
-			7)
-				clear_container_rules "$docker_name" "$ipv4_address"
-				;;
-			8)
-				block_container_port "$docker_name" "$ipv4_address"
-				;;
-			*)
-				break
-				;;
-		esac
-		break_end
-	done
+                    mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
+                    ;;
+                0)  # 返回上一级
+                    break
+                    ;;
+                *)  # 无效选项
+					echo -e "${red}无效选择, 当前只能选择安装或返回 !${white}"
+					sleep 1
+					;;
+            esac
+        fi
+        break_end
+    done
 }
 
 ##############################
@@ -6878,7 +7006,7 @@ nezha_app(){
 		echo -e "${pink}------------------------${white}"
 		echo "1. 使用"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
@@ -6967,7 +7095,7 @@ poste_mail_app(){
 		echo -e "${pink}------------------------${white}"
 		echo "1. 安装           2. 更新           3. 卸载"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
@@ -7136,7 +7264,7 @@ safeline_app(){
 		echo -e "${pink}------------------------${white}"
 		echo "1. 安装           2. 更新           3. 重置密码           4. 卸载"
 		echo -e "${pink}------------------------${white}"
-		echo "0. 返回上一级选单"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
@@ -7681,9 +7809,10 @@ linux_app() {
 
 	while true; do
 		clear
-		echo -e "应用市场"
+		echo -e "${green}===== 应用市场 =====${white}"
+		echo ""
 		docker_tato
-		echo -e "${cyan}------------------------${white}"
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${cyan}1.  ${white}1Panel面板             ${cyan}2.  ${white}宝塔面板                 ${cyan}3.  ${white}aaPanel面板"
 		echo -e "${cyan}4.  ${white}NginxProxyManager面板  ${cyan}5.  ${white}OpenList面板             ${cyan}6.  ${white}WebTop远程桌面网页版"
 		echo -e "${cyan}7.  ${white}哪吒探针               ${cyan}8.  ${white}qbittorrent离线下载      ${cyan}9.  ${white}Poste.io邮件服务器程序"
@@ -7695,9 +7824,9 @@ linux_app() {
 		echo -e "${cyan}25. ${white}Lucky                  ${cyan}26. ${white}LibreTV私有影视          ${cyan}27. ${white}MoonTV私有影视"
 		echo -e "${cyan}28. ${white}Melody音乐精灵         ${cyan}29. ${white}Beszel服务器监控         ${cyan}30. ${white}SyncTV一起看片神器"
 		echo -e "${cyan}31. ${white}X-UI面板               ${cyan}32. ${white}3X-UI面板                ${cyan}33. ${white}Microsoft 365 E5 Renew X"
-		echo -e "${cyan}------------------------${white}"
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${yellow}0.   ${white}返回主菜单"
-		echo -e "${cyan}------------------------${white}"
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
 		case $sub_choice in
@@ -7771,8 +7900,8 @@ linux_app() {
 			break
 			;;
 		*)
-			echo -e "${red}无效选择, 请重试${white}"
-			pause
+			echo -e "${red}无效选择, 请重新输入 !${white}"
+			sleep 1
 			;;
 		esac
 	done
@@ -7783,25 +7912,28 @@ linux_app() {
 ############################### 九、Dev环境管理###############################
 # Dev环境管理主菜单
 dev_env_management() {
-	clear
 	while true; do
-	echo -e "${green}====Dev环境管理====${white}"
-	echo -e ""
-	echo -e "${cyan}------------------------${white}"
-	echo -e "${cyan}1.   ${white}Python管理"
-	echo -e "${cyan}2.   ${white}数据库管理"
-	echo -e "${cyan}3.   ${white}敬请期待......"
-	echo -e "${cyan}------------------------${white}"
-	echo -e "${yellow}0.   ${white}返回主菜单"
-	echo -e "${cyan}------------------------${white}"
+	clear
+		echo -e "${green}====Dev环境管理====${white}"
+		echo -e ""
+		echo -e "${pink}------------------------${white}"
+		echo -e "${cyan}1.${white} Python管理"
+		echo -e "${cyan}2.${white} 数据库管理"
+		echo -e "${cyan}3.${white} 敬请期待......"
+		echo -e "${pink}------------------------${white}"
+		echo -e "${yellow}0.${white} 返回主菜单"
+		echo -e "${pink}------------------------${white}"
 
-	read -e -p "请选择功能编号: " choice
-	case $choice in
-		1) python_management ;;
-		2) db_management ;;
-		0) return_to_menu ;;
-		*) echo "无效选择"; sleep 1 ;;
-        esac
+		read -e -p "请选择功能编号: " choice
+		case $choice in
+			1) python_management ;;
+			2) db_management ;;
+			0) return_to_menu ;;
+			*) 
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
+			esac
 	done
 }
 
@@ -7812,10 +7944,10 @@ python_management() {
     local choice
     while true; do
         clear
-        echo -e "${yellow}Python版本管理工具${white}"
-        echo "---------------------------------------"
-        echo "该功能可无缝安装Python官方支持的任何版本! "
-        
+        echo -e "${green}Python版本管理工具${white}"
+        echo -e "${pink}---------------------------------------${white}"
+        echo -e "${yellow}该功能可无缝安装Python官方支持的任何版本! ${white}"
+
         # 获取当前Python版本
         if command -v python &>/dev/null; then
             local CURRENT_VERSION=$(python -V 2>&1 | awk '{print $2}')
@@ -7824,18 +7956,18 @@ python_management() {
         fi
         echo -e "当前Python版本号: ${yellow}$CURRENT_VERSION${white}"
         
-        echo "------------"
-        echo "推荐版本:  3.12    3.11    3.10    3.9    3.8    2.7"
-        echo "查询更多版本: https://www.python.org/downloads/"
-        echo "------------"
-        echo "1. 安装指定版本Python"
-        echo "2. 切换已安装的Python版本"
-        echo "3. 查看已安装的Python版本"
-        echo "4. 卸载指定Python版本"
-        echo "0. 返回上一级"
-        echo "------------"
-        
-        read -e -p "请选择操作: " choice
+        echo -e "${pink}---------------------------------------${white}"
+        echo -e "推荐版本:  3.12    3.11    3.10    3.9    3.8    2.7"
+        echo -e "查询更多版本: https://www.python.org/downloads/"
+        echo -e "${pink}---------------------------------------${white}"
+        echo -e "${cyan}1.${white} 安装指定版本Python"
+        echo -e "${cyan}2.${white} 切换已安装的Python版本"
+        echo -e "${cyan}3.${white} 查看已安装的Python版本"
+        echo -e "${cyan}4.${white} 卸载指定Python版本"
+        echo -e "${yellow}0.${white} 返回上一级"
+        echo -e "${pink}---------------------------------------${white}"
+
+        read -e -p "请输入你的操作: " choice
         
         case $choice in
             1) install_python_version ;;
@@ -7844,11 +7976,11 @@ python_management() {
             4) uninstall_python_version ;;
             0) 
                 #  "脚本PY管理-退出"
-                break_end
                 return ;;
             *) 
-                echo "无效选择，请重试"
-                sleep 1 ;;
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
         esac
     done
 }
@@ -7906,7 +8038,7 @@ install_pyenv_dependencies() {
 					make xz-dev build-base ncurses-dev
         
     else
-        echo "错误: 未知的包管理器，无法安装依赖"
+        echo "错误: 未知的包管理器, 无法安装依赖"
         return 1
     fi
 }
@@ -7960,7 +8092,7 @@ EOF
 install_python_version() {
     #  "py版本管理-安装"
     
-    read -e -p "输入你要安装的Python版本号（例如: 3.12.0，输入0取消）: " py_new_v
+    read -e -p "输入你要安装的Python版本号（例如: 3.12.0, 输入0取消）: " py_new_v
     
     if [[ "$py_new_v" == "0" ]]; then
         echo "取消安装"
@@ -8081,24 +8213,26 @@ uninstall_python_version() {
 ######### 数据库 管理 ########
 ##############################
 db_management() {
-    clear
     while true; do
 		clear
-		echo -e "${yellow}数据库管理工具${white}"
+		echo -e "${green}数据库管理工具${white}"
 		echo -e ""
-        echo -e "${cyan}------------------------${white}"
-        echo -e "${cyan}1.   ${white}MySQL数据库"
-		echo -e "${cyan}2.   ${white}敬请期待..."
+        echo -e "${pink}------------------------${white}"
+        echo -e "${cyan}1.${white} MySQL数据库"
+		echo -e "${cyan}2.${white} 敬请期待..."
 
-		echo -e "${cyan}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回主菜单"
-        echo -e "${cyan}------------------------${white}"
+		echo -e "${pink}------------------------${white}"
+		echo -e "${yellow}0.${white} 返回主菜单"
+        echo -e "${pink}------------------------${white}"
 
         read -e -p "请选择功能编号: " choice
         case $choice in
             1) mysql_server_app ;;
             0) return_to_menu ;;
-            *) echo "无效选择"; sleep 1 ;;
+            *) 
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
         esac
     done
 }
@@ -8134,7 +8268,7 @@ mysql_server_app(){
 		local version_suffix=$(echo $version)
 		docker_name="${docker_name}${version_suffix}"
 		app_id="${app_id}${version_suffix}"
-        # 设置MySQL的root密码，建议替换为强密码
+        # 设置MySQL的root密码, 建议替换为强密码
 		read -e -p "请输入MySQL数据库ROOT密码: " input_passwd
         local mysql_root_password=$input_passwd
         
@@ -8152,7 +8286,7 @@ mysql_server_app(){
     }
 
 	# 提取所有mysql版本号并处理格式
-	local mysql_versions=$(grep -oE 'mysql([0-9]+\.?[0-9]*)' /home/docker/appno.txt | sed 's/mysql//' | tr '\n' ',' | sed 's/,$//')
+	local mysql_versions=$(grep -oE 'mysql.*' /home/docker/appno.txt | sed 's/mysql//' | tr '\n' ',' | sed 's/,$//')
 	if [ -z "$mysql_versions" ]; then
 		echo -e "${red}未安装MySQL任何版本! 即将进入安装...${white}"
 		echo -e "${cyan}按回车键继续...${white}"
@@ -8203,10 +8337,10 @@ main_menu() {
     clear
     while true; do
 		clear
-		echo -e "${cyan}LinuxBox脚本工具箱 V$version${white}"
+		echo -e "${green}LinuxBox脚本工具箱 V$version${white}"
         echo -e "命令行输入${yellow} $key ${cyan}可快速启动脚本${white}"
 		echo -e ""
-        echo -e "${cyan}------------------------${white}"
+        echo -e "${pink}------------------------${white}"
         echo -e "${cyan}1.   ${white}系统信息查询"
 		echo -e "${cyan}2.   ${white}系统工具"
         echo -e "${cyan}3.   ${white}测试工具"
@@ -8216,11 +8350,11 @@ main_menu() {
         echo -e "${cyan}7.   ${white}BBR加速管理"
         echo -e "${cyan}8.   ${white}应用市场"
         echo -e "${cyan}9.   ${white}Dev环境管理"
-		echo -e "${cyan}------------------------${white}"
+		echo -e "${pink}------------------------${white}"
 		echo -e "${yellow}0.     ${white}退出脚本"
 		echo -e "${green}00.    ${white}更新脚本"
 		echo -e "${red}555.   ${white}卸载脚本"
-        echo -e "${cyan}------------------------${white}"
+        echo -e "${pink}------------------------${white}"
 
         read -e -p "请选择功能编号: " choice
         case $choice in
@@ -8237,7 +8371,10 @@ main_menu() {
 				exit 0 ;;
 			00) update_script ;;
 			555) uninstall_script ;;
-            *) echo "无效选择"; sleep 1 ;;
+            *) 
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				;;
         esac
     done
 }
