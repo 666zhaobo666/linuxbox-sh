@@ -121,6 +121,15 @@ LinuxBox.sh 是一款面向全场景的 Linux 一键管理与自动化运维脚�
 - **自动依赖安装与环境优化**：自动检测并安装编译依赖，优化系统环境，保障开发体验。
 - **交互式操作菜单**：所有 Dev 环境相关操作均有菜单引导，操作简单，反馈清晰。
 
+## 项目参考
+- https://github.com/kejilion/sh
+- https://github.com/xykt/IPQuality
+- https://github.com/yuju520/YujuToolBox
+- https://github.com/zhucaidan/BestTrace-Linux
+- https://github.com/zhucaidan/mtr_trace
+- https://github.com/evolutionboy/superspeed
+- https://github.com/sky22333/sky22333.github.io/issues/18
+
 
 
 
