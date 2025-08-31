@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="3.0.6"
+version="3.0.7"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -7847,7 +7847,7 @@ linux_app() {
 		8)
 			qb_app ;;
 		9)
-			poste_app ;;
+			poste_mail_app ;;
 		10)
 			qinglong_app ;;
 		11)
