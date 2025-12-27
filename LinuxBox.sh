@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="3.0.7"
+version="3.0.8"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -7799,6 +7799,87 @@ e5_renew_x_app(){
 		docker_app
 }
 
+# DecoTV私有影视
+decotv_app(){
+	local app_id="34"
+
+	local app_name="decotv私有影视"
+	local app_text="免费在线视频搜索与观看平台"
+	local app_url="官网介绍: https://github.com/decohererk/decotv"
+	local docker_name="decotv-core"
+	local docker_port="8076"
+	local app_size="2"
+
+	docker_app_install() {
+		read -e -p "设置登录用户名: " admin
+		while true; do
+			read -e -p "设置登录用户密码: " admin_password
+			if [ ${#admin_password} -ge 8 ]; then
+				break
+			else
+				echo "密码长度必须大于8位, 请重新输入! "
+			fi
+		done
+		read -e -p "输入Kvrocks端口 (默认6666): " kvrocks_port
+		kvrocks_port=${kvrocks_port:-6666}
+
+		mkdir -p /home/docker/decotv
+		cd /home/docker/decotv
+
+		cat > /home/docker/decotv/docker-compose.yml << EOF
+services:
+	decotv-core:
+    image: ghcr.io/decohererk/decotv:latest
+    container_name: decotv-core
+    restart: on-failure
+    ports:
+		- '${docker_port}:3000'
+    environment:
+		- USERNAME=${admin}
+		- PASSWORD=${admin_password}
+		- NEXT_PUBLIC_STORAGE_TYPE=kvrocks
+		- KVROCKS_URL=redis://decotv-kvrocks:${kvrocks_port}
+    networks:
+		- decotv-network
+    depends_on:
+		- decotv-kvrocks
+	decotv-kvrocks:
+    image: apache/kvrocks
+    container_name: decotv-kvrocks
+    restart: unless-stopped
+    volumes:
+		- kvrocks-data:/var/lib/kvrocks
+    networks:
+		- decotv-network
+networks:
+	decotv-network:
+    driver: bridge
+volumes:
+	kvrocks-data:
+EOF
+
+		cd /home/docker/decotv/
+		docker compose up -d
+		clear
+		echo "已经安装完成"
+		check_docker_app_ip
+	}
+
+
+	docker_app_update() {
+		cd /home/docker/decotv/ && docker compose down --rmi all
+		cd /home/docker/decotv/ && docker compose up -d
+	}
+
+
+	docker_app_uninstall() {
+		cd /home/docker/decotv/ && docker compose down --rmi all
+		rm -rf /home/docker/decotv
+		echo "应用已卸载"
+	}
+
+	docker_app_plus
+}
 
 
 
@@ -7824,6 +7905,7 @@ linux_app() {
 		echo -e "${cyan}25. ${white}Lucky                  ${cyan}26. ${white}LibreTV私有影视          ${cyan}27. ${white}MoonTV私有影视"
 		echo -e "${cyan}28. ${white}Melody音乐精灵         ${cyan}29. ${white}Beszel服务器监控         ${cyan}30. ${white}SyncTV一起看片神器"
 		echo -e "${cyan}31. ${white}X-UI面板               ${cyan}32. ${white}3X-UI面板                ${cyan}33. ${white}Microsoft 365 E5 Renew X"
+		echo -e "${cyan}34. ${white}DecoTV私有影视"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${yellow}0.   ${white}返回主菜单"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
@@ -7896,6 +7978,8 @@ linux_app() {
 			3xui_app ;;
 		33)
 			e5_renew_x_app ;;
+		34)
+			decotv_app ;;
 		0)
 			break
 			;;
