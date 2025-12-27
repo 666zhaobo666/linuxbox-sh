@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="3.0.8"
+version="3.0.9"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -7820,43 +7820,49 @@ decotv_app(){
 				echo "密码长度必须大于8位, 请重新输入! "
 			fi
 		done
-		read -e -p "输入Kvrocks端口 (默认6666): " kvrocks_port
-		kvrocks_port=${kvrocks_port:-6666}
 
 		mkdir -p /home/docker/decotv
 		cd /home/docker/decotv
 
-		cat > /home/docker/decotv/docker-compose.yml << EOF
+		cat > /home/docker/decotv/docker-compose.yml << 'EOF'
 services:
-	decotv-core:
+  decotv-core:
     image: ghcr.io/decohererk/decotv:latest
     container_name: decotv-core
     restart: on-failure
     ports:
-		- '${docker_port}:3000'
+      - '${docker_port}:3000'
     environment:
-		- USERNAME=${admin}
-		- PASSWORD=${admin_password}
-		- NEXT_PUBLIC_STORAGE_TYPE=kvrocks
-		- KVROCKS_URL=redis://decotv-kvrocks:${kvrocks_port}
+      - USERNAME=${admin}
+      - PASSWORD=${admin_password}
+      - NEXT_PUBLIC_STORAGE_TYPE=kvrocks
+      - KVROCKS_URL=redis://decotv-kvrocks:6666
     networks:
-		- decotv-network
+      - decotv-network
     depends_on:
-		- decotv-kvrocks
-	decotv-kvrocks:
+      - decotv-kvrocks
+      
+  decotv-kvrocks:
     image: apache/kvrocks
     container_name: decotv-kvrocks
     restart: unless-stopped
     volumes:
-		- kvrocks-data:/var/lib/kvrocks
+      - kvrocks-data:/var/lib/kvrocks
     networks:
-		- decotv-network
+      - decotv-network
+
 networks:
-	decotv-network:
+  decotv-network:
     driver: bridge
+
 volumes:
-	kvrocks-data:
+  kvrocks-data:
 EOF
+		
+		# 替换变量
+		sed -i "s/\${docker_port}/${docker_port}/g" /home/docker/decotv/docker-compose.yml
+		sed -i "s/\${admin}/${admin}/g" /home/docker/decotv/docker-compose.yml
+		sed -i "s/\${admin_password}/${admin_password}/g" /home/docker/decotv/docker-compose.yml
 
 		cd /home/docker/decotv/
 		docker compose up -d
