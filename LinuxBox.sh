@@ -7887,7 +7887,28 @@ EOF
 	docker_app_plus
 }
 
+# Drawnix在线白板
+drawnix_app(){
+	local app_id="35"
+	local docker_name="drawnix"
+	local docker_img="pubuzhixing/drawnix:latest"
+	local docker_port=8077
 
+	docker_run() {
+		docker run -d \
+			--name drawnix \
+			--restart=always \
+			-p ${docker_port}:80 \
+			pubuzhixing/drawnix:latest
+	}
+
+	local docker_describe="一款开源的在线白板工具，类似Excalidraw，支持思维导图、流程图和自由绘图。"
+	local docker_url="官网介绍: https://github.com/pubuzhixing/drawnix"
+	local docker_use=""
+	local docker_passwd=""
+	local app_size="1"
+	docker_app
+}
 
 ##############################
 ######## 应用中心菜单 #########
@@ -7911,7 +7932,7 @@ linux_app() {
 		echo -e "${cyan}25. ${white}Lucky                  ${cyan}26. ${white}LibreTV私有影视          ${cyan}27. ${white}MoonTV私有影视"
 		echo -e "${cyan}28. ${white}Melody音乐精灵         ${cyan}29. ${white}Beszel服务器监控         ${cyan}30. ${white}SyncTV一起看片神器"
 		echo -e "${cyan}31. ${white}X-UI面板               ${cyan}32. ${white}3X-UI面板                ${cyan}33. ${white}Microsoft 365 E5 Renew X"
-		echo -e "${cyan}34. ${white}DecoTV私有影视"
+		echo -e "${cyan}34. ${white}DecoTV私有影视         ${cyan}35. ${white}Drawnix在线白板"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${yellow}0.   ${white}返回主菜单"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
@@ -7986,6 +8007,8 @@ linux_app() {
 			e5_renew_x_app ;;
 		34)
 			decotv_app ;;
+		35)
+			drawnix_app ;;
 		0)
 			break
 			;;
