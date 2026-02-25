@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="3.0.11"
+version="3.0.12"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -6937,6 +6937,7 @@ openlist_app(){
 				-e PGID=0 \
 				-e UMASK=022 \
 				--name="openlist" \
+				--user 0:0 \
 				--restart=unless-stopped \
 				openlistteam/openlist:latest
 		}
