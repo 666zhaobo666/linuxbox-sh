@@ -1,7 +1,7 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
 #版本信息
-version="3.0.10"
+version="3.0.11"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色
@@ -6925,7 +6925,7 @@ npm_app(){
 openlist_app(){
 		local app_id="5"
 		local docker_name="openlist"
-		local docker_img="openlistteam/openlist:latest-aria2"
+		local docker_img="openlistteam/openlist:latest"
 		local docker_port=5244
 
 		docker_run() {
@@ -6937,7 +6937,8 @@ openlist_app(){
 				-e PGID=0 \
 				-e UMASK=022 \
 				--name="openlist" \
-				openlistteam/openlist:latest-aria2
+				--restart=unless-stopped \
+				openlistteam/openlist:latest
 		}
 
 		local docker_describe="一个支持多种存储, 支持网页浏览和 WebDAV 的文件列表程序, 由 gin 和 Solidjs 驱动"
