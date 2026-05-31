@@ -1,18 +1,16 @@
 #!/bin/bash
+# 加载核心公共模块
+source core/common.sh 2>/dev/null || true
+# 加载所有模块（如果存在）
+if [ -d "modules" ]; then
+    for mod in modules/*.sh; do
+        [ -f "$mod" ] && source "$mod" 2>/dev/null || true
+    done
+fi
+
 # LinuxBox 多功能管理脚本
 #版本信息
 version="3.0.12"
-## 全局颜色变量
-white='\033[0m'			# 白色
-green='\033[0;32m'		# 绿色
-blue='\033[0;34m'		# 蓝色
-red='\033[31m'			# 红色
-yellow='\033[33m'		# 黄色
-grey='\e[37m'			# 灰色
-pink='\033[38;5;218m'	# 粉色
-cyan='\033[36m'			# 青色
-purple='\033[35m'		# 紫色
-
 ## 支持系统
 SUPPORTED_OS=("ubuntu" "debian" "arch" "fedora")
 
