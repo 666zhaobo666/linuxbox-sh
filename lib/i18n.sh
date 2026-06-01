@@ -1,28 +1,59 @@
+################################################################
+########################### i18n 国际化 ##########################
+# 通过 lang/<lang>.sh 提供翻译表，调用 lx_msg <key> [args...] 查表
+# 增加新翻译：编辑 lang/zh.sh 和 lang/en.sh 添加 LX_<key>='...' 即可
+
+# 加载语言文件
+# 用法: load_lang <lang>
+load_lang() {
+	local lang="${1:-zh}"
+	local lang_file="${LINUXBOX_LIB_DIR}/lang/${lang}.sh"
+	if [ ! -f "$lang_file" ]; then
+		# 找不到请求的语言, 回退英文
+		lang_file="${LINUXBOX_LIB_DIR}/lang/en.sh"
+		lang="en"
+	fi
+	# shellcheck source=lang/en.sh
+	. "$lang_file"
+	LX_LOADED="$lang"
+}
+
+# 查表翻译: lx_msg <key> [args...]
+# 例: lx_msg welcome                   -> "欢迎..."
+#     lx_msg shortcut "$key"           -> "命令行输入 j 可..."
+#     lx_msg update_found "$v" "$version"  -> "发现新版本 V3.2, 当前 V3.1"
 lx_msg() {
-	local msg_key="$1"
+	local key="$1"
 	shift
-	case "$SCRIPT_LANG:$msg_key" in
-		en:welcome) printf "Welcome to LinuxBox script toolbox\n" ;;
-		en:shortcut) printf "Type %s to launch LinuxBox quickly\n" "$key" ;;
-		en:invalid) printf "Invalid choice, please try again!\n" ;;
-		en:help_title) printf "LinuxBox command examples:\n" ;;
-		en:update_check) printf "Checking for updates...\n" ;;
-		en:update_latest) printf "Already up to date (%s)\n" "$version" ;;
-		en:update_found) printf "New version found: %s, current version: %s\n" "$1" "$version" ;;
-		en:update_done) printf "Update complete. Please restart LinuxBox.\n" ;;
-		en:update_cancel) printf "Update cancelled.\n" ;;
-		en:lang_done) printf "LinuxBox language switched to English.\n" ;;
-		*:welcome) printf "欢迎使用LinuxBox脚本工具箱\n" ;;
-		*:shortcut) printf "命令行输入 %s 可快速启动脚本\n" "$key" ;;
-		*:invalid) printf "无效选择, 请重新输入!\n" ;;
-		*:help_title) printf "LinuxBox 命令行参考用例：\n" ;;
-		*:update_check) printf "正在检查更新...\n" ;;
-		*:update_latest) printf "当前已是最新版本 (%s)\n" "$version" ;;
-		*:update_found) printf "发现新版本 V%s, 当前版本 V%s\n" "$1" "$version" ;;
-		*:update_done) printf "更新完成! 请重新运行脚本\n" ;;
-		*:update_cancel) printf "已取消更新\n" ;;
-		*:lang_done) printf "LinuxBox脚本语言已切换为中文。\n" ;;
-		*) printf "%s\n" "$msg_key" ;;
+	local var="LX_${key}"
+	# 间接变量取值, 找不到时回退到 key 字面值
+	local template="${!var}"
+	if [ -z "$template" ]; then
+		template="$key"
+	fi
+	# shellcheck disable=SC2059
+	printf "$template\n" "$@"
+}
+
+# 切换脚本语言 (主菜单 15 / 命令行 j lang xx)
+linuxbox_set_lang() {
+	case "$1" in
+		zh|cn|中文|"")
+			SCRIPT_LANG="zh"
+			save_linuxbox_config
+			load_lang "zh"
+			lx_msg lang_done
+			;;
+		en|english|English)
+			SCRIPT_LANG="en"
+			save_linuxbox_config
+			load_lang "en"
+			lx_msg lang_done
+			;;
+		*)
+			echo "用法: $key lang zh|en"
+			return 1
+			;;
 	esac
 }
 

@@ -53,38 +53,41 @@ if [ -f "$dispatch_path" ]; then
     . "$dispatch_path"
 fi
 
+# 加载当前语言包 (constants.sh 默认 zh, region.sh 末尾会从用户配置覆盖)
+load_lang "$SCRIPT_LANG"
+
 #############################################################################
 ################################# 主菜单 #####################################
 main_menu() {
     clear
     while true; do
 		clear
-		echo -e "${green}LinuxBox脚本工具箱 V$version${white}"
+		echo -e "${green}LinuxBox V$version${white}"
         echo -e "$(lx_msg shortcut)"
 		echo -e ""
 		echo -e "${pink}------------------------${white}"
-        echo -e "${cyan}1.   ${white}系统信息查询"
-		echo -e "${cyan}2.   ${white}系统工具"
-		echo -e "${cyan}3.   ${white}系统清理"
-		echo -e "${cyan}4.   ${white}基础工具"
-		echo -e "${cyan}5.   ${white}测试工具"
-		echo -e "${cyan}6.   ${white}Docker容器管理"
-		echo -e "${cyan}7.   ${white}LDNMP建站管理"
-		echo -e "${cyan}8.   ${white}防火墙配置"
-		echo -e "${cyan}9.   ${white}BBR加速管理"
-		echo -e "${cyan}10.  ${white}WARP管理"
-		echo -e "${cyan}11.  ${white}应用市场"
-		echo -e "${cyan}12.  ${white}服务器集群管理"
-		echo -e "${cyan}13.  ${white}游戏服务器管理"
-		echo -e "${cyan}14.  ${white}Dev环境管理"
-		echo -e "${cyan}15.  ${white}脚本语言 / Language"
+        echo -e "${cyan}1.   ${white}$(lx_msg menu_info)"
+		echo -e "${cyan}2.   ${white}$(lx_msg menu_tools)"
+		echo -e "${cyan}3.   ${white}$(lx_msg menu_clean)"
+		echo -e "${cyan}4.   ${white}$(lx_msg menu_basic)"
+		echo -e "${cyan}5.   ${white}$(lx_msg menu_test)"
+		echo -e "${cyan}6.   ${white}$(lx_msg menu_docker)"
+		echo -e "${cyan}7.   ${white}$(lx_msg menu_ldnmp)"
+		echo -e "${cyan}8.   ${white}$(lx_msg menu_firewall)"
+		echo -e "${cyan}9.   ${white}$(lx_msg menu_bbr)"
+		echo -e "${cyan}10.  ${white}$(lx_msg menu_warp)"
+		echo -e "${cyan}11.  ${white}$(lx_msg menu_app)"
+		echo -e "${cyan}12.  ${white}$(lx_msg menu_cluster)"
+		echo -e "${cyan}13.  ${white}$(lx_msg menu_game)"
+		echo -e "${cyan}14.  ${white}$(lx_msg menu_dev)"
+		echo -e "${cyan}15.  ${white}$(lx_msg menu_lang)"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}退出脚本"
-		echo -e "${green}00.    ${white}更新脚本"
-		echo -e "${red}555.   ${white}卸载脚本"
+		echo -e "${yellow}0.     ${white}$(lx_msg menu_quit)"
+		echo -e "${green}00.    ${white}$(lx_msg menu_update)"
+		echo -e "${red}555.   ${white}$(lx_msg menu_uninstall)"
         echo -e "${pink}------------------------${white}"
 
-        read -e -p "请选择功能编号: " choice
+        read -e -p "$(lx_msg menu_prompt) " choice
         case $choice in
             1) system_info ;;
 			2) linux_tools ;;
@@ -100,7 +103,7 @@ main_menu() {
             12) linux_cluster ;;
             13) linux_game_server ;;
             14) dev_env_management ;;
-            15) read -e -p "请输入语言 zh/en: " lang_choice; linuxbox_set_lang "$lang_choice"; break_end ;;
+            15) read -e -p "$(lx_msg ask_lang)" lang_choice; linuxbox_set_lang "$lang_choice"; break_end ;;
             0) 	clear
 				exit 0 ;;
 			00) update_script ;;
