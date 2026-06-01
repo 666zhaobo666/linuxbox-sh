@@ -23,7 +23,7 @@ for lib_file in constants config i18n region install update service utils packag
 done
 
 # 加载功能模块
-for mod_file in system_info system_tools system_tools_extra network_tools docker ldnmp firewall bbr appstore appstore_extra warp cluster game_server dev_env; do
+for mod_file in system_info system_tools network_tools docker ldnmp firewall bbr appstore warp cluster game_server dev_env; do
     mod_path="${LINUXBOX_LIB_DIR}/modules/${mod_file}.sh"
     if [ -f "$mod_path" ]; then
         # shellcheck source=modules/${mod_file}.sh
