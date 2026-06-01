@@ -1,48 +1,40 @@
-# LinuxBox全功能Linux管理脚本
+# LinuxBox 全功能 Linux 管理脚本
+
+一款面向运维和开发者的 Linux 一键管理脚本，按 kejilion 架构重构后保持模块化、可扩展。覆盖系统管理、网络与安全、建站与容器、性能测试与加速、应用市场、开发环境等 15 大模块，支持 Ubuntu / Debian / CentOS / Arch / Fedora 等主流发行版。
+
 ## 安装方法
-### 1. 原始地址
+
+### 一键安装（推荐）
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh)
+bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/install.sh)
 ```
-> ai-enhance 分支测试版：
+
+### 国内加速
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/ai-enhance/LinuxBox.sh)
+bash <(curl -sL https://proxy.cccg.top/raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/install.sh)
 ```
-### 2. 加速地址
-```bash
-bash <(curl -sL https://proxy.cccg.top/raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh)
-```
-> ai-enhance 分支测试版：
-```bash
-bash <(curl -sL https://proxy.cccg.top/raw.githubusercontent.com/666zhaobo666/linuxbox-sh/ai-enhance/LinuxBox.sh)
-```
+
+> 脚本会自动把入口、lib/、modules/ 全量下载到 `/usr/local/bin/linuxbox/`，创建 `j` 快捷命令，安装完输入 `j` 即可启动。
+
 ## 使用方法
-在终端输入 `j` 即可快速启动脚本
 
-## 框架配置与命令行用法
+终端输入 `j` 启动脚本，主菜单按编号选择功能。
 
-本项目从 `3.1.0-framework` 开始引入运行时配置层，默认配置文件位于 `~/.linuxbox/config`。
+常用快捷命令：
 
-可配置项：
-- `SCRIPT_BRANCH`：脚本更新分支，当前默认 `ai-enhance`。
-- `SCRIPT_LANG`：脚本语言，支持 `zh` / `en`，默认 `zh`。
-- `key`：快捷命令，默认 `j`。
-
-常用命令：
 ```bash
-j help
-j lang zh
-j lang en
-j update
-j install nano wget
-j service restart docker
-j docker
-j web
-j ssl example.com
-j swap 2048
-j time Asia/Shanghai
-j open-port 80 443
-j close-port 8080
+j help              # 查看命令行帮助
+j lang zh|en        # 切换语言
+j update            # 更新脚本
+j install nano wget # 安装软件包
+j service restart docker  # 重启服务
+j docker            # Docker 管理菜单
+j web               # LDNMP 建站菜单
+j ssl example.com   # 申请/管理证书
+j swap 2048         # 设置 2048M 虚拟内存
+j time Asia/Shanghai # 设置时区
+j open-port 80 443  # 开放端口
+j close-port 8080   # 关闭端口
 ```
 
 English quick start:
@@ -54,127 +46,113 @@ j docker
 j web
 ```
 
+## 框架配置
+
+默认配置文件位于 `~/.linuxbox/config`：
+
+- `SCRIPT_BRANCH`：脚本更新分支，默认 `main`。
+- `SCRIPT_LANG`：脚本语言，支持 `zh` / `en`，默认 `zh`。
+- `key`：快捷命令，默认 `j`。
 
 ## 功能介绍
 
-LinuxBox.sh 是一款面向全场景的 Linux 一键管理与自动化运维脚本，集成系统信息、用户与权限、网络与安全、建站与容器、测试与加速、应用市场、开发环境等多模块功能。支持 Ubuntu、Debian、Arch、Fedora 等主流发行版，兼容多种系统架构。
+### 一、系统信息查询
 
-主要特点：
-- **一键化操作**：所有功能均可通过菜单或命令一键完成，极大提升运维效率。
-- **全场景覆盖**：涵盖系统管理、建站部署、Docker容器、网络安全、性能测试、加速优化、应用安装、开发环境等。
-- **自动化与智能检测**：自动检测依赖、磁盘空间、root权限、系统类型，智能提示与防护，保障操作安全。
-- **高度兼容与扩展**：支持多发行版、多架构，模块化设计，便于后续扩展和自定义。
-- **安全机制完善**：集成防火墙、DDOS防护、WAF、权限管理、误操作防护等多重安全措施。
-
-### 一、系统信息与管理
-
-- **系统信息查询**：一键显示主机名、系统版本、CPU架构与型号、内存、硬盘、网络、地理位置、运营商、DNS、系统时间、运行时长等详细信息。
-- - **IP地址获取**：支持公网/本地 IP、IPv6 地址自动识别。
-
+- 一键显示主机名、系统版本、CPU 架构与型号、内存、硬盘、网络、地理位置、运营商、DNS、系统时间、运行时长等详细信息。
+- 自动识别公网/本地 IP 与 IPv6 地址。
 
 ### 二、系统工具合集
 
-- **脚本快捷键设置**：可自定义脚本启动快捷键，提升操作效率。
-- **用户与密码管理**：支持普通/高级账户创建、密码修改、sudo权限赋予与回收、用户删除。
-- **SSH管理**：一键修改SSH端口、密码/Root登录开关、密钥管理。
-- **DNS优化与切换**：一键切换国内/国外/自定义 DNS，提升网络体验。
-- **IPv4/IPv6优先级切换与修复**：支持优先级切换及一键修复IPv6。
-- **端口占用查看**：快速查看系统端口占用情况。
-- **虚拟内存调整**：一键分配/释放 swap 虚拟内存，支持自定义大小。
-- **主机名修改**：支持主机名一键修改，自动同步 hosts 文件。
-- **系统时区调整**：全球主流时区一键切换，支持多地区选择。
-- **系统更新源切换**：支持中国大陆/教育网/海外源，自动适配主流发行版。
-- **定时任务管理**：crontab 增删查改，支持多种周期任务设置。
-- **文件管理器**：支持目录/文件的创建、编辑、重命名、删除、权限修改、压缩/解压、复制/移动、远程传输（scp）。
-- **系统语言切换**：支持中英文、繁体等多语言环境，自动适配系统。
-- **系统回收站**：rm 命令集成回收站，防止误删，支持还原与清空。
-- **SSH远程连接工具**：保存、管理、快速连接多台服务器。
-- **硬盘分区管理**：分区挂载、卸载、格式化、状态检查，支持多文件系统类型。
-- **命令行历史与收藏夹**：一键查看命令历史，支持命令收藏。
-- **命令行美化工具**：多种 PS1 样式一键切换，个性化终端外观。
+- 脚本快捷键、用户与密码管理、SSH 端口与登录策略、DNS 优化、IPv4/IPv6 优先级切换、端口占用、虚拟内存调整、主机名修改、系统时区切换、系统更新源切换、定时任务管理、文件管理器、系统语言切换、系统回收站、SSH 远程连接、硬盘分区管理、命令行历史与收藏夹、命令行美化。
 
-### 三、测试工具合集
+### 三、系统清理
 
-- **IP与解锁检测**：集成 ChatGPT 解锁检测、流媒体解锁测试、IP质量体检等脚本，支持多种网络环境。
-- **网络测速**：支持 besttrace 三网回程路由、mtr_trace 回程线路、Superspeed 三网测速、nxtrace 快速/指定IP回程测试、ludashi2020、i-abc 多功能测速、NetQuality 网络质量体检等。
-- **硬件性能测试**：集成 yabs 性能测试、icu/gb5 CPU性能测试、bench 综合性能测试、spiritysdx 怪测评等。
-- **一键调用主流测速/检测脚本**，自动安装依赖，结果清晰展示。
+- 一键清理包管理器缓存、孤立依赖、系统日志、临时文件。
+- 覆盖 `apt / dnf / yum / apk / pacman / zypper / opkg / pkg` 八种主流包管理器。
+- 自动 rotate 与 vacuum `journalctl` 日志（`vacuum-time=1s` + `vacuum-size=500M`）。
+- 集成 `fix_dpkg` 工具，apt 卡死时自动解锁 `/var/lib/dpkg/lock*` 并恢复 `dpkg --configure -a`。
 
-### 四、Docker管理模块
+### 四、基础工具
 
-- **Docker环境一键安装/卸载/更新**：支持主流发行版自动安装、官方/中国镜像源切换、环境彻底卸载与清理。
-- **Docker容器管理**：一键查看、创建、启动、停止、重启、删除、进入容器，支持批量操作。
-- **Docker镜像管理**：支持镜像拉取、更新、删除、批量清理。
-- **Docker网络管理**：查看网络列表，容器加入/退出/删除网络，支持自定义网络创建。
-- **Docker卷管理**：新建、删除、批量清理未使用卷。
-- **Docker IPv6管理**：一键开启/关闭 IPv6 支持，自动配置 daemon.json。
-- **Docker源管理**：一键切换官方/国内镜像源，提升国内下载速度。
-- **全局状态查看**：一键展示容器、镜像、网络、卷等全局状态。
-- **Docker配置文件编辑**：支持直接编辑 daemon.json，灵活配置参数。
-- **一键清理无用资源**：自动清理停止的容器、未使用的镜像、网络、卷，释放系统空间。
+- 一屏展示 21 个常用工具的安装状态（curl / wget / sudo / socat / htop / iftop / unzip / tar / tmux / ffmpeg / btop / ranger / ncdu / fzf / vim / nano / git / cmatrix / sl / bastet / nsnake / ninvaders）。
+- 支持单装、单卸、一键全装（`31`）、一键全装（不含屏保和游戏，`32`）、一键全卸（`33`）、按名装卸（`41` / `42`）。
+- 屏保与小游戏：黑客帝国（cmatrix）、跑火车（sl）、俄罗斯方块（bastet）、贪吃蛇（nsnake）、太空入侵者（ninvaders）。
+- 集成 opencode AI 编程助手一键安装。
 
-### 五、LDNMP建站管理
+### 五、测试工具合集
 
-- **一键部署LNMP/LDNMP环境**：基于Docker自动部署Nginx、MySQL、PHP、Redis等主流组件，支持多版本选择。
-- **站点与数据库管理**：一键添加/删除站点、数据库，自动生成安全密码，支持多域名、多数据库配置。
-- **SSL证书自动申请与续签**：集成Certbot，支持Let's Encrypt证书自动申请、续签、证书状态查询与导入。
-- **反向代理与缓存加速**：支持Nginx反向代理、站点缓存、Cloudflare缓存清理，提升网站性能与安全。
-- **phpMyAdmin一键升级与管理**：支持phpMyAdmin快速升级，便捷管理数据库。
-- **环境优化与数据迁移**：自动优化PHP-FPM、Nginx配置，支持站点数据迁移与备份。
-- **证书信息与到期提醒**：一键查看证书公钥/私钥信息，证书到期自动提醒。
-- **WAF防火墙与安全加固**：支持Nginx WAF一键开启/关闭，检测CF模式，提升站点安全。
-- **多站点/多端口/多SSL支持**：灵活配置多站点、多端口、多SSL证书，满足复杂建站需求。
+- IP 与解锁检测：ChatGPT 解锁检测、流媒体解锁、IP 质量体检。
+- 网络测速：besttrace 三网回程、mtr_trace 回程线路、Superspeed 三网测速、nxtrace 快速/指定 IP 回程、ludashi2020、i-abc、NetQuality。
+- 硬件性能：yabs、cpu-gb5、bench、spiritysdx 怪测评。
+- 一键调用，自动安装依赖，结果清晰展示。
 
-### 六、防火墙管理
+### 六、Docker 容器管理
 
-- **一键安装/卸载防火墙**：支持 firewalld 和 iptables 两种主流防火墙的自动安装与卸载，适配多种发行版。
-- **端口开放与关闭**：一键开放/关闭指定端口、全部端口，支持 TCP/UDP 协议选择。
-- **IP白名单/黑名单管理**：灵活添加/移除 IP 白名单与黑名单，支持 IP 段操作。
-- **国家IP规则管理**：集成 ipset+ipdeny，支持一键封锁/仅允许指定国家 IP，解除国家限制。
-- **DDOS防御**：一键启动/关闭 DDOS 防御，限制并发连接数与速率，提升服务器安全性。
-- **PING管理**：一键允许/禁止 PING，灵活控制 ICMP 流量。
-- **规则清除与保存**：支持清除指定 IP 规则，自动保存/恢复 iptables 规则，保障重启后生效。
-- **防火墙类型自动检测**：自动识别当前系统防火墙类型，进入对应管理面板。
-- **高级面板操作**：集成 firewalld/iptables 高级管理菜单，所有操作均有交互式提示与反馈。
+- 一键安装/卸载/更新 Docker，支持官方源与国内镜像源切换。
+- 容器/镜像/网络/卷全生命周期管理，IPv6 支持开关，daemon.json 可视化编辑。
+- 一键清理停止的容器、未使用的镜像、网络、卷，释放系统空间。
 
-### 七、BBR加速管理
+### 七、LDNMP 建站管理
 
-- **一键开启BBR/BBR Plus/BBR2加速**：自动检测系统内核，支持多种主流 TCP 加速算法一键切换。
-- **自动安装/升级内核**：如系统不支持，自动下载并安装适配内核，保障加速功能可用。
-- **多种加速模式选择**：支持 BBR、BBR Plus、BBR2、锐速、Lotserver 等多种网络加速方案。
-- **状态检测与优化**：一键检测当前加速状态，自动优化 sysctl 配置，提升网络性能。
-- **兼容多发行版**：支持 Ubuntu、Debian、CentOS、Arch 等主流 Linux 发行版。
-- **交互式操作菜单**：所有加速相关操作均有菜单引导，操作简单，反馈清晰。
+- 一键部署 LNMP/LDNMP 环境（Docker 版），支持多版本。
+- 站点与数据库增删、SSL 证书自动申请与续签、phpMyAdmin 升级、CF 缓存清理。
+- Nginx WAF 开关、WordPress 调试/URL/内存一键修复、Nginx 压缩（gzip/zstd/br）配置。
 
-### 八、应用市场
+### 八、防火墙配置
 
-- **面板类应用一键管理**：支持多种主流运维/建站面板的安装、检测、升级与卸载，自动适配系统环境。
-- **Docker类应用管理**：集成常用 Docker 应用的安装、统计、访问地址检测与端口管理，支持批量操作。
-- **应用信息统计与展示**：一键统计已安装容器、镜像、网络、卷等信息，清晰展示系统应用状态。
-- **crontab自动检测与安装**：自动检测并安装定时任务服务，保障应用定时运行。
-- **iptables规则保存与恢复**：自动保存防火墙规则，支持系统重启后自动恢复，提升安全性。
-- **应用ID与目录管理**：支持自定义应用ID、目录结构，便于多应用环境管理。
-- **交互式操作菜单**：所有应用市场相关操作均有菜单引导，操作简单，反馈清晰。
+- 一键安装/卸载 firewalld 与 iptables，自动识别当前防火墙类型。
+- 端口开放/关闭、IP 白/黑名单、国家 IP 规则（ipset+ipdeny）、DDOS 防御、PING 管理。
+- 规则自动保存与恢复，支持重启后生效。
 
-### 九、Dev环境管理
+### 九、BBR 加速管理
 
-- **Python环境一键管理**：集成 pyenv，支持多版本 Python 安装、切换、卸载，自动安装依赖与环境变量配置。
-- **数据库管理工具**：支持 MySQL、PostgreSQL 等主流数据库的 Docker 容器化安装、版本选择、密码与数据目录自定义。
-- **多版本支持与切换**：一键查看、切换已安装的 Python/数据库版本，满足多项目开发需求。
-- **自动依赖安装与环境优化**：自动检测并安装编译依赖，优化系统环境，保障开发体验。
-- **交互式操作菜单**：所有 Dev 环境相关操作均有菜单引导，操作简单，反馈清晰。
+- 一键开启 BBR / BBR Plus / BBR2 / 锐速 / Lotserver，自动检测内核版本。
+- 内核不满足时自动安装适配内核。
+- 状态检测与 sysctl 自动优化。
+
+### 十、WARP 管理
+
+- Cloudflare WARP 客户端一键安装/卸载/状态查看。
+- 支持 WARP 模式切换、WARP+ 接入、Teams 团队配置。
+- 集成 Cloudflare 官方源与多发行版包管理（apt/yum）。
+
+### 十一、应用市场
+
+- 主流运维/建站面板一键管理：1Panel、宝塔、aaPanel 等。
+- Docker 应用市场：常用应用安装、统计、访问地址检测、端口管理。
+- crontab 自动检测、iptables 规则持久化、应用 ID 与目录管理。
+
+### 十二、服务器集群管理
+
+- 通过 SSH 远程批量管理多台服务器。
+- 服务器列表可视化，命令一键下发到全部节点。
+- 配置文件格式：`名称|IP|端口|用户名|密码`，权限可控。
+
+### 十三、游戏服务器管理
+
+- Minecraft 基岩版/Java 版一键开服，集成服务端核心下载与管理。
+- 幻兽帕鲁（Palworld）专用开服脚本，支持备份与日志管理。
+- 适合多人联机服务器快速部署。
+
+### 十四、Dev 环境管理
+
+- Python 多版本管理（pyenv）：安装、切换、卸载，自动配置环境变量。
+- 数据库 Docker 化部署：MySQL、PostgreSQL 多版本可选，密码与数据目录可自定义。
+- 编译依赖自动检测与安装。
+
+## 主要特点
+
+- **一键化操作**：所有功能均可通过菜单或命令行一键完成，运维效率大幅提升。
+- **模块化架构**：入口脚本 + `lib/` 公共库 + `modules/` 功能模块，加新功能只动一处。
+- **多发行版兼容**：支持 Ubuntu、Debian、CentOS、Arch、Fedora 等，主流架构（x86_64 / aarch64）开箱即用。
+- **安全机制完善**：集成防火墙、DDOS 防护、WAF、回收站、误操作确认等多重安全措施。
+- **智能检测**：自动检测依赖、磁盘空间、root 权限、系统类型，缺啥装啥、给提示不裸跑。
 
 ## 项目参考
+
 - https://github.com/kejilion/sh
 - https://github.com/xykt/IPQuality
 - https://github.com/yuju520/YujuToolBox
 - https://github.com/zhucaidan/BestTrace-Linux
 - https://github.com/zhucaidan/mtr_trace
 - https://github.com/evolutionboy/superspeed
-- https://github.com/sky22333/sky22333.github.io/issues/18
-
-
-
-
-
-

@@ -14,7 +14,7 @@ white='\033[0m'
 # 配置
 SCRIPT_REPO_OWNER="${SCRIPT_REPO_OWNER:-666zhaobo666}"
 SCRIPT_REPO_NAME="${SCRIPT_REPO_NAME:-linuxbox-sh}"
-SCRIPT_BRANCH="${SCRIPT_BRANCH:-ai-enhance}"
+SCRIPT_BRANCH="${SCRIPT_BRANCH:-main}"
 INSTALL_DIR="/usr/local/bin/linuxbox"
 KEY="${1:-j}"
 
@@ -53,7 +53,7 @@ download_file() {
 
 # 文件列表
 lib_files="constants.sh config.sh i18n.sh region.sh install.sh update.sh service.sh utils.sh package.sh system.sh dispatch.sh"
-mod_files="system_info.sh system_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh"
+mod_files="system_info.sh system_tools.sh system_clean.sh basic_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh"
 
 failed=0
 

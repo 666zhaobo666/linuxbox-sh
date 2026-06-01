@@ -157,7 +157,7 @@ update_script() {
 
     # 3. 更新 modules/ 目录
     echo -e "${cyan}[3/4] 更新 modules/ 目录...${white}"
-    local modules_files="system_info.sh system_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh"
+    local modules_files="system_info.sh system_tools.sh system_clean.sh basic_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh"
     if ! download_directory "modules" "$modules_files"; then
         update_failed=1
     fi
@@ -168,7 +168,7 @@ update_script() {
     local verify_errors=0
 
     # 检查关键文件
-    for file in lib/constants.sh lib/config.sh modules/system_info.sh modules/docker.sh; do
+    for file in lib/constants.sh lib/config.sh modules/system_info.sh modules/docker.sh modules/system_clean.sh modules/basic_tools.sh; do
         if [ ! -f "${LINUXBOX_LIB_DIR}/${file}" ]; then
             echo -e "${red}  ✗ 缺少关键文件: ${file}${white}"
             verify_errors=$((verify_errors + 1))

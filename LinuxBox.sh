@@ -29,13 +29,13 @@ for lib_file in constants config i18n region install update service utils packag
     else
         echo "[错误] 缺少库文件: $lib_path"
         echo "请使用以下命令安装:"
-        echo "  bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/ai-enhance/install.sh)"
+        echo "  bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/install.sh)"
         exit 1
     fi
 done
 
 # 加载功能模块
-for mod_file in system_info system_tools network_tools docker ldnmp firewall bbr appstore warp cluster game_server dev_env; do
+for mod_file in system_info system_tools system_clean basic_tools network_tools docker ldnmp firewall bbr appstore warp cluster game_server dev_env; do
     mod_path="${LINUXBOX_LIB_DIR}/modules/${mod_file}.sh"
     if [ -f "$mod_path" ]; then
         # shellcheck source=modules/${mod_file}.sh
@@ -65,17 +65,19 @@ main_menu() {
 		echo -e "${pink}------------------------${white}"
         echo -e "${cyan}1.   ${white}系统信息查询"
 		echo -e "${cyan}2.   ${white}系统工具"
-		echo -e "${cyan}3.   ${white}测试工具"
-		echo -e "${cyan}4.   ${white}Docker容器管理"
-		echo -e "${cyan}5.   ${white}LDNMP建站管理"
-		echo -e "${cyan}6.   ${white}防火墙配置"
-		echo -e "${cyan}7.   ${white}BBR加速管理"
-		echo -e "${cyan}8.   ${white}WARP管理"
-		echo -e "${cyan}9.   ${white}应用市场"
-		echo -e "${cyan}10.  ${white}服务器集群管理"
-		echo -e "${cyan}11.  ${white}游戏服务器管理"
-		echo -e "${cyan}12.  ${white}Dev环境管理"
-		echo -e "${cyan}13.  ${white}脚本语言 / Language"
+		echo -e "${cyan}3.   ${white}系统清理"
+		echo -e "${cyan}4.   ${white}基础工具"
+		echo -e "${cyan}5.   ${white}测试工具"
+		echo -e "${cyan}6.   ${white}Docker容器管理"
+		echo -e "${cyan}7.   ${white}LDNMP建站管理"
+		echo -e "${cyan}8.   ${white}防火墙配置"
+		echo -e "${cyan}9.   ${white}BBR加速管理"
+		echo -e "${cyan}10.  ${white}WARP管理"
+		echo -e "${cyan}11.  ${white}应用市场"
+		echo -e "${cyan}12.  ${white}服务器集群管理"
+		echo -e "${cyan}13.  ${white}游戏服务器管理"
+		echo -e "${cyan}14.  ${white}Dev环境管理"
+		echo -e "${cyan}15.  ${white}脚本语言 / Language"
 		echo -e "${pink}------------------------${white}"
 		echo -e "${yellow}0.     ${white}退出脚本"
 		echo -e "${green}00.    ${white}更新脚本"
@@ -86,17 +88,19 @@ main_menu() {
         case $choice in
             1) system_info ;;
 			2) linux_tools ;;
-            3) network_tools ;;
-            4) linux_docker ;;
-            5) linux_ldnmp ;;
-            6) linux_firewall ;;
-            7) linux_bbr ;;
-            8) linux_warp ;;
-            9) linux_app ;;
-            10) linux_cluster ;;
-            11) linux_game_server ;;
-            12) dev_env_management ;;
-            13) read -e -p "请输入语言 zh/en: " lang_choice; linuxbox_set_lang "$lang_choice"; break_end ;;
+            3) linux_system_clean ;;
+            4) linux_basic_tools ;;
+            5) network_tools ;;
+            6) linux_docker ;;
+            7) linux_ldnmp ;;
+            8) linux_firewall ;;
+            9) linux_bbr ;;
+            10) linux_warp ;;
+            11) linux_app ;;
+            12) linux_cluster ;;
+            13) linux_game_server ;;
+            14) dev_env_management ;;
+            15) read -e -p "请输入语言 zh/en: " lang_choice; linuxbox_set_lang "$lang_choice"; break_end ;;
             0) 	clear
 				exit 0 ;;
 			00) update_script ;;
