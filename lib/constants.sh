@@ -14,6 +14,7 @@ SCRIPT_FILE="${SCRIPT_FILE:-LinuxBox.sh}"
 SCRIPT_INSTALL_DIR="${SCRIPT_INSTALL_DIR:-/usr/local/bin}"
 SCRIPT_HOME="${SCRIPT_HOME:-$HOME/.linuxbox}"
 SCRIPT_CONFIG_FILE="${SCRIPT_CONFIG_FILE:-$SCRIPT_HOME/config}"
+LINUXBOX_INSTALL_DIR="${LINUXBOX_INSTALL_DIR:-/usr/local/bin/linuxbox}"
 SCRIPT_LANG="${SCRIPT_LANG:-zh}"
 ## 全局颜色变量
 white='\033[0m'			# 白色

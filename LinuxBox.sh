@@ -4,11 +4,21 @@
 version="3.2.0-modular"
 
 #############################################################################
-############################ LinuxBox 运行时配置 #############################
+############################# LinuxBox 运行时配置 #############################
 #############################################################################
 
 # 获取脚本所在目录 (支持软链接)
 LINUXBOX_LIB_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+
+# 检查是否通过管道执行 (bash <(curl ...))
+# 如果是，切换到安装目录
+if [ ! -d "${LINUXBOX_LIB_DIR}/lib" ] || [ ! -d "${LINUXBOX_LIB_DIR}/modules" ]; then
+    # 可能是管道执行，尝试使用安装目录
+    LINUXBOX_INSTALL_DIR="/usr/local/bin/linuxbox"
+    if [ -d "${LINUXBOX_INSTALL_DIR}/lib" ] && [ -d "${LINUXBOX_INSTALL_DIR}/modules" ]; then
+        LINUXBOX_LIB_DIR="${LINUXBOX_INSTALL_DIR}"
+    fi
+fi
 
 # 加载公共库
 for lib_file in constants config i18n region install update service utils package system; do
@@ -18,6 +28,8 @@ for lib_file in constants config i18n region install update service utils packag
         . "$lib_path"
     else
         echo "[错误] 缺少库文件: $lib_path"
+        echo "请使用以下命令安装:"
+        echo "  bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/ai-enhance/modular/install.sh)"
         exit 1
     fi
 done

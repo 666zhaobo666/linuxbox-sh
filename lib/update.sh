@@ -157,7 +157,7 @@ update_script() {
 
     # 3. 更新 modules/ 目录
     echo -e "${cyan}[3/4] 更新 modules/ 目录...${white}"
-    local modules_files="system_info.sh system_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh bbr.sh appstore.sh appstore_extra.sh warp.sh cluster.sh game_server.sh dev_env.sh"
+    local modules_files="system_info.sh system_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh"
     if ! download_directory "modules" "$modules_files"; then
         update_failed=1
     fi
