@@ -59,7 +59,7 @@ failed=0
 
 # 下载入口脚本
 echo -e "${cyan}[1/3] 下载入口脚本...${white}"
-entry_url="${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modular/LinuxBox.sh"
+entry_url="${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/LinuxBox.sh"
 if download_file "$entry_url" "${INSTALL_DIR}/LinuxBox.sh"; then
     echo -e "${green}  ✓ LinuxBox.sh${white}"
     chmod +x "${INSTALL_DIR}/LinuxBox.sh"
@@ -72,7 +72,7 @@ echo ""
 # 下载 lib 目录
 echo -e "${cyan}[2/3] 下载 lib/ 目录...${white}"
 for file in $lib_files; do
-    url="${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modular/lib/${file}"
+    url="${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/lib/${file}"
     if download_file "$url" "${INSTALL_DIR}/lib/${file}"; then
         echo -e "${green}  ✓ lib/${file}${white}"
         chmod +x "${INSTALL_DIR}/lib/${file}" 2>/dev/null || true
@@ -86,7 +86,7 @@ echo ""
 # 下载 modules 目录
 echo -e "${cyan}[3/3] 下载 modules/ 目录...${white}"
 for file in $mod_files; do
-    url="${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modular/modules/${file}"
+    url="${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modules/${file}"
     if download_file "$url" "${INSTALL_DIR}/modules/${file}"; then
         echo -e "${green}  ✓ modules/${file}${white}"
         chmod +x "${INSTALL_DIR}/modules/${file}" 2>/dev/null || true

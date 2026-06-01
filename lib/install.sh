@@ -31,7 +31,7 @@ install_download_dir() {
     local files=("$@")
     local success=0
     local fail=0
-    local base_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modular/${dir_name}"
+    local base_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/${dir_name}"
 
     for file in "${files[@]}"; do
         if install_download_file "${base_url}/${file}" "${LINUXBOX_INSTALL_DIR}/${dir_name}/${file}"; then
@@ -60,7 +60,7 @@ CheckFirstRun() {
 
 		# 1. 下载入口脚本
 		echo -e "${cyan}[1/3] 下载入口脚本...${white}"
-		local entry_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modular/LinuxBox.sh"
+		local entry_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/LinuxBox.sh"
 		if install_download_file "$entry_url" "${LINUXBOX_INSTALL_DIR}/LinuxBox.sh"; then
 			echo -e "${green}  ✓ LinuxBox.sh${white}"
 		else

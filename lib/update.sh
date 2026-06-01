@@ -5,7 +5,7 @@
 
 # 获取远程版本号
 get_remote_version() {
-    local remote_entry_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modular/LinuxBox.sh"
+    local remote_entry_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/LinuxBox.sh"
     curl -s --max-time 20 "$remote_entry_url" | grep '^version=' | head -n 1 | cut -d '"' -f 2
 }
 
@@ -47,7 +47,7 @@ download_directory() {
 
     # 下载文件列表
     for file in $files_list; do
-        local remote_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modular/${dir_name}/${file}"
+        local remote_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/${dir_name}/${file}"
         local tmp_file="${tmp_dir}/${file}"
 
         if download_file "$remote_url" "$tmp_file"; then
@@ -81,7 +81,7 @@ update_script() {
     # 检查是否在模块化目录中运行
     if [ ! -d "${LINUXBOX_LIB_DIR}/lib" ] || [ ! -d "${LINUXBOX_LIB_DIR}/modules" ]; then
         echo -e "${red}错误: 未检测到模块化目录结构${white}"
-        echo -e "${yellow}请确保从 modular/ 目录运行 LinuxBox.sh${white}"
+        echo -e "${yellow}请确保正确安装 LinuxBox 脚本${white}"
         sleep 2
         return 1
     fi
@@ -134,7 +134,7 @@ update_script() {
 
     # 1. 更新入口脚本
     echo -e "${cyan}[1/4] 更新入口脚本...${white}"
-    local entry_remote="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modular/LinuxBox.sh"
+    local entry_remote="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/LinuxBox.sh"
     local entry_tmp="/tmp/linuxbox_entry_$$.sh"
 
     if download_file "$entry_remote" "$entry_tmp"; then

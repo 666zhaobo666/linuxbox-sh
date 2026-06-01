@@ -29,7 +29,7 @@ for lib_file in constants config i18n region install update service utils packag
     else
         echo "[错误] 缺少库文件: $lib_path"
         echo "请使用以下命令安装:"
-        echo "  bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/ai-enhance/modular/install.sh)"
+        echo "  bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/ai-enhance/install.sh)"
         exit 1
     fi
 done
