@@ -4,12 +4,55 @@
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh)
 ```
+> ai-enhance 分支测试版：
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/666zhaobo666/linuxbox-sh/ai-enhance/LinuxBox.sh)
+```
 ### 2. 加速地址
 ```bash
 bash <(curl -sL https://proxy.cccg.top/raw.githubusercontent.com/666zhaobo666/linuxbox-sh/main/LinuxBox.sh)
 ```
+> ai-enhance 分支测试版：
+```bash
+bash <(curl -sL https://proxy.cccg.top/raw.githubusercontent.com/666zhaobo666/linuxbox-sh/ai-enhance/LinuxBox.sh)
+```
 ## 使用方法
 在终端输入 `j` 即可快速启动脚本
+
+## 框架配置与命令行用法
+
+本项目从 `3.1.0-framework` 开始引入运行时配置层，默认配置文件位于 `~/.linuxbox/config`。
+
+可配置项：
+- `SCRIPT_BRANCH`：脚本更新分支，当前默认 `ai-enhance`。
+- `SCRIPT_LANG`：脚本语言，支持 `zh` / `en`，默认 `zh`。
+- `key`：快捷命令，默认 `j`。
+
+常用命令：
+```bash
+j help
+j lang zh
+j lang en
+j update
+j install nano wget
+j service restart docker
+j docker
+j web
+j ssl example.com
+j swap 2048
+j time Asia/Shanghai
+j open-port 80 443
+j close-port 8080
+```
+
+English quick start:
+```bash
+j lang en
+j help
+j update
+j docker
+j web
+```
 
 
 ## 功能介绍
