@@ -39,6 +39,7 @@ echo ""
 # 创建安装目录
 mkdir -p "${INSTALL_DIR}/lib"
 mkdir -p "${INSTALL_DIR}/modules"
+mkdir -p "${INSTALL_DIR}/lang"
 
 # 下载文件函数
 download_file() {
@@ -51,57 +52,92 @@ download_file() {
     fi
 }
 
+# 进度条渲染函数 (用 \r 回到行首, 覆盖显示)
+# 用法: show_progress <current> <total> <bar_width>
+show_progress() {
+    local current=$1
+    local total=$2
+    local width=${3:-30}
+    local pct=$(( current * 100 / total ))
+    local filled=$(( current * width / total ))
+    local empty=$(( width - filled ))
+
+    local bar=""
+    local i
+    for ((i=0; i<filled; i++)); do bar+="█"; done
+    for ((i=0; i<empty; i++)); do bar+="░"; done
+
+    printf "\r${cyan}下载中: [${green}%s${cyan}] %3d%% (%d/%d)${white}" "$bar" "$pct" "$current" "$total"
+}
+
 # 文件列表
 lib_files="constants.sh config.sh i18n.sh region.sh install.sh update.sh service.sh utils.sh package.sh system.sh dispatch.sh"
 mod_files="system_info.sh system_tools.sh system_clean.sh basic_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh"
+lang_files="zh.sh en.sh"
 
-failed=0
+# 计算总文件数: 1 (入口) + lib 数量 + modules 数量 + lang 数量
+TOTAL=$(( 1 + $(echo $lib_files | wc -w) + $(echo $mod_files | wc -w) + $(echo $lang_files | wc -w) ))
+CURRENT=0
+FAILED_FILES=()
 
 # 下载入口脚本
-echo -e "${cyan}[1/3] 下载入口脚本...${white}"
-entry_url="${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/LinuxBox.sh"
-if download_file "$entry_url" "${INSTALL_DIR}/LinuxBox.sh"; then
-    echo -e "${green}  ✓ LinuxBox.sh${white}"
+CURRENT=$((CURRENT + 1))
+show_progress $CURRENT $TOTAL
+if download_file "${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/LinuxBox.sh" "${INSTALL_DIR}/LinuxBox.sh"; then
     chmod +x "${INSTALL_DIR}/LinuxBox.sh"
 else
-    echo -e "${red}  ✗ LinuxBox.sh 下载失败${white}"
-    failed=1
+    FAILED_FILES+=("LinuxBox.sh")
 fi
-echo ""
 
 # 下载 lib 目录
-echo -e "${cyan}[2/3] 下载 lib/ 目录...${white}"
 for file in $lib_files; do
-    url="${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/lib/${file}"
-    if download_file "$url" "${INSTALL_DIR}/lib/${file}"; then
-        echo -e "${green}  ✓ lib/${file}${white}"
+    CURRENT=$((CURRENT + 1))
+    show_progress $CURRENT $TOTAL
+    if download_file "${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/lib/${file}" "${INSTALL_DIR}/lib/${file}"; then
         chmod +x "${INSTALL_DIR}/lib/${file}" 2>/dev/null || true
     else
-        echo -e "${red}  ✗ lib/${file} 下载失败${white}"
-        failed=1
+        FAILED_FILES+=("lib/${file}")
     fi
 done
-echo ""
 
 # 下载 modules 目录
-echo -e "${cyan}[3/3] 下载 modules/ 目录...${white}"
 for file in $mod_files; do
-    url="${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modules/${file}"
-    if download_file "$url" "${INSTALL_DIR}/modules/${file}"; then
-        echo -e "${green}  ✓ modules/${file}${white}"
+    CURRENT=$((CURRENT + 1))
+    show_progress $CURRENT $TOTAL
+    if download_file "${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modules/${file}" "${INSTALL_DIR}/modules/${file}"; then
         chmod +x "${INSTALL_DIR}/modules/${file}" 2>/dev/null || true
     else
-        echo -e "${red}  ✗ modules/${file} 下载失败${white}"
-        failed=1
+        FAILED_FILES+=("modules/${file}")
     fi
 done
+
+# 下载 lang 目录
+for file in $lang_files; do
+    CURRENT=$((CURRENT + 1))
+    show_progress $CURRENT $TOTAL
+    if download_file "${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/lang/${file}" "${INSTALL_DIR}/lang/${file}"; then
+        chmod +x "${INSTALL_DIR}/lang/${file}" 2>/dev/null || true
+    else
+        FAILED_FILES+=("lang/${file}")
+    fi
+done
+
+# 进度条结束换行
+echo ""
 echo ""
 
-if [ $failed -eq 1 ]; then
-    echo -e "${red}安装失败，部分文件下载失败${white}"
+# 检查结果
+if [ ${#FAILED_FILES[@]} -gt 0 ]; then
+    echo -e "${red}✗ 部分文件下载失败 (${#FAILED_FILES[@]}/${TOTAL})${white}"
+    echo -e "${red}失败文件列表:${white}"
+    for f in "${FAILED_FILES[@]}"; do
+        echo -e "  ${red}✗ ${f}${white}"
+    done
     rm -rf "${INSTALL_DIR}"
     exit 1
 fi
+
+echo -e "${green}✓ 全部文件下载完成 (${TOTAL}/${TOTAL})${white}"
 
 # 创建符号链接
 ln -sf "${INSTALL_DIR}/LinuxBox.sh" "/usr/local/bin/${KEY}"
