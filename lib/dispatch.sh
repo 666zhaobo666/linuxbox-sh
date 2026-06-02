@@ -1,22 +1,3 @@
-linuxbox_set_lang() {
-	case "$1" in
-		zh|cn|中文|"")
-			SCRIPT_LANG="zh"
-			save_linuxbox_config
-			lx_msg lang_done
-			;;
-		en|english|English)
-			SCRIPT_LANG="en"
-			save_linuxbox_config
-			lx_msg lang_done
-			;;
-		*)
-			echo "用法: $key lang zh|en"
-			return 1
-			;;
-	esac
-}
-
 linuxbox_dispatch() {
 	local command="$1"
 	shift || true
@@ -24,9 +5,6 @@ linuxbox_dispatch() {
 	case "$command" in
 		help|-h|--help|帮助)
 			linuxbox_help
-			;;
-		lang|language|语言)
-			linuxbox_set_lang "$1"
 			;;
 		update|更新)
 			dependency_check
@@ -93,6 +71,9 @@ linuxbox_dispatch() {
 			;;
 		firewall|防火墙)
 			linux_firewall
+			;;
+		caddy)
+			linux_caddy
 			;;
 		warp)
 			linux_warp

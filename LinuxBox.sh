@@ -1,7 +1,8 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本 (模块化版本)
-#版本信息
-version="3.2.0"
+
+# 版本
+version="3.2.1"
 
 #############################################################################
 ############################# LinuxBox 运行时配置 #############################
@@ -35,7 +36,7 @@ for lib_file in constants config i18n region install update service utils packag
 done
 
 # 加载功能模块
-for mod_file in system_info system_tools system_clean basic_tools network_tools docker ldnmp firewall bbr appstore warp cluster game_server dev_env; do
+for mod_file in system_info system_tools system_clean basic_tools network_tools docker ldnmp firewall caddy bbr appstore warp cluster game_server dev_env; do
     mod_path="${LINUXBOX_LIB_DIR}/modules/${mod_file}.sh"
     if [ -f "$mod_path" ]; then
         # shellcheck source=modules/${mod_file}.sh
@@ -53,8 +54,8 @@ if [ -f "$dispatch_path" ]; then
     . "$dispatch_path"
 fi
 
-# 加载当前语言包 (constants.sh 默认 zh, region.sh 末尾会从用户配置覆盖)
-load_lang "$SCRIPT_LANG"
+# 加载翻译表 (当前仅中文)
+load_lang
 
 #############################################################################
 ################################# 主菜单 #####################################
@@ -73,14 +74,14 @@ main_menu() {
 		echo -e "${cyan}5.   ${white}$(lx_msg menu_test)"
 		echo -e "${cyan}6.   ${white}$(lx_msg menu_docker)"
 		echo -e "${cyan}7.   ${white}$(lx_msg menu_ldnmp)"
-		echo -e "${cyan}8.   ${white}$(lx_msg menu_firewall)"
-		echo -e "${cyan}9.   ${white}$(lx_msg menu_bbr)"
-		echo -e "${cyan}10.  ${white}$(lx_msg menu_warp)"
-		echo -e "${cyan}11.  ${white}$(lx_msg menu_app)"
-		echo -e "${cyan}12.  ${white}$(lx_msg menu_cluster)"
-		echo -e "${cyan}13.  ${white}$(lx_msg menu_game)"
-		echo -e "${cyan}14.  ${white}$(lx_msg menu_dev)"
-		echo -e "${cyan}15.  ${white}$(lx_msg menu_lang)"
+		echo -e "${cyan}8.   ${white}$(lx_msg menu_caddy)"
+		echo -e "${cyan}9.   ${white}$(lx_msg menu_firewall)"
+		echo -e "${cyan}10.  ${white}$(lx_msg menu_bbr)"
+		echo -e "${cyan}11.  ${white}$(lx_msg menu_warp)"
+		echo -e "${cyan}12.  ${white}$(lx_msg menu_app)"
+		echo -e "${cyan}13.  ${white}$(lx_msg menu_cluster)"
+		echo -e "${cyan}14.  ${white}$(lx_msg menu_game)"
+		echo -e "${cyan}15.  ${white}$(lx_msg menu_dev)"
 		echo -e "${pink}------------------------${white}"
 		echo -e "${yellow}0.     ${white}$(lx_msg menu_quit)"
 		echo -e "${green}00.    ${white}$(lx_msg menu_update)"
@@ -96,14 +97,14 @@ main_menu() {
             5) network_tools ;;
             6) linux_docker ;;
             7) linux_ldnmp ;;
-            8) linux_firewall ;;
-            9) linux_bbr ;;
-            10) linux_warp ;;
-            11) linux_app ;;
-            12) linux_cluster ;;
-            13) linux_game_server ;;
-            14) dev_env_management ;;
-            15) read -e -p "$(lx_msg ask_lang)" lang_choice; linuxbox_set_lang "$lang_choice"; break_end ;;
+            8) linux_caddy ;;
+            9) linux_firewall ;;
+            10) linux_bbr ;;
+            11) linux_warp ;;
+            12) linux_app ;;
+            13) linux_cluster ;;
+            14) linux_game_server ;;
+            15) dev_env_management ;;
             0) 	clear
 				exit 0 ;;
 			00) update_script ;;
