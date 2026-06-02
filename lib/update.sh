@@ -6,11 +6,20 @@
 
 ##  下载文件 (无 shebang 验证, lib/ 下的库文件首行不一定是 shebang)
 # 用法: download_file <remote_url> <local_path>
+# 远端 404 (文件不存在) 时: 删本地副本 + 返回 0, 不阻塞升级
 download_file() {
 	local url="$1"
 	local path="$2"
-	if curl -sSL --max-time 60 --fail "$url" -o "$path" 2>/dev/null; then
-		[ -s "$path" ] && return 0
+	local http_code
+	http_code=$(curl -sSL --max-time 60 -o "$path" -w "%{http_code}" "$url" 2>/dev/null)
+	# 404: 远端已删除, 同步删本地副本
+	if [ "${http_code}" = "404" ]; then
+		[ -e "${path}" ] && rm -f "${path}"
+		return 0
+	fi
+	# 200 + 非空文件: 成功
+	if [ "${http_code}" = "200" ] && [ -s "${path}" ]; then
+		return 0
 	fi
 	return 1
 }
@@ -49,6 +58,18 @@ update_script() {
 		sleep 2
 		return 1
 	fi
+
+	# 清理已废弃的目录/文件 (跨版本兼容)
+	# 当某个目录/文件被新版移除时, 启动时主动删本地残留
+	# (download_file 的 404 处理是下载过程中兜底, 这里是启动时兜底)
+	local stale_paths=("lang")
+	local stale
+	for stale in "${stale_paths[@]}"; do
+		if [ -d "${LINUXBOX_LIB_DIR}/${stale}" ]; then
+			rm -rf "${LINUXBOX_LIB_DIR}/${stale}"
+			echo -e "${yellow}清理已废弃目录: ${stale}/${white}"
+		fi
+	done
 
 	# 获取远程版本
 	local remote_version
