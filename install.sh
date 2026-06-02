@@ -63,7 +63,6 @@ show_progress() {
 # 文件列表 (与 lib/constants.sh 保持一致, 单一来源在那边, 这里独立硬编码一份)
 LIB_FILES=(constants.sh config.sh i18n.sh region.sh install.sh update.sh service.sh utils.sh package.sh system.sh dispatch.sh)
 MOD_FILES=(system_info.sh system_tools.sh system_clean.sh basic_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh caddy.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh)
-LANG_FILES=(zh.sh)
 
 echo -e "${cyan}正在安装 LinuxBox 脚本工具箱...${white}"
 echo ""
@@ -71,10 +70,9 @@ echo ""
 # 创建安装目录
 mkdir -p "${INSTALL_DIR}/lib"
 mkdir -p "${INSTALL_DIR}/modules"
-mkdir -p "${INSTALL_DIR}/lang"
 
-# 计算总数: 1 入口 + lib + modules + lang
-TOTAL=$(( 1 + ${#LIB_FILES[@]} + ${#MOD_FILES[@]} + ${#LANG_FILES[@]} ))
+# 计算总数: 1 入口 + lib + modules
+TOTAL=$(( 1 + ${#LIB_FILES[@]} + ${#MOD_FILES[@]} ))
 CURRENT=0
 FAILED_FILES=()
 
@@ -106,17 +104,6 @@ for file in "${MOD_FILES[@]}"; do
 		chmod +x "${INSTALL_DIR}/modules/${file}" 2>/dev/null || true
 	else
 		FAILED_FILES+=("modules/${file}")
-	fi
-done
-
-# 下载 lang 目录
-for file in "${LANG_FILES[@]}"; do
-	CURRENT=$((CURRENT + 1))
-	show_progress $CURRENT $TOTAL
-	if download_file "${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/lang/${file}" "${INSTALL_DIR}/lang/${file}"; then
-		chmod +x "${INSTALL_DIR}/lang/${file}" 2>/dev/null || true
-	else
-		FAILED_FILES+=("lang/${file}")
 	fi
 done
 

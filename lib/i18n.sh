@@ -1,40 +1,47 @@
 ################################################################
-########################### 翻译查询中心 ##########################
-# 翻译表在 lang/zh.sh (LX_<key>='模板' 格式)
-# 调用 lx_msg <key> [args...] 查表, %s 占位符由后续参数填充
-# 增加新翻译: 编辑 lang/zh.sh 添加 LX_<key>='...' 即可
+########################### 中文文案常量 #######################
+# 所有界面字符串集中在这里, 直接当变量引用即可:
+#   echo "${LX_menu_info}"
+#   printf "$LX_update_found\n" "$remote" "$local"
+# 没有查表函数, 没有 lx_msg, 不再有 lang/ 目录
+# 增加新文案: 在本文件加一行 LX_<key>='...' 即可
+################################################################
 
-# 加载翻译表 (当前仅中文, 直接 source 一次)
-# 用法: load_lang
-load_lang() {
-	local lang_file="${LINUXBOX_LIB_DIR}/lang/zh.sh"
-	if [ ! -f "$lang_file" ]; then
-		echo "[错误] 缺少翻译文件: $lang_file" >&2
-		return 1
-	fi
-	# shellcheck source=lang/zh.sh
-	. "$lang_file"
-}
+# 系统级消息
+LX_welcome='欢迎使用LinuxBox脚本工具箱'
+LX_shortcut='命令行输入 %s 可快速启动脚本'
+LX_invalid='无效选择, 请重新输入!'
+LX_help_title='LinuxBox 命令行参考用例:'
+LX_update_check='正在检查更新...'
+LX_update_latest='当前已是最新版本 (%s)'
+LX_update_found='发现新版本 V%s, 当前版本 V%s'
+LX_update_done='更新完成! 请重新运行脚本'
+LX_update_cancel='已取消更新'
 
-# 查表翻译: lx_msg <key> [args...]
-# 例: lx_msg welcome                   -> "欢迎..."
-#     lx_msg shortcut "$key"           -> "命令行输入 j 可..."
-#     lx_msg update_found "$v" "$version"  -> "发现新版本 V3.2, 当前 V3.1"
-lx_msg() {
-	local key="$1"
-	shift
-	local var="LX_${key}"
-	# 间接变量取值, 找不到时回退到 key 字面值
-	local template="${!var}"
-	if [ -z "$template" ]; then
-		template="$key"
-	fi
-	# shellcheck disable=SC2059
-	printf "$template\n" "$@"
-}
+# 主菜单项
+LX_menu_info='系统信息查询'
+LX_menu_tools='系统工具'
+LX_menu_clean='系统清理'
+LX_menu_basic='基础工具'
+LX_menu_test='测试工具'
+LX_menu_docker='Docker 容器管理'
+LX_menu_ldnmp='LDNMP 建站管理'
+LX_menu_firewall='防火墙配置'
+LX_menu_caddy='Caddy 反代管理'
+LX_menu_bbr='BBR 加速管理'
+LX_menu_warp='WARP 管理'
+LX_menu_app='应用市场'
+LX_menu_cluster='服务器集群管理'
+LX_menu_game='游戏服务器管理'
+LX_menu_dev='Dev 环境管理'
+LX_menu_quit='退出脚本'
+LX_menu_update='更新脚本'
+LX_menu_uninstall='卸载脚本'
+LX_menu_prompt='请选择功能编号: '
 
+## 打印命令行帮助
 linuxbox_help() {
-	lx_msg help_title
+	echo "${LX_help_title}"
 	cat <<EOF
   $key                         进入交互菜单
   $key help                    查看命令帮助

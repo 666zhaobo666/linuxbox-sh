@@ -41,7 +41,7 @@ get_remote_version() {
 
 ## 主升级函数
 update_script() {
-	lx_msg update_check
+	echo "${LX_update_check}"
 
 	# 检查是否在模块化目录中运行
 	if [ ! -d "${LINUXBOX_LIB_DIR}/lib" ] || [ ! -d "${LINUXBOX_LIB_DIR}/modules" ]; then
@@ -61,16 +61,18 @@ update_script() {
 
 	# 比较版本号
 	if [ "$remote_version" = "$version" ]; then
-		lx_msg update_latest
+		# shellcheck disable=SC2059
+		printf "$LX_update_latest\n" "$version"
 		break_end
 		return 0
 	fi
 
 	# 提示更新
-	lx_msg update_found "$remote_version" "$version"
+	# shellcheck disable=SC2059
+	printf "$LX_update_found\n" "$remote_version" "$version"
 	read -r -p "是否确认更新？(y/n): " confirm
 	if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-		lx_msg update_cancel
+		echo "${LX_update_cancel}"
 		break_end
 		return 1
 	fi
@@ -89,7 +91,7 @@ update_script() {
 	local entry_ok=0
 
 	# 合并所有待下载文件, 用一个总进度条
-	# 顺序: 入口 -> lib/ -> modules/ -> lang/
+	# 顺序: 入口 -> lib/ -> modules/
 	# 入口必须先下完, 否则 lib/ 里可能引用新接口但代码没换
 	local entries=()
 	entries+=("${SCRIPT_FILE}|")  # 入口脚本, subdir 为空
@@ -98,9 +100,6 @@ update_script() {
 	done
 	for f in "${LINUXBOX_MOD_FILES[@]}"; do
 		entries+=("modules/${f}|modules")
-	done
-	for f in "${LINUXBOX_LANG_FILES[@]}"; do
-		entries+=("lang/${f}|lang")
 	done
 
 	local total=${#entries[@]}
@@ -153,7 +152,8 @@ update_script() {
 		echo -e "${green}  新版本: ${remote_version}${white}"
 		echo -e "${green}========================================${white}"
 		echo ""
-		lx_msg shortcut
+		# shellcheck disable=SC2059
+		printf "$LX_shortcut\n" "$key"
 		echo -e "${yellow}注意: 请重新运行脚本以使用新版本${white}"
 		echo -e "${grey}备份保存在: ${backup_dir}${white}"
 
