@@ -162,7 +162,7 @@ update_script() {
         update_failed=1
     fi
 
-    local lang_files="zh.sh en.sh"
+    local lang_files="zh.sh"
     if ! download_directory "lang" "$lang_files"; then
         update_failed=1
     fi
@@ -173,7 +173,7 @@ update_script() {
     local verify_errors=0
 
     # 检查关键文件
-    for file in lib/constants.sh lib/config.sh modules/system_info.sh modules/docker.sh modules/system_clean.sh modules/basic_tools.sh lang/zh.sh lang/en.sh; do
+    for file in lib/constants.sh lib/config.sh modules/system_info.sh modules/docker.sh modules/system_clean.sh modules/basic_tools.sh lang/zh.sh; do
         if [ ! -f "${LINUXBOX_LIB_DIR}/${file}" ]; then
             echo -e "${red}  ✗ 缺少关键文件: ${file}${white}"
             verify_errors=$((verify_errors + 1))

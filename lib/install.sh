@@ -79,7 +79,7 @@ CheckFirstRun() {
 
 		# 3. 下载 modules/ 目录
 		echo -e "${cyan}[3/3] 下载 modules/ 目录...${white}"
-		local mod_files=(system_info.sh system_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh)
+		local mod_files=(system_info.sh system_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh caddy.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh)
 		if ! install_download_dir "modules" "${mod_files[@]}"; then
 			install_failed=1
 		fi

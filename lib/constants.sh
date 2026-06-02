@@ -1,7 +1,6 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本
-#版本信息
-version="3.1.0-framework"
+# version 不在本文件定义, 全脚本唯一版本号在 LinuxBox.sh 顶部
 
 #############################################################################
 ############################ LinuxBox 运行时配置 #############################
@@ -15,7 +14,6 @@ SCRIPT_INSTALL_DIR="${SCRIPT_INSTALL_DIR:-/usr/local/bin}"
 SCRIPT_HOME="${SCRIPT_HOME:-$HOME/.linuxbox}"
 SCRIPT_CONFIG_FILE="${SCRIPT_CONFIG_FILE:-$SCRIPT_HOME/config}"
 LINUXBOX_INSTALL_DIR="${LINUXBOX_INSTALL_DIR:-/usr/local/bin/linuxbox}"
-SCRIPT_LANG="${SCRIPT_LANG:-zh}"
 ## 全局颜色变量
 white='\033[0m'			# 白色
 green='\033[0;32m'		# 绿色

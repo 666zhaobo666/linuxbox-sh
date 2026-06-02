@@ -73,7 +73,7 @@ show_progress() {
 # 文件列表
 lib_files="constants.sh config.sh i18n.sh region.sh install.sh update.sh service.sh utils.sh package.sh system.sh dispatch.sh"
 mod_files="system_info.sh system_tools.sh system_clean.sh basic_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh"
-lang_files="zh.sh en.sh"
+lang_files="zh.sh"
 
 # 计算总文件数: 1 (入口) + lib 数量 + modules 数量 + lang 数量
 TOTAL=$(( 1 + $(echo $lib_files | wc -w) + $(echo $mod_files | wc -w) + $(echo $lang_files | wc -w) ))
@@ -146,7 +146,6 @@ chmod +x "/usr/local/bin/${KEY}"
 # 保存配置
 mkdir -p "$HOME/.linuxbox"
 cat > "$HOME/.linuxbox/config" << EOF
-SCRIPT_LANG="zh"
 SCRIPT_BRANCH="${SCRIPT_BRANCH}"
 key="${KEY}"
 EOF

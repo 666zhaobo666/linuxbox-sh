@@ -24,12 +24,13 @@ bash <(curl -sL https://proxy.cccg.top/raw.githubusercontent.com/666zhaobo666/li
 
 ```bash
 j help              # 查看命令行帮助
-j lang zh|en        # 切换语言
 j update            # 更新脚本
 j install nano wget # 安装软件包
 j service restart docker  # 重启服务
 j docker            # Docker 管理菜单
 j web               # LDNMP 建站菜单
+j caddy             # Caddy 反代管理菜单
+j firewall          # 防火墙管理菜单
 j ssl example.com   # 申请/管理证书
 j swap 2048         # 设置 2048M 虚拟内存
 j time Asia/Shanghai # 设置时区
@@ -37,21 +38,11 @@ j open-port 80 443  # 开放端口
 j close-port 8080   # 关闭端口
 ```
 
-English quick start:
-```bash
-j lang en
-j help
-j update
-j docker
-j web
-```
-
 ## 框架配置
 
 默认配置文件位于 `~/.linuxbox/config`：
 
 - `SCRIPT_BRANCH`：脚本更新分支，默认 `main`。
-- `SCRIPT_LANG`：脚本语言，支持 `zh` / `en`，默认 `zh`。
 - `key`：快捷命令，默认 `j`。
 
 ## 功能介绍
