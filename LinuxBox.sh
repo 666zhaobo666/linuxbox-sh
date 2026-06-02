@@ -1,8 +1,9 @@
 #!/bin/bash
 # LinuxBox 多功能管理脚本 (模块化版本)
 
-# 版本
-version="3.2.3"
+# 全脚本唯一版本号 (主菜单显示 + lib/update.sh 远程比对 + 更新后校验 都读这一行)
+# 升版本只需改这一处
+version="3.2.4"
 
 #############################################################################
 ############################# LinuxBox 运行时配置 #############################
@@ -54,9 +55,6 @@ if [ -f "$dispatch_path" ]; then
     . "$dispatch_path"
 fi
 
-# 加载翻译表 (当前仅中文)
-load_lang
-
 #############################################################################
 ################################# 主菜单 #####################################
 main_menu() {
@@ -64,31 +62,31 @@ main_menu() {
     while true; do
 		clear
 		echo -e "${green}LinuxBox V$version${white}"
-        echo -e "$(lx_msg shortcut)"
+        printf "${white}${LX_shortcut}${white}\n" "$key"
 		echo -e ""
 		echo -e "${pink}------------------------${white}"
-        echo -e "${cyan}1.   ${white}$(lx_msg menu_info)"
-		echo -e "${cyan}2.   ${white}$(lx_msg menu_tools)"
-		echo -e "${cyan}3.   ${white}$(lx_msg menu_clean)"
-		echo -e "${cyan}4.   ${white}$(lx_msg menu_basic)"
-		echo -e "${cyan}5.   ${white}$(lx_msg menu_test)"
-		echo -e "${cyan}6.   ${white}$(lx_msg menu_docker)"
-		echo -e "${cyan}7.   ${white}$(lx_msg menu_ldnmp)"
-		echo -e "${cyan}8.   ${white}$(lx_msg menu_caddy)"
-		echo -e "${cyan}9.   ${white}$(lx_msg menu_firewall)"
-		echo -e "${cyan}10.  ${white}$(lx_msg menu_bbr)"
-		echo -e "${cyan}11.  ${white}$(lx_msg menu_warp)"
-		echo -e "${cyan}12.  ${white}$(lx_msg menu_app)"
-		echo -e "${cyan}13.  ${white}$(lx_msg menu_cluster)"
-		echo -e "${cyan}14.  ${white}$(lx_msg menu_game)"
-		echo -e "${cyan}15.  ${white}$(lx_msg menu_dev)"
+        echo -e "${cyan}1.   ${white}${LX_menu_info}"
+		echo -e "${cyan}2.   ${white}${LX_menu_tools}"
+		echo -e "${cyan}3.   ${white}${LX_menu_clean}"
+		echo -e "${cyan}4.   ${white}${LX_menu_basic}"
+		echo -e "${cyan}5.   ${white}${LX_menu_test}"
+		echo -e "${cyan}6.   ${white}${LX_menu_docker}"
+		echo -e "${cyan}7.   ${white}${LX_menu_ldnmp}"
+		echo -e "${cyan}8.   ${white}${LX_menu_caddy}"
+		echo -e "${cyan}9.   ${white}${LX_menu_firewall}"
+		echo -e "${cyan}10.  ${white}${LX_menu_bbr}"
+		echo -e "${cyan}11.  ${white}${LX_menu_warp}"
+		echo -e "${cyan}12.  ${white}${LX_menu_app}"
+		echo -e "${cyan}13.  ${white}${LX_menu_cluster}"
+		echo -e "${cyan}14.  ${white}${LX_menu_game}"
+		echo -e "${cyan}15.  ${white}${LX_menu_dev}"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}$(lx_msg menu_quit)"
-		echo -e "${green}00.    ${white}$(lx_msg menu_update)"
-		echo -e "${red}555.   ${white}$(lx_msg menu_uninstall)"
+		echo -e "${yellow}0.     ${white}${LX_menu_quit}"
+		echo -e "${green}00.    ${white}${LX_menu_update}"
+		echo -e "${red}555.   ${white}${LX_menu_uninstall}"
         echo -e "${pink}------------------------${white}"
 
-        read -e -p "$(lx_msg menu_prompt) " choice
+        read -e -p "${LX_menu_prompt}" choice
         case $choice in
             1) system_info ;;
 			2) linux_tools ;;
@@ -110,7 +108,7 @@ main_menu() {
 			00) update_script ;;
 			555) uninstall_script ;;
             *)
-				echo -e "${red}$(lx_msg invalid)${white}"
+				echo -e "${red}${LX_invalid}${white}"
 				sleep 1
 				;;
         esac

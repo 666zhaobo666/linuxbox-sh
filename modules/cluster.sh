@@ -254,7 +254,7 @@ linux_cluster() {
             14) cluster_set_timezone ;;
             0) return_to_menu ;;
             *)
-                echo -e "${red}$(lx_msg invalid)${white}"
+                echo -e "${red}${LX_invalid}${white}"
                 sleep 1
                 ;;
         esac
