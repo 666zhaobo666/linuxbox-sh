@@ -1,8 +1,8 @@
 #############################################################################
 ########################## 八、Caddy 反向代理管理 ############################
-# 依赖: bash, grep, awk, sed, curl, systemctl, ps
+# 依赖: bash, grep, awk, sed, curl, systemctl, ps, caddy
 # 文件布局:
-#   /etc/caddy/Caddyfile              # 主配置 (必须 import /etc/caddy/vhosts/*.conf)
+#   /etc/caddy/Caddyfile              # 主配置 (自动 import /etc/caddy/vhosts/*.conf)
 #   /etc/caddy/vhosts/<domain>.conf   # 每个反代一个独立文件
 #   /var/lib/caddy/.local/share/caddy/certificates/  # Caddy 自动签发的证书目录
 #############################################################################
@@ -16,6 +16,9 @@ CADDY_CERT_BASE="/var/lib/caddy/.local/share/caddy/certificates"  # 证书存储
 CADDY_LE_DIR="${CADDY_CERT_BASE}/acme-v02.api.letsencrypt.org-directory"  # Let's Encrypt 证书目录
 CADDY_ZEROSSL_DIR="${CADDY_CERT_BASE}/acme.zerossl.com-v2-dv90"  # ZeroSSL 证书目录
 
+#############################################################################
+############################ 基础检测与状态 #################################
+
 ## 检测 Caddy 是否安装
 caddy_check_installed() {
     if [ -x "${CADDY_BIN}" ] || command -v caddy >/dev/null 2>&1; then
@@ -24,7 +27,7 @@ caddy_check_installed() {
     return 1
 }
 
-## 检查 root 权限 (脚本开头调用)
+## 检查 root 权限
 caddy_check_root() {
     if [ "$EUID" -ne 0 ]; then
         echo -e "${red}提示: ${white}Caddy 管理需要 root 权限, 请使用 sudo 或以 root 用户运行!"
@@ -35,7 +38,6 @@ caddy_check_root() {
 
 ## 初始化环境: 确保配置目录、vhosts 目录、主配置 import 行齐全
 caddy_init_env() {
-    # 确保目录存在
     mkdir -p "${CADDY_CONFIG_DIR}"
     mkdir -p "${CADDY_VHOSTS_DIR}"
 
@@ -45,7 +47,6 @@ caddy_init_env() {
 # Caddy 主配置文件
 # 由 LinuxBox 脚本自动维护
 {
-    # 全局选项: 启用 admin API
     admin off
 }
 
@@ -56,14 +57,13 @@ EOF
 
     # 确保主配置中包含 import 行 (幂等)
     if ! grep -qE '^[[:space:]]*import[[:space:]]+/etc/caddy/vhosts/\*\.conf' "${CADDY_MAIN_CONF}" 2>/dev/null; then
-        # 在文件末尾追加 import 行 (避免覆盖)
         echo "" >> "${CADDY_MAIN_CONF}"
         echo "# 自动追加: 加载 vhost 配置" >> "${CADDY_MAIN_CONF}"
         echo "import /etc/caddy/vhosts/*.conf" >> "${CADDY_MAIN_CONF}"
     fi
 }
 
-## 获取 Caddy 服务运行状态 (输出: 运行中/未运行/未安装)
+## 获取 Caddy 服务运行状态
 caddy_service_status() {
     if ! caddy_check_installed; then
         echo "未安装"
@@ -80,7 +80,6 @@ caddy_service_status() {
 
 ## 获取 Caddy 进程实际物理内存占用 (RSS, 单位 MB)
 caddy_memory_usage() {
-    # ps 取 RSS (KB), awk 求和并转 MB
     local rss_kb
     rss_kb=$(ps -C caddy -o rss= 2>/dev/null | awk '{sum+=$1} END {print sum+0}')
     if [ -z "${rss_kb}" ] || [ "${rss_kb}" -eq 0 ]; then
@@ -91,11 +90,8 @@ caddy_memory_usage() {
 }
 
 ## 检查指定域名的 SSL 证书是否已签发
-# 用法: caddy_ssl_status "example.com"
-# 输出: "已签发" 或 "待签发/无"
 caddy_ssl_status() {
     local domain="$1"
-    # 同时检查 Let's Encrypt 与 ZeroSSL 目录
     if [ -f "${CADDY_LE_DIR}/${domain}/${domain}.crt" ] || \
        [ -f "${CADDY_ZEROSSL_DIR}/${domain}/${domain}.crt" ] || \
        [ -f "${CADDY_CERT_BASE}/${domain}/${domain}.crt" ]; then
@@ -104,6 +100,9 @@ caddy_ssl_status() {
         echo "待签发/无"
     fi
 }
+
+#############################################################################
+############################## 仪表盘渲染 ####################################
 
 ## 渲染顶部仪表盘
 caddy_draw_dashboard() {
@@ -114,7 +113,6 @@ caddy_draw_dashboard() {
     local mem
     mem=$(caddy_memory_usage)
 
-    # 状态颜色: 运行中绿色, 异常红色
     local status_color="${red}"
     if [ "${status}" = "运行中" ]; then
         status_color="${green}"
@@ -126,18 +124,14 @@ caddy_draw_dashboard() {
     printf "  ${cyan}%-26s${white} | ${cyan}%-26s${white} | ${cyan}%s${white}\n" "域名" "反代目标" "SSL 证书"
     echo -e "${pink}--------------------------------------------------------${white}"
 
-    # 遍历 vhosts 目录, 解析每个 conf 文件
     if [ -d "${CADDY_VHOSTS_DIR}" ]; then
         local conf_file domain target ssl_text
         for conf_file in "${CADDY_VHOSTS_DIR}"/*.conf; do
             [ -e "${conf_file}" ] || continue
-            # 文件名即域名 (去掉 .conf 后缀)
             domain=$(basename "${conf_file}" .conf)
-            # 提取 reverse_proxy 后的目标
             target=$(grep -E '^\s*reverse_proxy' "${conf_file}" 2>/dev/null | \
                      head -n1 | awk '{print $2}')
             [ -z "${target}" ] && target="-"
-            # SSL 状态着色
             ssl_text=$(caddy_ssl_status "${domain}")
             if [ "${ssl_text}" = "已签发" ]; then
                 printf "  %-26s | %-26s | ${green}%s${white}\n" "${domain}" "${target}" "[已签发]"
@@ -154,14 +148,122 @@ caddy_draw_dashboard() {
     echo -e "${pink}--------------------------------------------------------${white}"
 }
 
-## 菜单 1: 添加反向代理
+#############################################################################
+######################## vhost 文件操作工具函数 ###############################
+# 这几个函数是高级配置子功能共享的基础工具:
+#   caddy_vhost_backup               备份当前 vhost
+#   caddy_vhost_insert_block         在 `}` 之前插入一段指令块
+#   caddy_vhost_remove_directive     删除指定行 (用于负载均衡替换)
+#   caddy_vhost_validate_or_rollback 验证 + 失败回滚 + 成功 reload
+#   caddy_select_vhost               列出域名让用户选, 选中后 echo 到 stdout
+#############################################################################
+
+## 备份 vhost 文件 (写到 <file>.bak)
+caddy_vhost_backup() {
+    local vhost_file="$1"
+    cp -f "$vhost_file" "${vhost_file}.bak"
+}
+
+## 在 `}` 行之前插入一段指令块
+# 用法: caddy_vhost_insert_block <vhost_file> "<block_text>"
+caddy_vhost_insert_block() {
+    local vhost_file="$1"
+    local block="$2"
+    local tmp="${vhost_file}.tmp"
+    # 保留除最后一行 `}` 之外的全部
+    head -n -1 "$vhost_file" > "$tmp"
+    # 追加新块
+    printf '%s\n' "$block" >> "$tmp"
+    # 加回 `}`
+    echo "}" >> "$tmp"
+    mv -f "$tmp" "$vhost_file"
+}
+
+## 删除 vhost 中匹配 regex 的所有行 (用于负载均衡场景替换 reverse_proxy)
+caddy_vhost_remove_directive() {
+    local vhost_file="$1"
+    local pattern="$2"
+    local tmp="${vhost_file}.tmp"
+    grep -vE "$pattern" "$vhost_file" > "$tmp" || true
+    mv -f "$tmp" "$vhost_file"
+}
+
+## 验证主配置, 成功则 reload, 失败回滚到 .bak
+caddy_vhost_validate_or_rollback() {
+    local vhost_file="$1"
+
+    # caddy validate 通过主配置 (它会 import 所有 vhost)
+    local validate_out
+    validate_out=$(caddy validate --config "${CADDY_MAIN_CONF}" 2>&1)
+    if [ $? -eq 0 ]; then
+        echo -e "${green}配置验证通过, 正在重载 Caddy...${white}"
+        rm -f "${vhost_file}.bak"
+        if systemctl reload caddy 2>/dev/null; then
+            echo -e "${green}已生效${white}"
+        else
+            echo -e "${yellow}reload 失败, 请检查 caddy 服务状态${white}"
+        fi
+    else
+        echo -e "${red}配置语法错误, 已回滚${white}"
+        echo -e "${red}错误信息: ${validate_out}${white}"
+        mv -f "${vhost_file}.bak" "$vhost_file"
+    fi
+    break_end
+}
+
+## 让用户从 vhost 列表中选一个域名, 选中的域名 echo 到 stdout, 取消时 echo 空
+# 用法: domain=$(caddy_select_vhost) || return
+caddy_select_vhost() {
+    local conf_files=()
+    local domains=()
+    local f domain
+    for f in "${CADDY_VHOSTS_DIR}"/*.conf; do
+        [ -e "$f" ] || continue
+        domain=$(basename "$f" .conf)
+        conf_files+=("$f")
+        domains+=("$domain")
+    done
+
+    if [ ${#domains[@]} -eq 0 ]; then
+        echo -e "${yellow}当前没有任何域名配置, 请先添加一个${white}"
+        break_end
+        return 1
+    fi
+
+    echo -e "${cyan}请选择要操作的域名:${white}"
+    local i
+    for ((i=0; i<${#domains[@]}; i++)); do
+        echo "  $((i+1)). ${domains[$i]}"
+    done
+    read -e -p "请输入序号 (输入 0 取消): " choice
+
+    if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
+        echo -e "${red}无效输入${white}"
+        sleep 1
+        return 1
+    fi
+    if [ "$choice" -eq 0 ]; then
+        return 1
+    fi
+    if [ "$choice" -lt 1 ] || [ "$choice" -gt ${#domains[@]} ]; then
+        echo -e "${red}序号超出范围${white}"
+        sleep 1
+        return 1
+    fi
+
+    echo "${domains[$((choice-1))]}"
+    return 0
+}
+
+#############################################################################
+############################ 基础菜单功能 ####################################
+
+## 菜单 1: 添加基础反向代理
 caddy_add_proxy() {
     caddy_init_env
 
-    # 读取并校验域名
     local domain target
     read -e -p "请输入待绑定的域名 (例如 app.yourdomain.com): " domain
-    # 基础格式校验: 非空, 无空格, 至少含一个点
     if [ -z "${domain}" ] || [[ "${domain}" == *" "* ]]; then
         echo -e "${red}域名不合法, 不能为空或包含空格!${white}"
         break_end
@@ -173,21 +275,18 @@ caddy_add_proxy() {
         return
     fi
 
-    # 读取并校验目标地址
     read -e -p "请输入本地服务地址及端口 (例如 127.0.0.1:8080): " target
     if [ -z "${target}" ] || [[ "${target}" == *" "* ]]; then
         echo -e "${red}目标地址不合法!${white}"
         break_end
         return
     fi
-    # 简单 IP:PORT 格式校验
     if ! [[ "${target}" =~ ^[0-9a-zA-Z\.\-]+:[0-9]+$ ]]; then
         echo -e "${red}目标格式不合法, 应为 IP:PORT 形式!${white}"
         break_end
         return
     fi
 
-    # 生成 vhost 文件
     local vhost_file="${CADDY_VHOSTS_DIR}/${domain}.conf"
     cat > "${vhost_file}" <<EOF
 ${domain} {
@@ -195,7 +294,6 @@ ${domain} {
 }
 EOF
 
-    # 重载 Caddy
     if systemctl reload caddy 2>/dev/null; then
         echo -e "${green}配置文件已生成并重载 Caddy。${white}"
         echo -e "${green}若域名已正确解析至本机, SSL 证书将在后台自动申请。${white}"
@@ -207,19 +305,18 @@ EOF
     break_end
 }
 
-## 菜单 2: 删除反向代理
+## 菜单 2: 删除主机配置
 caddy_del_proxy() {
     caddy_init_env
 
-    # 收集现有域名列表
     local conf_files=()
     local domains=()
     local f domain
     for f in "${CADDY_VHOSTS_DIR}"/*.conf; do
-        [ -e "${f}" ] || continue
-        domain=$(basename "${f}" .conf)
-        conf_files+=("${f}")
-        domains+=("${domain}")
+        [ -e "$f" ] || continue
+        domain=$(basename "$f" .conf)
+        conf_files+=("$f")
+        domains+=("$domain")
     done
 
     if [ ${#domains[@]} -eq 0 ]; then
@@ -228,23 +325,21 @@ caddy_del_proxy() {
         return
     fi
 
-    # 列出供选择
     local i
     for ((i=0; i<${#domains[@]}; i++)); do
         echo "  $((i+1)). ${domains[$i]}"
     done
     read -e -p "请输入要删除的序号 (输入 0 取消): " choice
 
-    # 输入校验
-    if ! [[ "${choice}" =~ ^[0-9]+$ ]]; then
+    if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
         echo -e "${red}无效输入!${white}"
         sleep 1
         return
     fi
-    if [ "${choice}" -eq 0 ]; then
+    if [ "$choice" -eq 0 ]; then
         return
     fi
-    if [ "${choice}" -lt 1 ] || [ "${choice}" -gt ${#domains[@]} ]; then
+    if [ "$choice" -lt 1 ] || [ "$choice" -gt ${#domains[@]} ]; then
         echo -e "${red}序号超出范围!${white}"
         sleep 1
         return
@@ -254,7 +349,6 @@ caddy_del_proxy() {
     local target_domain="${domains[$idx]}"
     local target_file="${conf_files[$idx]}"
 
-    # 二次确认
     read -e -p "确定要删除 ${target_domain} 的反代配置吗？(y/n): " confirm
     if [[ ! "${confirm}" =~ ^[Yy]$ ]]; then
         echo -e "${yellow}已取消${white}"
@@ -262,7 +356,6 @@ caddy_del_proxy() {
         return
     fi
 
-    # 删除文件并重载
     rm -f "${target_file}"
     if systemctl reload caddy 2>/dev/null; then
         echo -e "${green}配置文件已删除并重载 Caddy。${white}"
@@ -272,7 +365,7 @@ caddy_del_proxy() {
     break_end
 }
 
-## 菜单 3: 重载 Caddy 服务
+## 菜单 4: 重载 Caddy 服务
 caddy_reload_service() {
     caddy_init_env
 
@@ -308,7 +401,7 @@ caddy_reload_service() {
     break_end
 }
 
-## 菜单 4: 查看 Caddy 运行日志
+## 菜单 5: 查看 Caddy 运行日志
 caddy_view_logs() {
     echo -e "${cyan}最近 20 条 Caddy 日志:${white}"
     echo -e "${pink}--------------------------------------------------------${white}"
@@ -319,7 +412,293 @@ caddy_view_logs() {
     echo ""
 }
 
-## 安装 Caddy (官方源安装流程)
+#############################################################################
+######################## 高级配置子功能 (菜单 3) ##############################
+
+## 高级 [1]: 静态文件托管
+caddy_adv_fileserver() {
+    local domain="$1"
+    local vhost_file="${CADDY_VHOSTS_DIR}/${domain}.conf"
+
+    local root_dir
+    read -e -p "请输入网站根目录 (如 /var/www/html): " root_dir
+    if [ -z "${root_dir}" ]; then
+        echo -e "${yellow}已取消${white}"
+        sleep 1
+        return
+    fi
+
+    if grep -qE '^\s*root\s+\*' "$vhost_file"; then
+        echo -e "${yellow}已存在 root 指令, 跳过${white}"
+        break_end
+        return
+    fi
+    if grep -qE '^\s*file_server\b' "$vhost_file"; then
+        echo -e "${yellow}已存在 file_server 指令, 跳过${white}"
+        break_end
+        return
+    fi
+
+    caddy_vhost_backup "$vhost_file"
+    caddy_vhost_insert_block "$vhost_file" "    root * ${root_dir}
+    file_server"
+    caddy_vhost_validate_or_rollback "$vhost_file"
+}
+
+## 高级 [2]: 基础密码保护
+caddy_adv_basicauth() {
+    local domain="$1"
+    local vhost_file="${CADDY_VHOSTS_DIR}/${domain}.conf"
+
+    local username pass
+    read -e -p "请输入用户名: " username
+    if [ -z "${username}" ]; then
+        echo -e "${yellow}已取消${white}"
+        sleep 1
+        return
+    fi
+    read -s -p "请输入密码: " pass
+    echo ""
+    if [ -z "${pass}" ]; then
+        echo -e "${yellow}已取消${white}"
+        sleep 1
+        return
+    fi
+
+    # 调用 caddy hash-password 生成 bcrypt 哈希
+    local hash
+    hash=$(caddy hash-password --plaintext "$pass" 2>/dev/null)
+    if [ -z "$hash" ]; then
+        echo -e "${red}生成密码哈希失败, 请确认 caddy 已正确安装${white}"
+        break_end
+        return
+    fi
+
+    if grep -qE '^\s*basicauth\b' "$vhost_file"; then
+        echo -e "${yellow}已存在 basicauth 指令, 跳过${white}"
+        break_end
+        return
+    fi
+
+    caddy_vhost_backup "$vhost_file"
+    caddy_vhost_insert_block "$vhost_file" "    basicauth /* {
+        ${username} ${hash}
+    }"
+    caddy_vhost_validate_or_rollback "$vhost_file"
+}
+
+## 高级 [3]: 重定向 / URL 重写
+caddy_adv_redirect() {
+    local domain="$1"
+    local vhost_file="${CADDY_VHOSTS_DIR}/${domain}.conf"
+
+    echo "请选择操作:"
+    echo "  1.  redir    (HTTP 重定向, 客户端会看到地址变化)"
+    echo "  2.  rewrite  (URL 重写, 客户端地址栏不变)"
+    read -e -p "请选择 [1]: " op
+    op="${op:-1}"
+
+    local target
+    read -e -p "请输入目标路径 (如 /newpath 或 https://other.com/): " target
+    if [ -z "${target}" ]; then
+        echo -e "${yellow}已取消${white}"
+        sleep 1
+        return
+    fi
+
+    local directive
+    case "$op" in
+        1) directive="redir ${target}" ;;
+        2) directive="rewrite * ${target}" ;;
+        *)
+            echo -e "${red}无效选择${white}"
+            sleep 1
+            return
+            ;;
+    esac
+
+    if grep -qE '^\s*(redir|rewrite)\b' "$vhost_file"; then
+        echo -e "${yellow}已存在 redir/rewrite 指令, 跳过${white}"
+        break_end
+        return
+    fi
+
+    caddy_vhost_backup "$vhost_file"
+    caddy_vhost_insert_block "$vhost_file" "    ${directive}"
+    caddy_vhost_validate_or_rollback "$vhost_file"
+}
+
+## 高级 [4]: 负载均衡 (替换原有 reverse_proxy 块)
+caddy_adv_loadbalance() {
+    local domain="$1"
+    local vhost_file="${CADDY_VHOSTS_DIR}/${domain}.conf"
+
+    local backends
+    read -e -p "请输入多个后端 IP:端口 (空格分隔, 如 192.168.1.10:8080 192.168.1.11:8080): " backends
+    if [ -z "${backends}" ]; then
+        echo -e "${yellow}已取消${white}"
+        sleep 1
+        return
+    fi
+
+    # 验证每个 backend 格式
+    local b
+    for b in $backends; do
+        if ! [[ "$b" =~ ^[0-9a-zA-Z\.\-]+:[0-9]+$ ]]; then
+            echo -e "${red}后端格式不合法: ${b}, 应为 IP:PORT 形式${white}"
+            break_end
+            return
+        fi
+    done
+
+    caddy_vhost_backup "$vhost_file"
+    # 删除原 reverse_proxy 行 (替换为多块形式)
+    caddy_vhost_remove_directive "$vhost_file" '^\s*reverse_proxy\s'
+    # 插入新的 reverse_proxy 多行块
+    caddy_vhost_insert_block "$vhost_file" "    reverse_proxy ${backends} {
+        lb_policy round_robin
+        health_uri /health
+    }"
+    caddy_vhost_validate_or_rollback "$vhost_file"
+}
+
+## 高级 [5]: HTTP 请求头管理
+caddy_adv_header() {
+    local domain="$1"
+    local vhost_file="${CADDY_VHOSTS_DIR}/${domain}.conf"
+
+    local key value
+    read -e -p "请输入 Header 键 (如 X-Frame-Options): " key
+    if [ -z "${key}" ]; then
+        echo -e "${yellow}已取消${white}"
+        sleep 1
+        return
+    fi
+    read -e -p "请输入 Header 值 (如 DENY): " value
+    if [ -z "${value}" ]; then
+        echo -e "${yellow}已取消${white}"
+        sleep 1
+        return
+    fi
+
+    if grep -qE "^\s*header\s+${key}\b" "$vhost_file"; then
+        echo -e "${yellow}已存在 header ${key}, 跳过${white}"
+        break_end
+        return
+    fi
+
+    caddy_vhost_backup "$vhost_file"
+    caddy_vhost_insert_block "$vhost_file" "    header ${key} \"${value}\""
+    caddy_vhost_validate_or_rollback "$vhost_file"
+}
+
+## 高级 [6]: IP 黑名单 / 访问限制
+caddy_adv_blockip() {
+    local domain="$1"
+    local vhost_file="${CADDY_VHOSTS_DIR}/${domain}.conf"
+
+    local ip
+    read -e -p "请输入要屏蔽的 IP 或 CIDR 网段 (如 192.168.1.100 或 10.0.0.0/8): " ip
+    if [ -z "${ip}" ]; then
+        echo -e "${yellow}已取消${white}"
+        sleep 1
+        return
+    fi
+
+    if grep -qE '^\s*@blocked\b' "$vhost_file"; then
+        echo -e "${yellow}已存在 IP 黑名单规则 (@blocked), 跳过${white}"
+        break_end
+        return
+    fi
+
+    caddy_vhost_backup "$vhost_file"
+    caddy_vhost_insert_block "$vhost_file" "    @blocked {
+        remote_ip ${ip}
+    }
+    abort @blocked"
+    caddy_vhost_validate_or_rollback "$vhost_file"
+}
+
+## 高级 [7]: PHP FastCGI
+caddy_adv_php() {
+    local domain="$1"
+    local vhost_file="${CADDY_VHOSTS_DIR}/${domain}.conf"
+
+    local sock
+    read -e -p "请输入 PHP-FPM sock 路径 (如 unix//run/php/php8.1-fpm.sock): " sock
+    if [ -z "${sock}" ]; then
+        echo -e "${yellow}已取消${white}"
+        sleep 1
+        return
+    fi
+
+    if grep -qE '^\s*php_fastcgi\b' "$vhost_file"; then
+        echo -e "${yellow}已存在 php_fastcgi 指令, 跳过${white}"
+        break_end
+        return
+    fi
+
+    # 如果用户给的是 socket 文件而不是 unix://xxx 格式, 自动补全
+    if [[ "$sock" == *.sock ]] && [[ "$sock" != unix://* ]]; then
+        sock="unix://$sock"
+    fi
+
+    caddy_vhost_backup "$vhost_file"
+    caddy_vhost_insert_block "$vhost_file" "    php_fastcgi ${sock}"
+    caddy_vhost_validate_or_rollback "$vhost_file"
+}
+
+## 高级配置子菜单 (在 caddy_advanced_settings 内 while 循环)
+caddy_advanced_settings() {
+    caddy_init_env
+
+    # 1. 先让用户选域名
+    local domain
+    if ! domain=$(caddy_select_vhost); then
+        return
+    fi
+
+    # 2. 进入该域名的高级配置子菜单
+    while true; do
+        clear
+        caddy_draw_dashboard
+        echo ""
+        echo -e "当前选中的域名: ${cyan}[ ${domain} ]${white}"
+        echo -e "${pink}--------------------------------------------------------${white}"
+        echo "请选择要追加的高级功能:"
+        echo -e "${cyan}1.  ${white}开启静态文件托管 (File Server)"
+        echo -e "${cyan}2.  ${white}开启基础密码保护 (Basic Auth)"
+        echo -e "${cyan}3.  ${white}设置重定向与 URL 重写 (Redirect & Rewrite)"
+        echo -e "${cyan}4.  ${white}配置负载均衡与健康检查 (Load Balancing)"
+        echo -e "${cyan}5.  ${white}管理 HTTP 请求头 (Headers Management)"
+        echo -e "${cyan}6.  ${white}IP 黑名单与访问限制 (IP/WAF)"
+        echo -e "${cyan}7.  ${white}开启 PHP FastCGI"
+        echo -e "${pink}--------------------------------------------------------${white}"
+        echo -e "${yellow}0.  ${white}返回主菜单"
+        echo -e "${pink}--------------------------------------------------------${white}"
+        read -e -p "请输入你的选择: " adv_choice
+
+        case "${adv_choice}" in
+            1) caddy_adv_fileserver "$domain" ;;
+            2) caddy_adv_basicauth  "$domain" ;;
+            3) caddy_adv_redirect  "$domain" ;;
+            4) caddy_adv_loadbalance "$domain" ;;
+            5) caddy_adv_header     "$domain" ;;
+            6) caddy_adv_blockip    "$domain" ;;
+            7) caddy_adv_php        "$domain" ;;
+            0) return 0 ;;
+            *)
+                echo -e "${red}无效选择, 请重新输入 !${white}"
+                sleep 1
+                ;;
+        esac
+    done
+}
+
+#############################################################################
+############################ 安装 / 卸载 ####################################
+
+## 安装 Caddy (官方源)
 caddy_install() {
     caddy_check_root || return 1
 
@@ -329,7 +708,6 @@ caddy_install() {
 
     case "${os}" in
         debian|ubuntu)
-            # Caddy 官方 Debian/Ubuntu 安装流程 (来自 caddyserver.com 文档)
             install curl debian-keyring debian-archive-keyring apt-transport-https gnupg
             curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
                 | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
@@ -339,7 +717,6 @@ caddy_install() {
             install caddy
             ;;
         rhel|centos|fedora|rocky|almalinux)
-            # Caddy 官方 RHEL/CentOS/Fedora 安装流程
             install curl gnupg
             curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
                 | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
@@ -352,7 +729,6 @@ caddy_install() {
             fi
             ;;
         arch)
-            # Arch 系 Caddy 不在官方仓库, 使用 pacman 安装 caddy (社区仓库, 失败回退)
             pacman -S --noconfirm caddy 2>/dev/null || \
                 echo -e "${red}Arch 系请使用 AUR (yay -S caddy) 或参考官方文档安装${white}"
             ;;
@@ -367,7 +743,6 @@ caddy_install() {
             ;;
     esac
 
-    # 安装后初始化 + 启动
     if caddy_check_installed; then
         echo -e "${green}Caddy 已安装: $(caddy version 2>/dev/null || echo 'unknown')${white}"
         caddy_init_env
@@ -410,13 +785,17 @@ caddy_uninstall() {
     break_end
 }
 
+#############################################################################
+########################## 主菜单 / 入口 #####################################
+
 ## 渲染 Caddy 主菜单
 caddy_show_menu() {
     echo ""
-    echo -e "${cyan}1.  ${white}添加反向代理"
-    echo -e "${cyan}2.  ${white}删除反向代理"
-    echo -e "${cyan}3.  ${white}重载 Caddy 服务"
-    echo -e "${cyan}4.  ${white}查看 Caddy 运行日志"
+    echo -e "${cyan}1.  ${white}添加基础反向代理"
+    echo -e "${cyan}2.  ${white}删除主机配置"
+    echo -e "${cyan}3.  ${white}进入高级配置模式"
+    echo -e "${cyan}4.  ${white}重载 Caddy 服务"
+    echo -e "${cyan}5.  ${white}查看 Caddy 运行日志"
     echo -e "${pink}--------------------------------------------------------${white}"
     echo -e "${red}99.${white} 卸载 Caddy"
     echo -e "${yellow}0.  ${white}返回上一级菜单"
@@ -426,8 +805,9 @@ caddy_show_menu() {
     case "${choice}" in
         1) caddy_add_proxy ;;
         2) caddy_del_proxy ;;
-        3) caddy_reload_service ;;
-        4) caddy_view_logs ;;
+        3) caddy_advanced_settings ;;
+        4) caddy_reload_service ;;
+        5) caddy_view_logs ;;
         99) caddy_uninstall ;;
         0) return 0 ;;
         *)
@@ -440,10 +820,10 @@ caddy_show_menu() {
 
 ## Caddy 模块入口: 主菜单第 8 项调用
 linux_caddy() {
-    # 入口 root 校验 (统一在面板最外层判断)
+    # 入口 root 校验
     caddy_check_root || { break_end; return; }
 
-    # 未安装分支: 给出"安装 / 退出"二选一
+    # 未安装分支
     if ! caddy_check_installed; then
         clear
         echo -e "${green}===== Caddy 反向代理管理 =====${white}"

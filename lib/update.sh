@@ -1,81 +1,51 @@
 #!/bin/bash
 ###########################################################################
 ########################### 模块化升级脚本 #################################
-# 设计原则: 与 install.sh 共用同一套 download_file / show_progress,
-# 全量覆盖下载, 用进度条显示, 失败时统一汇总, 不逐文件刷屏
+# 自包含设计: download_file 和 show_progress 在本文件内联, 不依赖 utils.sh
+# 跟 install.sh 一样用一个总进度条, 失败时统一汇总, 不逐文件刷屏
 
-# 获取远程版本号 (从入口脚本第一行 version="..." 抓)
+##  下载文件 (无 shebang 验证, lib/ 下的库文件首行不一定是 shebang)
+# 用法: download_file <remote_url> <local_path>
+download_file() {
+	local url="$1"
+	local path="$2"
+	if curl -sSL --max-time 60 --fail "$url" -o "$path" 2>/dev/null; then
+		[ -s "$path" ] && return 0
+	fi
+	return 1
+}
+
+##  进度条 (覆盖式, \r 回到行首)
+# 用法: show_progress <current> <total> [bar_width]
+show_progress() {
+	local current=$1
+	local total=$2
+	local width=${3:-30}
+	local pct=$(( current * 100 / total ))
+	local filled=$(( current * width / total ))
+	local empty=$(( width - filled ))
+
+	local bar=""
+	local i
+	for ((i=0; i<filled; i++)); do bar+="█"; done
+	for ((i=0; i<empty; i++)); do bar+="░"; done
+
+	printf "\r${cyan}下载中: [${green}%s${cyan}] %3d%% (%d/%d)${white}" "$bar" "$pct" "$current" "$total"
+}
+
+## 获取远程版本号 (从入口脚本第一行 version="..." 抓)
 get_remote_version() {
 	local remote_entry_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/${SCRIPT_FILE}"
 	curl -s --max-time 20 "$remote_entry_url" | grep '^version=' | head -n 1 | cut -d '"' -f 2
 }
 
-# 下载入口脚本 (单独处理, 因为下载完成后会替换正在运行的自己, 需特别小心)
-download_entry_script() {
-	local target="${LINUXBOX_LIB_DIR}/${SCRIPT_FILE}"
-	# 不能原地覆盖自己, 写到临时文件再 mv
-	local tmp="/tmp/${SCRIPT_FILE}.$$"
-	if download_file "${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/${SCRIPT_FILE}" "$tmp"; then
-		chmod +x "$tmp"
-		cp -f "$tmp" "$target"
-		rm -f "$tmp"
-		return 0
-	fi
-	rm -f "$tmp"
-	return 1
-}
-
-# 通用: 下载一组文件到指定目标目录, 返回失败文件列表 (通过全局变量 RETURNED)
-# 用法: download_group <group_name> <file_list_array_name> <target_subdir>
-#   例: download_group lib LINUXBOX_LIB_FILES lib
-download_group() {
-	local group_name="$1"
-	local files_array_name="$2"   # 数组变量名
-	local target_subdir="$3"       # 目标子目录 (相对 LINUXBOX_LIB_DIR)
-	local -n files_ref="$files_array_name"
-
-	local target_dir="${LINUXBOX_LIB_DIR}/${target_subdir}"
-	mkdir -p "$target_dir"
-
-	local total=${#files_ref[@]}
-	local i=0
-	local failed=()
-	local file url target
-
-	for file in "${files_ref[@]}"; do
-		i=$((i+1))
-		show_progress "$i" "$total"
-		url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/${target_subdir}/${file}"
-		target="${target_dir}/${file}"
-		if ! download_file "$url" "$target"; then
-			failed+=("$file")
-		fi
-		chmod +x "$target" 2>/dev/null || true
-	done
-
-	# 进度条结束, 换行
-	echo ""
-
-	# 汇总本组
-	if [ ${#failed[@]} -eq 0 ]; then
-		echo -e "${green}  ✓ ${group_name}/: ${total}/${total} 成功${white}"
-		RETURNED=0
-	else
-		echo -e "${yellow}  ! ${group_name}/: ${total} 个中 $((total - ${#failed[@]})) 个成功, ${#failed[@]} 个失败${white}"
-		# 把失败文件记到全局 (空格分隔), 由调用方统一打印
-		FAILED_FILES+=("${group_name}/${failed[@]}")
-		RETURNED=1
-	fi
-}
-
-# 主升级函数
+## 主升级函数
 update_script() {
 	lx_msg update_check
 
 	# 检查是否在模块化目录中运行
 	if [ ! -d "${LINUXBOX_LIB_DIR}/lib" ] || [ ! -d "${LINUXBOX_LIB_DIR}/modules" ]; then
-		echo -e "${red}错误: 未检测到模块化目录结构${white}"
-		echo -e "${yellow}请确保正确安装 LinuxBox 脚本${white}"
+		echo -e "${red}错误: 未检测到模块化目录结构, 请检查安装${white}"
 		sleep 2
 		return 1
 	fi
@@ -114,37 +84,65 @@ update_script() {
 	echo -e "${green}✓ 已创建备份: ${backup_dir}${white}"
 	echo ""
 
-	# 准备全局失败文件列表
+	# 准备失败文件列表
 	FAILED_FILES=()
 	local entry_ok=0
 
-	# 1. 更新入口脚本 (单独处理, 必须先下完, 否则后面源都找不到)
-	echo -e "${cyan}正在更新入口脚本...${white}"
-	if download_entry_script; then
-		echo -e "${green}  ✓ ${SCRIPT_FILE}${white}"
-		entry_ok=1
-	else
-		echo -e "${red}  ✗ ${SCRIPT_FILE} 下载失败${white}"
-		FAILED_FILES+=("${SCRIPT_FILE}")
-	fi
+	# 合并所有待下载文件, 用一个总进度条
+	# 顺序: 入口 -> lib/ -> modules/ -> lang/
+	# 入口必须先下完, 否则 lib/ 里可能引用新接口但代码没换
+	local entries=()
+	entries+=("${SCRIPT_FILE}|")  # 入口脚本, subdir 为空
+	for f in "${LINUXBOX_LIB_FILES[@]}"; do
+		entries+=("lib/${f}|lib")
+	done
+	for f in "${LINUXBOX_MOD_FILES[@]}"; do
+		entries+=("modules/${f}|modules")
+	done
+	for f in "${LINUXBOX_LANG_FILES[@]}"; do
+		entries+=("lang/${f}|lang")
+	done
+
+	local total=${#entries[@]}
+	local i=0
+
+	echo -e "${cyan}正在全量更新 (共 ${total} 个文件)...${white}"
+
+	# 单个总进度循环
+	local entry path subdir file url target
+	for entry in "${entries[@]}"; do
+		i=$((i+1))
+		show_progress "$i" "$total"
+		path="${entry%%|*}"
+		subdir="${entry##*|}"
+
+		# 入口脚本特殊处理: 不能原地覆盖 (会破坏正在运行的自己), 走 tmp
+		if [ -z "$subdir" ]; then
+			local tmp="/tmp/${SCRIPT_FILE}.$$"
+			if download_file "${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/${path}" "$tmp"; then
+				chmod +x "$tmp"
+				cp -f "$tmp" "${LINUXBOX_LIB_DIR}/${path}"
+				rm -f "$tmp"
+				entry_ok=1
+			else
+				rm -f "$tmp"
+				FAILED_FILES+=("${path}")
+			fi
+		else
+			file="${path##*/}"
+			url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/${subdir}/${file}"
+			target="${LINUXBOX_LIB_DIR}/${path}"
+			mkdir -p "$(dirname "$target")"
+			if download_file "$url" "$target"; then
+				chmod +x "$target" 2>/dev/null || true
+			else
+				FAILED_FILES+=("${path}")
+			fi
+		fi
+	done
+
+	# 进度条结束换行
 	echo ""
-
-	# 2. 全量更新 lib/ + modules/ + lang/, 三组合并显示一个总进度
-	local all_total=$((${#LINUXBOX_LIB_FILES[@]} + ${#LINUXBOX_MOD_FILES[@]} + ${#LINUXBOX_LANG_FILES[@]}))
-	echo -e "${cyan}正在全量更新 lib/ + modules/ + lang/ (共 ${all_total} 个文件)...${white}"
-
-	# 合并下载: 用一个全局进度计数
-	local grand_total=$all_total
-	local grand_current=0
-	local tmp_grand=/tmp/linuxbox_update_grand_$$
-	> "$tmp_grand"  # 清空
-
-	# 这里直接对每个目录组依次下载, 复用 download_group 但用全局进度需要稍作改动
-	# 简化: 三组串行下载, 每组内部自己显示进度; 不混进度
-	download_group "lib"    LINUXBOX_LIB_FILES    "lib"
-	download_group "modules" LINUXBOX_MOD_FILES   "modules"
-	download_group "lang"   LINUXBOX_LANG_FILES   "lang"
-	rm -f "$tmp_grand"
 	echo ""
 
 	# 汇总报告
@@ -171,7 +169,6 @@ update_script() {
 		echo -e "${yellow}  升级未完成${white}"
 		if [ $entry_ok -eq 0 ]; then
 			echo -e "${red}  - 入口脚本下载失败, 已回滚${white}"
-			# 回滚入口
 			cp -f "${backup_dir}/${SCRIPT_FILE}" "${LINUXBOX_LIB_DIR}/${SCRIPT_FILE}" 2>/dev/null
 		fi
 		if [ $total_failed -gt 0 ]; then
@@ -191,7 +188,7 @@ update_script() {
 	fi
 }
 
-# 回滚到指定版本
+## 回滚到指定版本
 rollback_version() {
 	echo -e "${cyan}===== 版本回滚 =====${white}"
 	if [ ! -d "${SCRIPT_HOME}/backup" ] || [ -z "$(ls -A "${SCRIPT_HOME}/backup" 2>/dev/null)" ]; then
@@ -245,7 +242,7 @@ rollback_version() {
 	fi
 }
 
-# 查看更新日志
+## 查看更新日志
 view_changelog() {
 	echo -e "${cyan}===== 更新日志 =====${white}"
 	local changelog_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/CHANGELOG.md"
