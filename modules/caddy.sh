@@ -417,7 +417,16 @@ caddy_add_proxy() {
 caddy_edit_remark() {
     caddy_init_env
 
-    # 先选域名
+    # 入口自检: 没 vhost 时直接提示返回 (跟 caddy_advanced_settings 一样的处理)
+    local vhost_count
+    vhost_count=$(ls "${CADDY_VHOSTS_DIR}"/*.conf 2>/dev/null | wc -l)
+    if [ "${vhost_count}" -eq 0 ]; then
+        echo -e "${yellow}当前没有任何域名配置, 请先在主菜单 [1] 添加基础反向代理${white}"
+        sleep 2
+        return
+    fi
+
+    # 选域名
     local domain
     if ! domain=$(caddy_select_vhost); then
         return
