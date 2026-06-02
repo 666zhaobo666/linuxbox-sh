@@ -114,45 +114,44 @@ caddy_draw_dashboard() {
     local mem
     mem=$(caddy_memory_usage)
 
-    # 状态颜色: 运行中绿色, 未运行红色
+    # 状态颜色: 运行中绿色, 异常红色
     local status_color="${red}"
     if [ "${status}" = "运行中" ]; then
         status_color="${green}"
     fi
 
-    echo -e "${cyan}=========================================================${white}"
-    echo -e "                 🚀  Caddy 极简反代控制台"
-    echo -e "${cyan}=========================================================${white}"
-    printf "  %-25s | %-25s | %s\n" "域名 (Domain)" "反代目标 (Target)" "SSL 证书状态"
-    echo -e "${cyan}---------------------------------------------------------${white}"
+    echo -e "${green}===== Caddy 反向代理管理 =====${white}"
+    echo ""
+    echo -e "${pink}--------------------------------------------------------${white}"
+    printf "  ${cyan}%-26s${white} | ${cyan}%-26s${white} | ${cyan}%s${white}\n" "域名" "反代目标" "SSL 证书"
+    echo -e "${pink}--------------------------------------------------------${white}"
 
     # 遍历 vhosts 目录, 解析每个 conf 文件
     if [ -d "${CADDY_VHOSTS_DIR}" ]; then
-        local conf_file domain target ssl
+        local conf_file domain target ssl_text
         for conf_file in "${CADDY_VHOSTS_DIR}"/*.conf; do
             [ -e "${conf_file}" ] || continue
             # 文件名即域名 (去掉 .conf 后缀)
             domain=$(basename "${conf_file}" .conf)
             # 提取 reverse_proxy 后的目标
             target=$(grep -E '^\s*reverse_proxy' "${conf_file}" 2>/dev/null | \
-                     head -n1 | awk '{print $2}' | tr -d ' ' || echo "-")
+                     head -n1 | awk '{print $2}')
             [ -z "${target}" ] && target="-"
-            # SSL 状态
-            local ssl_text
+            # SSL 状态着色
             ssl_text=$(caddy_ssl_status "${domain}")
             if [ "${ssl_text}" = "已签发" ]; then
-                printf "  %-25s | %-25s | ${green}[🟢 已签发]${white}\n" "${domain}" "${target}"
+                printf "  %-26s | %-26s | ${green}%s${white}\n" "${domain}" "${target}" "[已签发]"
             else
-                printf "  %-25s | %-25s | ${red}[🔴 待签发/无]${white}\n" "${domain}" "${target}"
+                printf "  %-26s | %-26s | ${yellow}%s${white}\n" "${domain}" "${target}" "[待签发/无]"
             fi
         done
     else
         echo "  (暂无配置)"
     fi
 
-    echo -e "${cyan}---------------------------------------------------------${white}"
-    printf "  状态: ${status_color}🟢 %s${white}   |  内存占用: %s MB\n" "${status}" "${mem}"
-    echo -e "${cyan}=========================================================${white}"
+    echo -e "${pink}--------------------------------------------------------${white}"
+    printf "  状态: ${status_color}%s${white}  |  内存占用: %s MB\n" "${status}" "${mem}"
+    echo -e "${pink}--------------------------------------------------------${white}"
 }
 
 ## 菜单 1: 添加反向代理
@@ -198,14 +197,14 @@ EOF
 
     # 重载 Caddy
     if systemctl reload caddy 2>/dev/null; then
-        echo -e "${green}✅ 配置文件已生成并重载 Caddy。${white}"
+        echo -e "${green}配置文件已生成并重载 Caddy。${white}"
         echo -e "${green}若域名已正确解析至本机, SSL 证书将在后台自动申请。${white}"
     else
-        echo -e "${yellow}⚠️ 配置文件已生成, 但重载 Caddy 失败, 请检查: ${white}"
+        echo -e "${yellow}配置文件已生成, 但重载 Caddy 失败, 请检查: ${white}"
         echo -e "  1) Caddy 是否已启动 (systemctl status caddy)"
         echo -e "  2) 主配置语法是否正确 (${CADDY_MAIN_CONF})"
     fi
-    sleep 2
+    break_end
 }
 
 ## 菜单 2: 删除反向代理
@@ -215,7 +214,7 @@ caddy_del_proxy() {
     # 收集现有域名列表
     local conf_files=()
     local domains=()
-    local i=1 f domain
+    local f domain
     for f in "${CADDY_VHOSTS_DIR}"/*.conf; do
         [ -e "${f}" ] || continue
         domain=$(basename "${f}" .conf)
@@ -225,13 +224,14 @@ caddy_del_proxy() {
 
     if [ ${#domains[@]} -eq 0 ]; then
         echo -e "${yellow}当前无配置可删除${white}"
-        sleep 2
+        break_end
         return
     fi
 
     # 列出供选择
+    local i
     for ((i=0; i<${#domains[@]}; i++)); do
-        echo "  [$((i+1))] ${domains[$i]}"
+        echo "  $((i+1)). ${domains[$i]}"
     done
     read -e -p "请输入要删除的序号 (输入 0 取消): " choice
 
@@ -255,7 +255,7 @@ caddy_del_proxy() {
     local target_file="${conf_files[$idx]}"
 
     # 二次确认
-    read -e -p "⚠️  确定要删除 ${target_domain} 的反代配置吗？(y/n): " confirm
+    read -e -p "确定要删除 ${target_domain} 的反代配置吗？(y/n): " confirm
     if [[ ! "${confirm}" =~ ^[Yy]$ ]]; then
         echo -e "${yellow}已取消${white}"
         sleep 1
@@ -265,11 +265,11 @@ caddy_del_proxy() {
     # 删除文件并重载
     rm -f "${target_file}"
     if systemctl reload caddy 2>/dev/null; then
-        echo -e "${green}✅ 配置文件已删除并重载 Caddy。${white}"
+        echo -e "${green}配置文件已删除并重载 Caddy。${white}"
     else
-        echo -e "${yellow}⚠️ 文件已删除, 但重载 Caddy 失败, 请手动检查。${white}"
+        echo -e "${yellow}文件已删除, 但重载 Caddy 失败, 请手动检查。${white}"
     fi
-    sleep 2
+    break_end
 }
 
 ## 菜单 3: 重载 Caddy 服务
@@ -277,25 +277,25 @@ caddy_reload_service() {
     caddy_init_env
 
     echo "请选择操作:"
-    echo "  [1] reload (热重载, 默认)"
-    echo "  [2] restart (完全重启)"
-    echo "  [0] 取消"
+    echo "  1.  reload (热重载, 默认)"
+    echo "  2.  restart (完全重启)"
+    echo "  0.  取消"
     read -e -p "请输入选择 [1]: " op
     op="${op:-1}"
 
     case "${op}" in
         1)
             if systemctl reload caddy 2>/dev/null; then
-                echo -e "${green}✅ Caddy 重新加载成功${white}"
+                echo -e "${green}Caddy 重新加载成功${white}"
             else
-                echo -e "${red}❌ 重载失败, 请检查配置文件语法。${white}"
+                echo -e "${red}重载失败, 请检查配置文件语法。${white}"
             fi
             ;;
         2)
             if systemctl restart caddy 2>/dev/null; then
-                echo -e "${green}✅ Caddy 重启成功${white}"
+                echo -e "${green}Caddy 重启成功${white}"
             else
-                echo -e "${red}❌ 重启失败, 请检查 systemctl status caddy。${white}"
+                echo -e "${red}重启失败, 请检查 systemctl status caddy。${white}"
             fi
             ;;
         0)
@@ -305,21 +305,21 @@ caddy_reload_service() {
             echo -e "${red}无效选择${white}"
             ;;
     esac
-    sleep 2
+    break_end
 }
 
 ## 菜单 4: 查看 Caddy 运行日志
 caddy_view_logs() {
     echo -e "${cyan}最近 20 条 Caddy 日志:${white}"
-    echo -e "${cyan}---------------------------------------------------------${white}"
+    echo -e "${pink}--------------------------------------------------------${white}"
     journalctl -u caddy -n 20 --no-pager 2>/dev/null || echo -e "${red}无法读取日志, 请确认 caddy 服务已安装。${white}"
-    echo -e "${cyan}---------------------------------------------------------${white}"
+    echo -e "${pink}--------------------------------------------------------${white}"
     echo -e "${yellow}按任意键返回主菜单...${white}"
     read -n 1 -s -r
     echo ""
 }
 
-## 安装 Caddy (使用官方源)
+## 安装 Caddy (官方源安装流程)
 caddy_install() {
     caddy_check_root || return 1
 
@@ -329,33 +329,22 @@ caddy_install() {
 
     case "${os}" in
         debian|ubuntu)
-            # 官方安装步骤: 添加源 + 安装
-            install curl
-            install debian-keyring debian-archive-keyring apt-transport-https 2>/dev/null
-            curl -1sLf "https://dl.cloudsmith.io/public/caddy/stable/gpg.key" 2>/dev/null \
-                | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg 2>/dev/null
-            curl -1sLf "https://dl.cloudsmith.io/public/caddy/stable/deb/debian/generic.gpg" 2>/dev/null \
-                | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg 2>/dev/null
-            echo "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/debian generic main" \
-                > /etc/apt/sources.list.d/caddy-stable.list
-            apt update -y 2>/dev/null
+            # Caddy 官方 Debian/Ubuntu 安装流程 (来自 caddyserver.com 文档)
+            install curl debian-keyring debian-archive-keyring apt-transport-https gnupg
+            curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+                | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+            curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+                | tee /etc/apt/sources.list.d/caddy-stable.list
+            apt update
             install caddy
             ;;
         rhel|centos|fedora|rocky|almalinux)
-            install curl
-            curl -1sLf "https://dl.cloudsmith.io/public/caddy/stable/rpm/gpg.key" 2>/dev/null \
-                | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg 2>/dev/null
-            curl -1sLf "https://dl.cloudsmith.io/public/caddy/stable/rpm/rhel/generic.gpg" 2>/dev/null \
-                | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg 2>/dev/null
-            cat > /etc/yum.repos.d/caddy-stable.repo <<'EOF'
-[caddy-stable]
-name=Caddy stable
-baseurl=https://dl.cloudsmith.io/public/caddy/stable/rpm/rhel/$releasever/$basearch
-gpgkey=file:///usr/share/keyrings/caddy-stable-archive-keyring.gpg
-gpgcheck=1
-repo_gpgcheck=1
-enabled=1
-EOF
+            # Caddy 官方 RHEL/CentOS/Fedora 安装流程
+            install curl gnupg
+            curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+                | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+            curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/rpm.rpm.txt' \
+                | tee /etc/yum.repos.d/caddy-stable.repo
             if command -v dnf >/dev/null 2>&1; then
                 dnf install -y caddy
             else
@@ -389,6 +378,7 @@ EOF
         echo -e "${red}Caddy 安装失败, 请检查上方错误信息。${white}"
         return 1
     fi
+    break_end
 }
 
 ## 卸载 Caddy
@@ -417,21 +407,21 @@ caddy_uninstall() {
     esac
 
     echo -e "${green}Caddy 已卸载。配置和证书文件未被删除。${white}"
-    sleep 2
+    break_end
 }
 
 ## 渲染 Caddy 主菜单
 caddy_show_menu() {
     echo ""
-    echo "请选择操作:"
-    echo -e "${cyan}  [1] ➕ 添加反向代理 (Add Proxy)${white}"
-    echo -e "${cyan}  [2] ➖ 删除反向代理 (Delete Proxy)${white}"
-    echo -e "${cyan}  [3] 🔄 重载 Caddy 服务 (Reload)${white}"
-    echo -e "${cyan}  [4] 📜 查看 Caddy 运行日志 (View Logs)${white}"
-    echo -e "${red}  [99] 卸载 Caddy${white}"
-    echo -e "${yellow}  [0] ❌ 退出面板 (Exit)${white}"
-    echo -e "${cyan}=========================================================${white}"
-    read -e -p "请输入序号 [0-4]: " choice
+    echo -e "${cyan}1.  ${white}添加反向代理"
+    echo -e "${cyan}2.  ${white}删除反向代理"
+    echo -e "${cyan}3.  ${white}重载 Caddy 服务"
+    echo -e "${cyan}4.  ${white}查看 Caddy 运行日志"
+    echo -e "${pink}--------------------------------------------------------${white}"
+    echo -e "${red}99.${white} 卸载 Caddy"
+    echo -e "${yellow}0.  ${white}返回上一级菜单"
+    echo -e "${pink}--------------------------------------------------------${white}"
+    read -e -p "请输入你的选择: " choice
 
     case "${choice}" in
         1) caddy_add_proxy ;;
@@ -441,7 +431,7 @@ caddy_show_menu() {
         99) caddy_uninstall ;;
         0) return 0 ;;
         *)
-            echo -e "${red}无效选择, 请重新输入!${white}"
+            echo -e "${red}无效选择, 请重新输入 !${white}"
             sleep 1
             ;;
     esac
@@ -456,26 +446,23 @@ linux_caddy() {
     # 未安装分支: 给出"安装 / 退出"二选一
     if ! caddy_check_installed; then
         clear
-        echo -e "${cyan}=========================================================${white}"
-        echo -e "                 🚀  Caddy 极简反代控制台"
-        echo -e "${cyan}=========================================================${white}"
-        echo -e "${red}  未检测到 Caddy 安装, 请选择操作:${white}"
-        echo -e "${pink}---------------------------------------------------------${white}"
-        echo -e "${cyan}  [1] 🛠  安装 Caddy${white}"
-        echo -e "${yellow}  [0] ❌ 退出面板 (Exit)${white}"
-        echo -e "${cyan}=========================================================${white}"
-        read -e -p "请输入序号 [0-1]: " first_choice
+        echo -e "${green}===== Caddy 反向代理管理 =====${white}"
+        echo -e "${red}未检测到 Caddy 安装, 请先安装。${white}"
+        echo -e "${pink}--------------------------------------------------------${white}"
+        echo -e "${cyan}1.  ${white}安装 Caddy"
+        echo -e "${yellow}0.  ${white}返回上一级菜单"
+        echo -e "${pink}--------------------------------------------------------${white}"
+        read -e -p "请输入你的选择: " first_choice
         case "${first_choice}" in
             1)
                 caddy_install
-                break_end
                 # 安装成功后继续进入主面板 (下轮 while 会重新检测)
                 ;;
             0|"")
                 return
                 ;;
             *)
-                echo -e "${red}无效选择${white}"
+                echo -e "${red}无效选择, 请重新输入 !${white}"
                 sleep 1
                 return
                 ;;
