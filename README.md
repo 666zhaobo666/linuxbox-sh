@@ -1,6 +1,6 @@
 # LinuxBox 全功能 Linux 管理脚本
 
-一款面向运维和开发者的 Linux 一键管理脚本，按 kejilion 架构重构后保持模块化、可扩展。覆盖系统管理、网络与安全、建站与容器、性能测试与加速、应用市场、开发环境等 15 大模块，支持 Ubuntu / Debian / CentOS / Arch / Fedora 等主流发行版。
+一款面向运维和开发者的 Linux 一键管理脚本。覆盖系统管理、网络与安全、建站与容器、性能测试与加速、应用市场、开发环境等 15 大模块，支持 Ubuntu / Debian / CentOS / Arch / Fedora 等主流发行版。
 
 ## 安装方法
 
