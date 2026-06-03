@@ -1606,7 +1606,7 @@ xui_app(){
 	local panelurl="https://github.com/FranzKafkaYu/x-ui"
 
 	xui_app_install(){
-		bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh)
+		local tmp_script="/tmp/xui_install.sh" && curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh -o "$tmp_script" && bash "$tmp_script" && rm -f "$tmp_script"
 	}
 
 	panel_app_manage(){
