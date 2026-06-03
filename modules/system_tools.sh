@@ -1378,7 +1378,7 @@ cmd_line_beautify_tool() {
 		echo -e "6. \033[1;33mroot \033[1;34mlocalhost \033[1;35m~ \033[0m${white}#"
 		echo -e "7. root localhost ~ #"
 		echo -e "${pink}------------------------${white}"
-		echo "${yellow}0. 返回上一级菜单${white}"
+		echo -e "${yellow}0. 返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
