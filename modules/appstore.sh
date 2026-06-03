@@ -629,9 +629,9 @@ docker_app_plus() {
         check_docker_app
         check_docker_image_update "$docker_name"
         
-        echo -e "$app_name $check_docker $update_status"
-        echo "$app_text"
-        echo "$app_url"
+        echo -e "$docker_name $check_docker $update_status"
+        echo "$docker_describe"
+        echo "$docker_url"
         
         # 处理端口信息（保持不变）
         if docker ps -a --format '{{.Names}}' | grep -q "^${docker_name}$" >/dev/null 2>&1; then
