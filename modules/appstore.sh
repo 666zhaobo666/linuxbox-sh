@@ -593,17 +593,7 @@ docker_app() {
                     install jq
                     install_docker
                     docker_run
-                    setup_docker_dir
-                    echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
-
-                    mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
-
-                    clear
-                    echo "$docker_name 已经安装完成"
-                    check_docker_app_ip
-                    echo ""
-                    $docker_use
-                    $docker_passwd
+                    docker_app_post_install "$docker_name" "$docker_port" "$docker_use" "$docker_passwd"
                     ;;
                 0)  # 返回上一级
                     break
@@ -714,11 +704,8 @@ docker_app_plus() {
 
                     install jq
                     install_docker
-                    docker_app_install
-                    setup_docker_dir
-                    echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
-
-                    mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
+                    docker_run
+                    docker_app_post_install "$docker_name" "$docker_port" "$docker_use" "$docker_passwd"
                     ;;
                 0)  # 返回上一级
                     break
@@ -1033,28 +1020,11 @@ poste_mail_app(){
 				echo "按任意键继续..."
 				read -n 1 -s -r -p ""
 
-				install jq
-				install_docker
-
-				docker run \
-					--net=host \
-					-e TZ=Europe/Prague \
-					-v /home/docker/mail:/data \
-					--name "mailserver" \
-					-h "$yuming" \
-					--restart=always \
-					-d analogic/poste.io
-
-				mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
-
-				clear
-				echo "poste.io已经安装完成"
-				echo -e "${pink}------------------------${white}"
-				echo "您可以使用以下地址访问poste.io:"
-				echo "https://$yuming"
-				echo ""
-
-				;;
+                    install jq
+                    install_docker
+                    docker_run
+                    docker_app_post_install "$docker_name" "$docker_port" "$docker_use" "$docker_passwd"
+                    ;;
 
 			2)
 				docker rm -f mailserver
