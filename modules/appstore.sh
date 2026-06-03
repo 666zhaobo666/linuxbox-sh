@@ -1625,7 +1625,7 @@ xui_app(){
 	local panelname="3xui"
 	local panelurl="https://github.com/MHSanaei/3x-ui"
 
-	panel_app_install(){
+	x3ui_app_install(){
 		bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
 	}
 
