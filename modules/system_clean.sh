@@ -85,5 +85,9 @@ linux_system_clean() {
 		echo "未知的包管理器!"
 		return
 	fi
+
+	echo -e "${green}系统清理完成！${white}"
+	read -p "按任意键继续..." -n 1 -s
+	echo
 	return
 }

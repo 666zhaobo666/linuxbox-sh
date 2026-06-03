@@ -237,42 +237,26 @@ linux_basic_tools() {
 			  clear
 			  install sl
 			  clear
-			  if command -v sl >/dev/null 2>&1; then
-			    sl
-			  else
-			    echo "sl 安装失败或不存在，请手动安装"
-			  fi
+			  run_game sl
 			  ;;
 			26)
 			  clear
 			  install bastet
 			  clear
-			  if command -v bastet >/dev/null 2>&1; then
-			    bastet
-			  else
-			    echo "bastet 安装失败或不存在，请手动安装"
-			  fi
+			  run_game bastet
 			  ;;
 			27)
 			  clear
 			  install nsnake
 			  clear
-			  if command -v nsnake >/dev/null 2>&1; then
-			    nsnake
-			  else
-			    echo "nsnake 安装失败或不存在，请手动安装"
-			  fi
+			  run_game nsnake
 			  ;;
 
 			28)
 			  clear
 			  install ninvaders
 			  clear
-			  if command -v ninvaders >/dev/null 2>&1; then
-			    ninvaders
-			  else
-			    echo "ninvaders 安装失败或不存在，请手动安装"
-			  fi
+			  run_game ninvaders
 			  ;;
 
 		  31)
