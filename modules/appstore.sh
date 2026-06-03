@@ -591,16 +591,7 @@ docker_app() {
             case $choice in
                 1)  # 全新安装
                     check_disk_space "$app_size"
-                    while true; do
-                        read -e -p "输入应用对外服务端口 (1-65535): " app_port
-                        app_port=${app_port:-8080}
-                        if [[ "$app_port" =~ ^[0-9]+$ ]] && [ "$app_port" -ge 1 ] && [ "$app_port" -le 65535 ]; then
-                            break
-                        else
-                            echo -e "${red}端口无效，请输入 1-65535 之间的数字${white}"
-                        fi
-                    done
-                    local docker_port=$app_port
+                    local docker_port=$(read_docker_port 8080)
 
                     install jq
                     install_docker
@@ -715,16 +706,7 @@ docker_app_plus() {
             case $choice in
                 1)  # 全新安装
                     check_disk_space "$app_size"
-                    while true; do
-                        read -e -p "输入应用对外服务端口 (1-65535): " app_port
-                        app_port=${app_port:-8080}
-                        if [[ "$app_port" =~ ^[0-9]+$ ]] && [ "$app_port" -ge 1 ] && [ "$app_port" -le 65535 ]; then
-                            break
-                        else
-                            echo -e "${red}端口无效，请输入 1-65535 之间的数字${white}"
-                        fi
-                    done
-                    local docker_port=$app_port
+                    local docker_port=$(read_docker_port 8080)
 
                     install jq
                     install_docker
@@ -4338,4 +4320,19 @@ docker_app_post_install() {
     else
         echo "安装失败，请检查 Docker 运行状态"
     fi
+}
+
+# Phase 6.2: 公共端口输入函数（带校验）
+read_docker_port() {
+    local default_port=${1:-8080}
+    while true; do
+        read -e -p "输入应用对外服务端口 (1-65535): " port
+        port=${port:-$default_port}
+        if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1 ] && [ "$port" -le 65535 ]; then
+            echo "$port"
+            return 0
+        else
+            echo -e "${red}端口无效，请输入 1-65535 之间的数字${white}"
+        fi
+    done
 }
