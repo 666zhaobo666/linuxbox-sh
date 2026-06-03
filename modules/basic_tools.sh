@@ -9,6 +9,28 @@
 
 linux_basic_tools() {
 
+	# 安全运行游戏命令（支持 /usr/games/ 路径）
+	run_game() {
+	  local cmd="$1"
+	  if [ -x "/usr/games/$cmd" ]; then
+	    "/usr/games/$cmd"
+	  elif command -v "$cmd" >/dev/null 2>&1; then
+	    "$cmd"
+	  else
+	    echo "$cmd 安装失败或路径异常"
+	  fi
+	}
+
+	# 检查命令是否存在（支持 /usr/games/）
+	check_cmd() {
+	  local cmd="$1"
+	  if command -v "$cmd" >/dev/null 2>&1 || [ -x "/usr/games/$cmd" ]; then
+	    return 0
+	  else
+	    return 1
+	  fi
+	}
+
   while true; do
 	  clear
 	  echo -e "基础工具"
