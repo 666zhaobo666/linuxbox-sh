@@ -704,20 +704,9 @@ docker_app_plus() {
 
                     install jq
                     install_docker
-                    docker_run
+                    docker_app_install
                     docker_app_post_install "$docker_name" "$docker_port" "$docker_use" "$docker_passwd"
                     ;;
-                0)  # 返回上一级
-                    break
-                    ;;
-                *)  # 无效选项
-					echo -e "${red}无效选择, 当前只能选择安装或返回 !${white}"
-					sleep 1
-					;;
-            esac
-        fi
-        break_end
-    done
 }
 
 ##############################
