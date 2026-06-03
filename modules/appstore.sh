@@ -549,13 +549,18 @@ docker_app() {
                     $docker_passwd
                     ;;
                 2)  # 卸载
-                    docker rm -f "$docker_name"
-                    docker rmi -f "$docker_img"
-                    rm -rf "/home/docker/$docker_name"
-                    rm -f /home/docker/${docker_name}_port.conf
+                    read -e -p "确认卸载 ${docker_name}？(y/N): " confirm
+                    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+                        docker rm -f "$docker_name"
+                        docker rmi -f "$docker_img"
+                        rm -rf "/home/docker/$docker_name"
+                        rm -f /home/docker/${docker_name}_port.conf
 
-                    sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-                    echo "应用已卸载"
+                        sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+                        echo "应用已卸载"
+                    else
+                        echo "已取消卸载"
+                    fi
                     ;;
                 5)  # 添加域名访问
                     echo "${docker_name}域名访问设置"
