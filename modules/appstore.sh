@@ -675,9 +675,13 @@ docker_app_plus() {
                 2)  # 卸载
                     read -e -p "确认卸载 ${docker_name}？(y/N): " confirm
                     if [[ "$confirm" =~ ^[Yy]$ ]]; then
-                        docker_app_uninstall
+                        docker rm -f "$docker_name"
+                        docker rmi -f "$docker_img"
+                        rm -rf "/home/docker/$docker_name"
                         rm -f /home/docker/${docker_name}_port.conf
+
                         sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+                        echo "应用已卸载"
                     else
                         echo "已取消卸载"
                     fi
