@@ -1334,6 +1334,8 @@ cmd_history() {
 	}
 
 	history_file=$(get_history_file) && cat -n "$history_file"
+	read -p "按任意键继续..." -n 1 -s
+	echo
 }
 
 
