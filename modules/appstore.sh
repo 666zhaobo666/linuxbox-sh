@@ -719,7 +719,7 @@ docker_app_plus() {
 
                     install jq
                     install_docker
-                    docker_app_install
+                    docker_run
                     docker_app_post_install "$docker_name" "$docker_port" "$docker_use" "$docker_passwd"
                     ;;
 }
