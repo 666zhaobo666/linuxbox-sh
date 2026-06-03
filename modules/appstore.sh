@@ -1628,7 +1628,7 @@ xui_app(){
 	local panelurl="https://github.com/MHSanaei/3x-ui"
 
 	x3ui_app_install(){
-		bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
+		local tmp_script="/tmp/x3ui_install.sh" && curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh -o "$tmp_script" && bash "$tmp_script" && rm -f "$tmp_script"
 	}
 
 	panel_app_manage(){
