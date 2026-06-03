@@ -666,7 +666,10 @@ docker_app_plus() {
             # 容器存在时允许的操作
             case $choice in
                 1)  # 更新
-                    docker_app_update
+                    docker rm -f "$docker_name"
+                    docker rmi -f "$docker_img"
+                    docker_run
+
                     mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
                     ;;
                 2)  # 卸载
