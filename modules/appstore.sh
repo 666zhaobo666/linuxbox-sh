@@ -4336,3 +4336,27 @@ read_docker_port() {
         fi
     done
 }
+
+
+# Phase 6.2: Docker 应用菜单显示
+show_docker_app_menu() {
+    echo ""
+    echo -e "${cyan}------------------------------------------------------${white}"
+
+    if check_docker_app; then
+        echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
+    else
+        echo -e "${green}1. 安装${white}"
+    fi
+
+    echo -e "${pink}------------------------------------------------------${white}"
+
+    if check_docker_app; then
+        echo -e "5. 添加域名访问      6. 删除域名访问"
+        echo -e "7. 允许IP+端口访问   8. 阻止IP+端口访问"
+        echo -e "${pink}------------------------------------------------------${white}"
+    fi
+
+    echo -e "${yellow}0. 返回上一级菜单${white}"
+    echo -e "${pink}------------------------------------------------------${white}"
+}
