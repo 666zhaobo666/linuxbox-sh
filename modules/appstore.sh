@@ -719,7 +719,7 @@ docker_app_plus() {
 	local panelname="1Panel"
 	local panelurl="https://1panel.cn/"
 
-	panel_app_install(){
+	1panel_app_install(){
 		bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)"
 	}
 
