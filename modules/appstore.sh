@@ -715,8 +715,15 @@ docker_app_plus() {
             case $choice in
                 1)  # 全新安装
                     check_disk_space "$app_size"
-                    read -e -p "输入应用对外服务端口: " app_port
-                    local app_port=${app_port:-8080}  # 提供默认端口（避免未定义）
+                    while true; do
+                        read -e -p "输入应用对外服务端口 (1-65535): " app_port
+                        app_port=${app_port:-8080}
+                        if [[ "$app_port" =~ ^[0-9]+$ ]] && [ "$app_port" -ge 1 ] && [ "$app_port" -le 65535 ]; then
+                            break
+                        else
+                            echo -e "${red}端口无效，请输入 1-65535 之间的数字${white}"
+                        fi
+                    done
                     local docker_port=$app_port
 
                     install jq
