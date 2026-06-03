@@ -1146,7 +1146,7 @@ safeline_app(){
 			1)
 				install_docker
 				check_disk_space 5
-				bash -c "$(curl -fsSLk https://waf-ce.chaitin.cn/release/latest/setup.sh)"
+				local tmp_script="/tmp/waf_setup.sh" && curl -fsSLk https://waf-ce.chaitin.cn/release/latest/setup.sh -o "$tmp_script" && bash "$tmp_script" && rm -f "$tmp_script"
 
 				mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
 				clear
