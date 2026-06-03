@@ -4330,3 +4330,26 @@ EOF
 	local app_size="2"
 	docker_app
 }
+# Phase 2/4: 公共 Docker 安装后处理函数
+docker_app_post_install() {
+    local docker_name=$1
+    local docker_port=$2
+    local docker_use=$3
+    local docker_passwd=$4
+
+    if docker ps -a --format '{{.Names}}' | grep -q "^${docker_name}$"; then
+        setup_docker_dir
+        echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
+
+        mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
+
+        clear
+        echo "$docker_name 已经安装完成"
+        check_docker_app_ip
+        echo ""
+        $docker_use
+        $docker_passwd
+    else
+        echo "安装失败，请检查 Docker 运行状态"
+    fi
+}
