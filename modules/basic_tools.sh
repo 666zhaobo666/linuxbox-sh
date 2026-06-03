@@ -68,7 +68,7 @@ linux_basic_tools() {
 
 	  for ((i=0; i<${#tools[@]}; i+=2)); do
 		# 左列
-		if command -v "${tools[i]}" >/dev/null 2>&1; then
+		if check_cmd "${tools[i]}"; then
 		  left=$(printf "✅ %-12s 已安装" "${tools[i]}")
 		else
 		  left=$(printf "❌ %-12s 未安装" "${tools[i]}")
@@ -76,7 +76,7 @@ linux_basic_tools() {
 
 		# 右列（防止数组越界）
 		if [[ -n "${tools[i+1]}" ]]; then
-		  if command -v "${tools[i+1]}" >/dev/null 2>&1; then
+		  if check_cmd "${tools[i+1]}"; then
 			right=$(printf "✅ %-12s 已安装" "${tools[i+1]}")
 		  else
 			right=$(printf "❌ %-12s 未安装" "${tools[i+1]}")
