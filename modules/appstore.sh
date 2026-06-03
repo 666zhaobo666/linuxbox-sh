@@ -614,10 +614,6 @@ docker_app() {
 
 
 # Docker 应用管理 compose
-docker_app_plus() {
-    # 兼容层：已合并至 docker_app()
-    docker_app
-}
 ##############################
 ########## 应用函数 ##########
 ##############################
@@ -1431,7 +1427,7 @@ moontv_app(){
 		echo "应用已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Melody音乐精灵
@@ -1667,7 +1663,7 @@ EOF
 		echo "应用已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Drawnix在线白板
@@ -2118,7 +2114,7 @@ EOF
 		echo "Nextcloud 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # emby多媒体管理系统
@@ -2371,7 +2367,7 @@ EOF
 		echo "PhotoPrism 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # searxng聚合搜索站
@@ -2567,7 +2563,7 @@ dify_app(){
 		echo "Dify 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # gitea私有代码仓库
@@ -2795,7 +2791,7 @@ EOF
 		echo "JumpServer 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # immich图片视频管理器
@@ -2835,7 +2831,7 @@ immich_app(){
 		echo "Immich 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Syncthing点对点文件同步工具
@@ -3072,7 +3068,7 @@ EOF
 		echo "RocketChat 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Gopeed高速下载工具
