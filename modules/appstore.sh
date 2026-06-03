@@ -189,7 +189,7 @@ check_docker_app() {
 # 检查Docker应用的访问地址
 check_docker_app_ip() {
 echo -e "${pink}------------------------${white}"
-echo "访问地址:"
+echo "${access_label:-访问地址}:"
 ip_address
 
 if [ -n "$ipv4_address" ]; then
@@ -592,7 +592,22 @@ docker_app() {
             case $choice in
                 1)  # 全新安装
                     check_disk_space "$app_size"
-                    local docker_port=$(read_docker_port 8080)
+
+                    case "${port_mode:-single}" in
+                        single)
+                            local docker_port=$(read_docker_port "${docker_port:-8080}")
+                            ;;
+                        multi|custom)
+                            # 由 docker_run 内部处理端口输入
+                            ;;
+                        service_only)
+                            echo -e "${yellow}此应用为服务类，无管理界面${white}"
+                            local docker_port=""
+                            ;;
+                        none)
+                            local docker_port=""
+                            ;;
+                    esac
 
                     install jq
                     install_docker
