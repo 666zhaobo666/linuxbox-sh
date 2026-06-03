@@ -509,7 +509,8 @@ docker_app() {
         echo ""
         echo -e "${cyan}------------------------------------------------------${white}"
 
-		# 根据容器是否存在显示不同菜单
+        show_docker_app_menu()
+        # 旧菜单逻辑已迁移至公共函数 show_docker_app_menu()
         if check_docker_app; then  # 容器存在（返回0）
             echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
         else  # 容器不存在（返回非0）
@@ -638,7 +639,8 @@ docker_app_plus() {
         echo ""
         echo -e "${cyan}------------------------------------------------------${white}"
         
-		# 根据容器是否存在显示不同菜单
+        show_docker_app_menu()
+        # 旧菜单逻辑已迁移至公共函数 show_docker_app_menu()
         if check_docker_app; then  # 容器存在（返回0）
             echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
         else  # 容器不存在（返回非0）
