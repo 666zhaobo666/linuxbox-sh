@@ -2683,6 +2683,7 @@ wireguard_server_app(){
 	local docker_name="wg-easy"
 	local docker_img="ghcr.io/wg-easy/wg-easy:latest"
 	local docker_port=8113
+	local access_label="管理面板访问地址"
 
 	docker_run() {
 		mkdir -p /home/docker/wireguard
