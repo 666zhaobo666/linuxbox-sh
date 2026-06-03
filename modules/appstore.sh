@@ -677,9 +677,14 @@ docker_app_plus() {
                     mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
                     ;;
                 2)  # 卸载
-                    docker_app_uninstall
-                    rm -f /home/docker/${docker_name}_port.conf
-                    sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+                    read -e -p "确认卸载 ${docker_name}？(y/N): " confirm
+                    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+                        docker_app_uninstall
+                        rm -f /home/docker/${docker_name}_port.conf
+                        sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+                    else
+                        echo "已取消卸载"
+                    fi
                     ;;
                 5)  # 添加域名访问
                     echo "${docker_name}域名访问设置"
