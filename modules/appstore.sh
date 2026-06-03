@@ -764,7 +764,7 @@ aapanel_app(){
 	local panelname="aapanel"
 	local panelurl="https://www.aapanel.com/"
 
-	panel_app_install(){
+	aapanel_app_install(){
 		URL=https://www.aapanel.com/script/install_pro_en.sh && if [ -f /usr/bin/curl ]; then curl -ksSO $URL ; else wget --no-check-certificate -O install_pro_en.sh $URL; fi; bash install_pro_en.sh aa372544
 	}
 
