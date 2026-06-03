@@ -4329,7 +4329,8 @@ docker_app_post_install() {
         mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
 
         clear
-        echo "$docker_name 已经安装完成"
+        echo "$docker_name 已安装完成"
+        echo "访问端口: $docker_port"
         check_docker_app_ip
         echo ""
         $docker_use
