@@ -1157,7 +1157,7 @@ safeline_app(){
 				;;
 
 			2)
-				bash -c "$(curl -fsSLk https://waf-ce.chaitin.cn/release/latest/upgrade.sh)"
+				local tmp_script="/tmp/waf_upgrade.sh" && curl -fsSLk https://waf-ce.chaitin.cn/release/latest/upgrade.sh -o "$tmp_script" && bash "$tmp_script" && rm -f "$tmp_script"
 				docker rmi $(docker images | grep "safeline" | grep "none" | awk '{print $3}')
 				echo ""
 
