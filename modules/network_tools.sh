@@ -41,22 +41,30 @@ network_tools() {
 				clear
 				## "ChatGPT解锁状态检测"
 				bash <(curl -Ls https://cdn.jsdelivr.net/gh/missuo/OpenAI-Checker/openai.sh)
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 			2)
 				clear
 				## "Region流媒体解锁测试"
 				bash <(curl -L -s check.unlock.media)
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 			3)
 				clear
 				## "yeahwu流媒体解锁检测"
 				install wget
 				wget -qO- ${url_proxy}github.com/yeahwu/check/raw/main/check.sh | bash
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 			4)
 				clear
 				## "xykt_IP质量体检脚本"
 				bash <(curl -Ls IP.Check.Place)
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 
 
@@ -65,22 +73,30 @@ network_tools() {
 				## "besttrace三网回程延迟路由测试"
 				install wget
 				wget -qO- git.io/besttrace | bash
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 			12)
 				clear
 				## "mtr_trace三网回程线路测试"
 				curl ${url_proxy}raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh | bash
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 			13)
 				clear
 				## "Superspeed三网测速"
 				bash <(curl -Lso- https://git.io/superspeed_uxh)
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 			14)
 				clear
 				## "nxtrace快速回程测试脚本"
 				curl nxtrace.org/nt |bash
 				nexttrace --fast-trace --tcp
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 			15)
 				clear
@@ -107,24 +123,32 @@ network_tools() {
 				read -e -p "输入一个指定IP: " testip
 				curl nxtrace.org/nt |bash
 				nexttrace $testip
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 
 			16)
 				clear
 				## "ludashi2020三网线路测试"
 				curl ${url_proxy}raw.githubusercontent.com/ludashi2020/backtrace/main/install.sh -sSf | sh
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 
 			17)
 				clear
 				## "i-abc多功能测速脚本"
 				bash <(curl -sL ${url_proxy}raw.githubusercontent.com/i-abc/Speedtest/main/speedtest.sh)
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 
 			18)
 				clear
 				## "网络质量测试脚本"
 				bash <(curl -sL Net.Check.Place)
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 
 			21)
@@ -132,23 +156,31 @@ network_tools() {
 				## "yabs性能测试"
 				check_swap
 				curl -sL yabs.sh | bash -s -- -i -5
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 			22)
 				clear
 				## "icu/gb5 CPU性能测试脚本"
 				check_swap
 				bash <(curl -sL bash.icu/gb5)
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 
 			31)
 				clear
 				## "bench性能测试"
 				curl -Lso- bench.sh | bash
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 			32)
 				## "spiritysdx融合怪测评"
 				clear
 				curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh
+				read -p "按任意键继续..." -n 1 -s
+				echo
 				;;
 
 			0)

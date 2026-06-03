@@ -189,7 +189,7 @@ check_docker_app() {
 # 检查Docker应用的访问地址
 check_docker_app_ip() {
 echo -e "${pink}------------------------${white}"
-echo "访问地址:"
+echo "${access_label:-访问地址}:"
 ip_address
 
 if [ -n "$ipv4_address" ]; then
@@ -509,7 +509,8 @@ docker_app() {
         echo ""
         echo -e "${cyan}------------------------------------------------------${white}"
 
-		# 根据容器是否存在显示不同菜单
+        show_docker_app_menu()
+        # 旧菜单逻辑已迁移至公共函数 show_docker_app_menu()
         if check_docker_app; then  # 容器存在（返回0）
             echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
         else  # 容器不存在（返回非0）
@@ -549,13 +550,18 @@ docker_app() {
                     $docker_passwd
                     ;;
                 2)  # 卸载
-                    docker rm -f "$docker_name"
-                    docker rmi -f "$docker_img"
-                    rm -rf "/home/docker/$docker_name"
-                    rm -f /home/docker/${docker_name}_port.conf
+                    read -e -p "确认卸载 ${docker_name}？(y/N): " confirm
+                    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+                        docker rm -f "$docker_name"
+                        docker rmi -f "$docker_img"
+                        rm -rf "/home/docker/$docker_name"
+                        rm -f /home/docker/${docker_name}_port.conf
 
-                    sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-                    echo "应用已卸载"
+                        sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+                        echo "应用已卸载"
+                    else
+                        echo "已取消卸载"
+                    fi
                     ;;
                 5)  # 添加域名访问
                     echo "${docker_name}域名访问设置"
@@ -586,24 +592,27 @@ docker_app() {
             case $choice in
                 1)  # 全新安装
                     check_disk_space "$app_size"
-                    read -e -p "输入应用对外服务端口: " app_port
-                    local app_port=${app_port:-8080}  # 提供默认端口
-                    local docker_port=$app_port
+
+                    case "${port_mode:-single}" in
+                        single)
+                            local docker_port=$(read_docker_port "${docker_port:-8080}")
+                            ;;
+                        multi|custom)
+                            # 由 docker_run 内部处理端口输入
+                            ;;
+                        service_only)
+                            echo -e "${yellow}此应用为服务类，无管理界面${white}"
+                            local docker_port=""
+                            ;;
+                        none)
+                            local docker_port=""
+                            ;;
+                    esac
 
                     install jq
                     install_docker
                     docker_run
-                    setup_docker_dir
-                    echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
-
-                    mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
-
-                    clear
-                    echo "$docker_name 已经安装完成"
-                    check_docker_app_ip
-                    echo ""
-                    $docker_use
-                    $docker_passwd
+                    docker_app_post_install "$docker_name" "$docker_port" "$docker_use" "$docker_passwd"
                     ;;
                 0)  # 返回上一级
                     break
@@ -620,119 +629,6 @@ docker_app() {
 
 
 # Docker 应用管理 compose
-docker_app_plus() {
-    while true; do
-        clear
-        # 先执行检查函数, 确定容器状态
-        check_docker_app
-        check_docker_image_update "$docker_name"
-        
-        echo -e "$app_name $check_docker $update_status"
-        echo "$app_text"
-        echo "$app_url"
-        
-        # 处理端口信息（保持不变）
-        if docker ps -a --format '{{.Names}}' | grep -q "^${docker_name}$" >/dev/null 2>&1; then
-            if [ ! -f "/home/docker/${docker_name}_port.conf" ]; then
-                local docker_port=$(docker port "$docker_name" | head -n1 | awk -F'[:]' '/->/ {print $NF; exit}')
-                docker_port=${docker_port:-0000}
-                echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
-            fi
-            local docker_port=$(cat "/home/docker/${docker_name}_port.conf")
-            check_docker_app_ip
-        fi
-        
-        echo ""
-        echo -e "${cyan}------------------------------------------------------${white}"
-        
-		# 根据容器是否存在显示不同菜单
-        if check_docker_app; then  # 容器存在（返回0）
-            echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
-        else  # 容器不存在（返回非0）
-            echo -e "${green}1. 安装${white}"
-        fi
-        
-        echo -e "${pink}------------------------------------------------------${white}"
-        
-        # 仅当容器存在时显示域名和端口相关操作
-        if check_docker_app; then
-            echo "5. 添加域名访问      6. 删除域名访问"
-            echo "7. 允许IP+端口访问   8. 阻止IP+端口访问"
-            echo -e "${pink}------------------------------------------------------${white}"
-        fi
-        
-        echo -e "${yellow}0. 返回上一级菜单${white}"
-        echo -e "${pink}------------------------------------------------------${white}"
-        
-        read -e -p "输入你的选择: " choice
-        
-        # 根据容器状态限制可执行的选项
-        if check_docker_app; then
-            # 容器存在时允许的操作
-            case $choice in
-                1)  # 更新
-                    docker_app_update
-                    mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
-                    ;;
-                2)  # 卸载
-                    docker_app_uninstall
-                    rm -f /home/docker/${docker_name}_port.conf
-                    sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-                    ;;
-                5)  # 添加域名访问
-                    echo "${docker_name}域名访问设置"
-                    add_yuming
-                    ldnmp_Proxy "${yuming}" 127.0.0.1 "${docker_port}"
-                    block_container_port "$docker_name" "$ipv4_address"
-                    ;;
-                6)  # 删除域名访问
-                    echo "域名格式 example.com 不带https://"
-                    web_del
-                    ;;
-                7)  # 允许IP+端口访问
-                    clear_container_rules "$docker_name" "$ipv4_address"
-                    ;;
-                8)  # 阻止IP+端口访问
-                    block_container_port "$docker_name" "$ipv4_address"
-                    ;;
-                0)  # 返回上一级
-                    break
-                    ;;
-                *)  # 无效选项
-					echo -e "${red}无效选择, 请重新输入 !${white}"
-					sleep 1
-					;;
-            esac
-        else
-            # 容器不存在时仅允许安装和返回操作
-            case $choice in
-                1)  # 全新安装
-                    check_disk_space "$app_size"
-                    read -e -p "输入应用对外服务端口: " app_port
-                    local app_port=${app_port:-8080}  # 提供默认端口（避免未定义）
-                    local docker_port=$app_port
-
-                    install jq
-                    install_docker
-                    docker_app_install
-                    setup_docker_dir
-                    echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
-
-                    mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
-                    ;;
-                0)  # 返回上一级
-                    break
-                    ;;
-                *)  # 无效选项
-					echo -e "${red}无效选择, 当前只能选择安装或返回 !${white}"
-					sleep 1
-					;;
-            esac
-        fi
-        break_end
-    done
-}
-
 ##############################
 ########## 应用函数 ##########
 ##############################
@@ -743,8 +639,10 @@ docker_app_plus() {
 	local panelname="1Panel"
 	local panelurl="https://1panel.cn/"
 
-	panel_app_install(){
-		bash -c "$(curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh)"
+	1panel_app_install(){
+		local tmp_script="/tmp/1panel_install.sh"
+		curl -sSL https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh -o "$tmp_script" && bash "$tmp_script"
+		rm -f "$tmp_script"
 	}
 
 	panel_app_manage(){
@@ -765,7 +663,7 @@ bt_app(){
 	local panelname="宝塔面板"
 	local panelurl="https://www.bt.cn"
 
-	panel_app_install(){
+	bt_app_install(){
 		if [ -f /usr/bin/curl ]; then curl -sSO https://download.bt.cn/install/install_panel.sh; else wget -O install_panel.sh https://download.bt.cn/install/install_panel.sh; fi; bash install_panel.sh ed8484bec
 	}
 
@@ -788,7 +686,7 @@ aapanel_app(){
 	local panelname="aapanel"
 	local panelurl="https://www.aapanel.com/"
 
-	panel_app_install(){
+	aapanel_app_install(){
 		URL=https://www.aapanel.com/script/install_pro_en.sh && if [ -f /usr/bin/curl ]; then curl -ksSO $URL ; else wget --no-check-certificate -O install_pro_en.sh $URL; fi; bash install_pro_en.sh aa372544
 	}
 
@@ -1033,28 +931,11 @@ poste_mail_app(){
 				echo "按任意键继续..."
 				read -n 1 -s -r -p ""
 
-				install jq
-				install_docker
-
-				docker run \
-					--net=host \
-					-e TZ=Europe/Prague \
-					-v /home/docker/mail:/data \
-					--name "mailserver" \
-					-h "$yuming" \
-					--restart=always \
-					-d analogic/poste.io
-
-				mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
-
-				clear
-				echo "poste.io已经安装完成"
-				echo -e "${pink}------------------------${white}"
-				echo "您可以使用以下地址访问poste.io:"
-				echo "https://$yuming"
-				echo ""
-
-				;;
+                    install jq
+                    install_docker
+                    docker_run
+                    docker_app_post_install "$docker_name" "$docker_port" "$docker_use" "$docker_passwd"
+                    ;;
 
 			2)
 				docker rm -f mailserver
@@ -1185,7 +1066,7 @@ safeline_app(){
 			1)
 				install_docker
 				check_disk_space 5
-				bash -c "$(curl -fsSLk https://waf-ce.chaitin.cn/release/latest/setup.sh)"
+				local tmp_script="/tmp/waf_setup.sh" && curl -fsSLk https://waf-ce.chaitin.cn/release/latest/setup.sh -o "$tmp_script" && bash "$tmp_script" && rm -f "$tmp_script"
 
 				mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
 				clear
@@ -1196,7 +1077,7 @@ safeline_app(){
 				;;
 
 			2)
-				bash -c "$(curl -fsSLk https://waf-ce.chaitin.cn/release/latest/upgrade.sh)"
+				local tmp_script="/tmp/waf_upgrade.sh" && curl -fsSLk https://waf-ce.chaitin.cn/release/latest/upgrade.sh -o "$tmp_script" && bash "$tmp_script" && rm -f "$tmp_script"
 				docker rmi $(docker images | grep "safeline" | grep "none" | awk '{print $3}')
 				echo ""
 
@@ -1561,7 +1442,7 @@ moontv_app(){
 		echo "应用已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Melody音乐精灵
@@ -1644,8 +1525,8 @@ xui_app(){
 	local panelname="xui"
 	local panelurl="https://github.com/FranzKafkaYu/x-ui"
 
-	panel_app_install(){
-		bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh)
+	xui_app_install(){
+		local tmp_script="/tmp/xui_install.sh" && curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/x-ui/master/install.sh -o "$tmp_script" && bash "$tmp_script" && rm -f "$tmp_script"
 	}
 
 	panel_app_manage(){
@@ -1666,8 +1547,8 @@ xui_app(){
 	local panelname="3xui"
 	local panelurl="https://github.com/MHSanaei/3x-ui"
 
-	panel_app_install(){
-		bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
+	x3ui_app_install(){
+		local tmp_script="/tmp/x3ui_install.sh" && curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh -o "$tmp_script" && bash "$tmp_script" && rm -f "$tmp_script"
 	}
 
 	panel_app_manage(){
@@ -1797,7 +1678,7 @@ EOF
 		echo "应用已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Drawnix在线白板
@@ -2248,7 +2129,7 @@ EOF
 		echo "Nextcloud 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # emby多媒体管理系统
@@ -2501,7 +2382,7 @@ EOF
 		echo "PhotoPrism 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # searxng聚合搜索站
@@ -2697,7 +2578,7 @@ dify_app(){
 		echo "Dify 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # gitea私有代码仓库
@@ -2759,15 +2640,17 @@ frp_server_app(){
 	local app_id="56"
 	local docker_name="frps"
 	local docker_img="snowdreamtech/frps:latest"
-	local docker_port=8112
+	local docker_port=7500
+	local port_mode="custom"
+	local access_label="Dashboard访问地址"
 
 	docker_run() {
 		mkdir -p /home/docker/frps
 		read -e -p "设置FRP服务端端口 (默认7000): " frp_port
 		frp_port=${frp_port:-7000}
-		read -e -p "设置Dashboard端口: " dash_port
-		dash_port=${dash_port:-7500}
+		local dash_port=$(read_docker_port 7500)
 		read -e -p "设置Dashboard密码: " dash_pwd
+		docker_port=$dash_port
 
 		cat > /home/docker/frps/frps.toml << EOF
 bindPort = $frp_port
@@ -2800,6 +2683,7 @@ wireguard_server_app(){
 	local docker_name="wg-easy"
 	local docker_img="ghcr.io/wg-easy/wg-easy:latest"
 	local docker_port=8113
+	local access_label="管理面板访问地址"
 
 	docker_run() {
 		mkdir -p /home/docker/wireguard
@@ -2925,7 +2809,7 @@ EOF
 		echo "JumpServer 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # immich图片视频管理器
@@ -2965,7 +2849,7 @@ immich_app(){
 		echo "Immich 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Syncthing点对点文件同步工具
@@ -3202,7 +3086,7 @@ EOF
 		echo "RocketChat 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Gopeed高速下载工具
@@ -4329,4 +4213,67 @@ EOF
 	local docker_passwd=""
 	local app_size="2"
 	docker_app
+}
+# Phase 2/4: 公共 Docker 安装后处理函数
+docker_app_post_install() {
+    local docker_name=$1
+    local docker_port=$2
+    local docker_use=$3
+    local docker_passwd=$4
+
+    if docker ps -a --format '{{.Names}}' | grep -q "^${docker_name}$"; then
+        setup_docker_dir
+        echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
+
+        mkdir -p /home/docker && touch /home/docker/appno.txt && (add_app_id)
+
+        clear
+        echo "$docker_name 已安装完成"
+        echo "访问端口: $docker_port"
+        check_docker_app_ip
+        echo ""
+        $docker_use
+        $docker_passwd
+    else
+        echo "安装失败，请检查 Docker 运行状态"
+    fi
+}
+
+# Phase 6.2: 公共端口输入函数（带校验）
+read_docker_port() {
+    local default_port=${1:-8080}
+    while true; do
+        read -e -p "输入应用对外服务端口 (1-65535): " port
+        port=${port:-$default_port}
+        if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1 ] && [ "$port" -le 65535 ]; then
+            echo "$port"
+            return 0
+        else
+            echo -e "${red}端口无效，请输入 1-65535 之间的数字${white}"
+        fi
+    done
+}
+
+
+# Phase 6.2: Docker 应用菜单显示
+show_docker_app_menu() {
+    echo ""
+    echo -e "${cyan}------------------------------------------------------${white}"
+
+    if check_docker_app; then
+        echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
+    else
+        echo -e "${green}1. 安装${white}"
+    fi
+
+    echo -e "${pink}------------------------------------------------------${white}"
+
+    if check_docker_app; then
+        echo -e "5. 添加域名访问      6. 删除域名访问"
+        echo -e "7. 允许IP+端口访问   8. 阻止IP+端口访问"
+        echo -e "${pink}------------------------------------------------------${white}"
+    fi
+
+    echo -e "${yellow}0. 返回上一级菜单${white}"
+    echo -e "${pink}------------------------------------------------------${white}"
 }

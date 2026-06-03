@@ -204,7 +204,7 @@ optimize_dns() {
 		echo " v6: 2400:3200::1 2400:da00::6666"
 		echo "3. 手动编辑DNS配置"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " Limiting
 		case "$Limiting" in
@@ -258,7 +258,7 @@ change_ip_priority() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. IPv4 优先          2. IPv6 优先          3. IPv6 修复工具"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "选择优先的网络: " choice
 
@@ -357,7 +357,7 @@ modify_swap_size() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. 分配1024M         2. 分配2048M         3. 分配4096M         4. 自定义大小"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " choice
 
@@ -417,7 +417,7 @@ user_management() {
 		echo -e "${pink}------------------------------------------${white}"
 		echo -e "5. 删除账号"
 		echo -e "${pink}------------------------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
@@ -524,7 +524,7 @@ adjust_timezone() {
 		echo -e "${pink}------------------------${white}"
 		echo "31. UTC全球标准时间"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
@@ -617,7 +617,7 @@ switch_update_source() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. 中国大陆【默认】          2. 中国大陆【教育网】          3. 海外地区"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
@@ -658,7 +658,7 @@ cron_job_management() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. 添加定时任务              2. 删除定时任务              3. 编辑定时任务"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " sub_choice
 
@@ -1031,7 +1031,7 @@ switch_system_language() {
 		echo -e "${pink}------------------------${white}"
 		echo "1. 英文          2. 简体中文          3. 繁体中文"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " choice
 
@@ -1077,7 +1077,7 @@ linux_trash() {
 		echo "1. 启用回收站          2. 关闭回收站"
 		echo "3. 还原内容            4. 清空回收站"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
@@ -1144,7 +1144,7 @@ ssh_manager() {
 		list_connections
 		echo "1. 创建新连接        2. 使用连接        3. 删除连接"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " choice
 		case $choice in
@@ -1306,7 +1306,7 @@ disk_manager() {
 		echo "1. 挂载分区        2. 卸载分区        3. 查看已挂载分区"
 		echo "4. 格式化分区      5. 检查分区状态"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "请输入你的选择: " choice
 		case $choice in
@@ -1334,6 +1334,8 @@ cmd_history() {
 	}
 
 	history_file=$(get_history_file) && cat -n "$history_file"
+	read -p "按任意键继续..." -n 1 -s
+	echo
 }
 
 
@@ -1378,7 +1380,7 @@ cmd_line_beautify_tool() {
 		echo -e "6. \033[1;33mroot \033[1;34mlocalhost \033[1;35m~ \033[0m${white}#"
 		echo -e "7. root localhost ~ #"
 		echo -e "${pink}------------------------${white}"
-		echo "${yellow}0. 返回上一级菜单${white}"
+		echo -e "${yellow}0.${white}  返回上一级菜单${white}"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
