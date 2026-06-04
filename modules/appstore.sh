@@ -3287,28 +3287,39 @@ frp_server_app(){
 
 	docker_run() {
 		mkdir -p /home/docker/frps
-		# 让用户输入 Dashboard bindPort (默认 7500)
+
+		# 1. 收集面板与服务端口
 		read -e -p "设置FRP面板端口 (默认7500): " dash_port
 		dash_port=${dash_port:-7500}
-		# 让用户输入 Server bindPort (默认 7000)
+
 		read -e -p "设置FRP服务端口 (默认7000): " frp_port
 		frp_port=${frp_port:-7000}
 
+		# 2. 收集客户端连接的认证 Token
+        read -e -p "设置FRP客户端连接认证Token(通信密码, 默认12345678): " auth_token
+        auth_token=${auth_token:-12345678}
+
+		# 3. 收集面板密码
 		read -e -p "设置Dashboard密码: " dash_pwd
 
+		# 4. 生成 frps.toml 配置文件
 		cat > /home/docker/frps/frps.toml << EOF
 bindPort = $frp_port
+
 webServer.addr = "0.0.0.0"
 webServer.port = $dash_port
 webServer.user = "admin"
 webServer.password = "$dash_pwd"
+
+# 开启 Token 认证保护服务端
+auth.method = "token"
+auth.token = "$auth_token"
 EOF
 
 		docker run -d \
 			--name frps \
 			--restart=always \
-			-p ${frp_port}:${frp_port} \
-			-p ${dash_port}:${dash_port} \
+			--network host \
 			-v /home/docker/frps/frps.toml:/etc/frp/frps.toml \
 			snowdreamtech/frps:latest
 		
