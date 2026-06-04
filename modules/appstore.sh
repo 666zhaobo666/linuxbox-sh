@@ -42,9 +42,15 @@ panel_manage() {
 				add_app_id
 				;;
 			2)
-				panel_app_manage
-
-				add_app_id
+				# 修复检测 bug: 未装就管理会误标为已装
+				check_panel_app
+				if [ "$check_panel" = "${green}已安装${white}" ]; then
+					panel_app_manage
+					add_app_id
+				else
+					echo -e "${red}面板未安装, 请先安装${white}"
+					sleep 1
+				fi
 
 				;;
 			3)
@@ -518,12 +524,8 @@ get_primary_port() {
 	fi
 }
 
-# 自动兜底: 若 app 没调 add_app_port, 派生一个 "访问地址" 入口
-_auto_register_fallback_port() {
-	if [ ${#APP_PORTS_NUMBERS[@]} -eq 0 ] && [ -n "${docker_port:-}" ]; then
-		add_app_port "访问地址" "$docker_port"
-	fi
-}
+# (no-op) 框架不再自动注册, app 必须在 docker_run 里显式 add_app_port
+_auto_register_fallback_port() { :; }
 
 # 全局 app 注册表 (供 666 已安装列表展示 app_name)
 APP_REGISTRY_IDS=()
@@ -840,9 +842,6 @@ docker_app() {
 	local _text="${app_text:-$docker_describe}"
 	local _url="${app_url:-$docker_url}"
 
-	# 自动兜底注册主端口 (老 app 没调 add_app_port 时也能显示)
-	_auto_register_fallback_port
-
 	while true; do
 		clear
 		# 先执行检查函数, 确定容器状态
@@ -956,9 +955,6 @@ docker_app() {
 			case $choice in
 				1)  # 全新安装
 					check_disk_space "$app_size"
-					read -e -p "输入应用对外服务端口: " app_port
-					local app_port=${app_port:-8080}  # 提供默认端口
-					local docker_port=$app_port
 
 					"$_install_cmd"
 					add_app_id
@@ -1066,9 +1062,13 @@ npm_app(){
 		local docker_name="npm"
 		local docker_img="jc21/nginx-proxy-manager:latest"
 		local docker_port=81
-		add_app_port "访问地址" 81
 
 		docker_run() {
+			# app 自管端口: 让用户输入实际对外服务端口
+			read -e -p "服务端口 (默认 81): " _user_port
+			_user_port=${_user_port:-81}
+			docker_port=$_user_port
+
 			docker run -d \
 				--name=$docker_name \
 				-p ${docker_port}:81 \
@@ -1078,6 +1078,9 @@ npm_app(){
 				-v /home/docker/npm/letsencrypt:/etc/letsencrypt \
 				--restart=always \
 				$docker_img
+
+			# 注册到展示表 (app 自定 label)
+			add_app_port "Web 端口" "$docker_port"
 		}
 
 		local app_text="一个Nginx反向代理工具面板, 不支持添加域名访问."
@@ -1094,9 +1097,13 @@ openlist_app(){
 		local docker_name="openlist"
 		local docker_img="openlistteam/openlist:latest"
 		local docker_port=5244
-		add_app_port "访问地址" 5244
 
 		docker_run() {
+			# app 自管端口: 让用户输入实际对外服务端口
+			read -e -p "服务端口 (默认 5244): " _user_port
+			_user_port=${_user_port:-5244}
+			docker_port=$_user_port
+
 			docker run -d \
 				--restart=always \
 				-v /home/docker/openlist:/opt/openlist/data \
@@ -1108,6 +1115,9 @@ openlist_app(){
 				--user 0:0 \
 				--restart=unless-stopped \
 				openlistteam/openlist:latest
+
+			# 注册到展示表 (app 自定 label)
+			add_app_port "Web 端口" "$docker_port"
 		}
 
 		local app_text="一个支持多种存储, 支持网页浏览和 WebDAV 的文件列表程序, 由 gin 和 Solidjs 驱动"
@@ -1124,9 +1134,13 @@ webtop_app(){
 		local docker_name="webtop-ubuntu"
 		local docker_img="lscr.io/linuxserver/webtop:ubuntu-kde"
 		local docker_port=3006
-		add_app_port "访问地址" 3006
 
 		docker_run() {
+			# app 自管端口: 让用户输入实际对外服务端口
+			read -e -p "服务端口 (默认 3006): " _user_port
+			_user_port=${_user_port:-3006}
+			docker_port=$_user_port
+
 			read -e -p "设置登录用户名: " admin
 			read -e -p "设置登录用户密码: " admin_password
 			docker run -d \
@@ -1145,6 +1159,9 @@ webtop_app(){
 				--shm-size="1gb" \
 				--restart unless-stopped \
 				lscr.io/linuxserver/webtop:ubuntu-kde
+
+			# 注册到展示表 (app 自定 label)
+			add_app_port "Web 端口" "$docker_port"
 		}
 
 		local app_text="webtop基于Ubuntu的容器.若IP无法访问, 请添加域名访问."
@@ -1162,7 +1179,6 @@ nezha_app(){
 	local app_url="官网搭建文档: https://nezha.wiki/guide/dashboard.html"
 	local docker_name="nezha-dashboard"
 	local docker_port=8008
-	add_app_port "访问地址" 8008
 	while true; do
 		check_docker_app
 		check_docker_image_update $docker_name
@@ -1366,9 +1382,13 @@ qinglong_app(){
 	local docker_name="qinglong"
 	local docker_img="whyour/qinglong:latest"
 	local docker_port=5700
-	add_app_port "访问地址" 5700
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 5700): " _user_port
+		_user_port=${_user_port:-5700}
+		docker_port=$_user_port
+
 		docker run -d \
 			-v /home/docker/qinglong/data:/ql/data \
 			-p ${docker_port}:5700 \
@@ -1376,6 +1396,9 @@ qinglong_app(){
 			--hostname qinglong \
 			--restart unless-stopped \
 			whyour/qinglong:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="青龙面板是一个定时任务管理平台"
@@ -1391,10 +1414,17 @@ code_server_app(){
 	local docker_name="code-server"
 	local docker_img="codercom/code-server"
 	local docker_port=8021
-	add_app_port "访问地址" 8021
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8021): " _user_port
+		_user_port=${_user_port:-8021}
+		docker_port=$_user_port
+
 		docker run -d -p ${docker_port}:8080 -v /home/docker/vscode-web:/home/coder/.local/share/code-server --name vscode-web --restart always codercom/code-server
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="VScode是一款强大的在线代码编写工具"
@@ -1411,10 +1441,17 @@ looking_glass_app(){
 		local docker_name="looking-glass"
 		local docker_img="wikihostinc/looking-glass-server"
 		local docker_port=8016
-		add_app_port "访问地址" 8016
 
 		docker_run() {
+			# app 自管端口: 让用户输入实际对外服务端口
+			read -e -p "服务端口 (默认 8016): " _user_port
+			_user_port=${_user_port:-8016}
+			docker_port=$_user_port
+
 			docker run -d --name looking-glass --restart always -p ${docker_port}:80 wikihostinc/looking-glass-server
+
+			# 注册到展示表 (app 自定 label)
+			add_app_port "Web 端口" "$docker_port"
 		}
 		local app_text="Looking Glass是一个VPS网速测试工具, 多项测试功能, 还可以实时监控VPS进出站流量"
 		local app_url="官网介绍: ${url_proxy}github.com/wikihost-opensource/als"
@@ -1430,7 +1467,6 @@ safeline_app(){
 	local app_url="官网介绍: https://waf-ce.chaitin.cn/"
 	local docker_name=safeline-mgt
 	local docker_port=9443
-	add_app_port "访问地址" 9443
 	while true; do
 		check_docker_app
 		clear
@@ -1498,15 +1534,22 @@ onlyoffice_app(){
 	local docker_name="onlyoffice"
 	local docker_img="onlyoffice/documentserver"
 	local docker_port=8018
-	add_app_port "访问地址" 8018
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8018): " _user_port
+		_user_port=${_user_port:-8018}
+		docker_port=$_user_port
+
 		docker run -d -p ${docker_port}:80 \
 			--restart=always \
 			--name onlyoffice \
 			-v /home/docker/onlyoffice/DocumentServer/logs:/var/log/onlyoffice  \
 			-v /home/docker/onlyoffice/DocumentServer/data:/var/www/onlyoffice/Data  \
 				onlyoffice/documentserver
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="onlyoffice是一款开源的在线office工具, 太强大了!"
@@ -1522,15 +1565,22 @@ uptimekuma_app(){
 	local docker_name="uptime-kuma"
 	local docker_img="louislam/uptime-kuma:latest"
 	local docker_port=8022
-	add_app_port "访问地址" 8022
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8022): " _user_port
+		_user_port=${_user_port:-8022}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name=uptime-kuma \
 			-p ${docker_port}:3001 \
 			-v /home/docker/uptime-kuma/uptime-kuma-data:/app/data \
 			--restart=always \
 			louislam/uptime-kuma:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="Uptime Kuma 易于使用的自托管监控工具"
@@ -1546,10 +1596,17 @@ memos_app(){
 	local docker_name="memos"
 	local docker_img="ghcr.io/usememos/memos:latest"
 	local docker_port=8023
-	add_app_port "访问地址" 8023
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8023): " _user_port
+		_user_port=${_user_port:-8023}
+		docker_port=$_user_port
+
 		docker run -d --name memos -p ${docker_port}:5230 -v /home/docker/memos:/var/opt/memos --restart always ghcr.io/usememos/memos:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="Memos是一款轻量级、自托管的备忘录中心"
@@ -1565,10 +1622,17 @@ drawio_app(){
 	local docker_name="drawio"
 	local docker_img="jgraph/drawio"
 	local docker_port=8032
-	add_app_port "访问地址" 8032
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8032): " _user_port
+		_user_port=${_user_port:-8032}
+		docker_port=$_user_port
+
 		docker run -d --restart=always --name drawio -p ${docker_port}:8080 -v /home/docker/drawio:/var/lib/drawio jgraph/drawio
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="这是一个强大图表绘制软件.思维导图, 拓扑图, 流程图, 都能画"
@@ -1584,15 +1648,22 @@ sun_panel_app(){
 	local docker_name="sun-panel"
 	local docker_img="hslr/sun-panel"
 	local docker_port=8033
-	add_app_port "访问地址" 8033
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8033): " _user_port
+		_user_port=${_user_port:-8033}
+		docker_port=$_user_port
+
 		docker run -d --restart=always -p ${docker_port}:3002 \
 			-v /home/docker/sun-panel/conf:/app/conf \
 			-v /home/docker/sun-panel/uploads:/app/uploads \
 			-v /home/docker/sun-panel/database:/app/database \
 			--name sun-panel \
 			hslr/sun-panel
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="Sun-Panel服务器、NAS导航面板、Homepage、浏览器首页"
@@ -1608,8 +1679,12 @@ webssh_app(){
 	local docker_name="webssh"
 	local docker_img="jrohy/webssh"
 	local docker_port=8040
-	add_app_port "访问地址" 8040
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8040): " _user_port
+		_user_port=${_user_port:-8040}
+		docker_port=$_user_port
+
 		docker run -d -p ${docker_port}:5032 --restart always --name webssh -e TZ=Asia/Shanghai jrohy/webssh
 	}
 
@@ -1625,13 +1700,15 @@ lobe_chat(){
 	local docker_name="lobe-chat"
 	local docker_img="lobehub/lobe-chat:latest"
 	local docker_port=8036
-	add_app_port "访问地址" 8036
 
 	docker_run() {
 		docker run -d -p ${docker_port}:3210 \
 			--name lobe-chat \
 			--restart=always \
 			lobehub/lobe-chat
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="LobeChat聚合市面上主流的AI大模型, ChatGPT/Claude/Gemini/Groq/Ollama"
@@ -1647,10 +1724,17 @@ myip_app(){
 	local docker_name="myip"
 	local docker_img="jason5ng32/myip:latest"
 	local docker_port=8037
-	add_app_port "访问地址" 8037
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8037): " _user_port
+		_user_port=${_user_port:-8037}
+		docker_port=$_user_port
+
 		docker run -d -p ${docker_port}:18966 --name myip jason5ng32/myip:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="是一个多功能IP工具箱, 可以查看自己IP信息及连通性, 用网页面板呈现"
@@ -1666,14 +1750,21 @@ ghproxy_app(){
 	local docker_name="ghproxy"
 	local docker_img="wjqserver/ghproxy:latest"
 	local docker_port=8046
-	add_app_port "访问地址" 8046
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8046): " _user_port
+		_user_port=${_user_port:-8046}
+		docker_port=$_user_port
+
 		docker run -d \
 		--name ghproxy \
 		--restart always \
 		-p ${docker_port}:8080 \
 		-v /home/docker/ghproxy/config:/data/ghproxy/config wjqserver/ghproxy:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="使用Go实现的GHProxy, 用于加速部分地区Github仓库的拉取."
@@ -1689,10 +1780,17 @@ allinssl_app(){
 	local docker_name="allinssl"
 	local docker_img="allinssl/allinssl:latest"
 	local docker_port=8068
-	add_app_port "访问地址" 8068
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8068): " _user_port
+		_user_port=${_user_port:-8068}
+		docker_port=$_user_port
+
 		docker run -itd --name allinssl -p ${docker_port}:8888 -v /home/docker/allinssl/data:/www/allinssl/data -e ALLINSSL_USER=allinssl -e ALLINSSL_PWD=allinssldocker -e ALLINSSL_URL=allinssl allinssl/allinssl:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源免费的 SSL 证书自动化管理平台"
@@ -1708,15 +1806,22 @@ ddnsgo_app(){
 	local docker_name="ddns-go"
 	local docker_img="jeessy/ddns-go"
 	local docker_port=8067
-	add_app_port "访问地址" 8067
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8067): " _user_port
+		_user_port=${_user_port:-8067}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name ddns-go \
 			--restart=always \
 			-p ${docker_port}:9876 \
 			-v /home/docker/ddns-go:/root \
 			jeessy/ddns-go
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
@@ -1732,14 +1837,21 @@ lucky_app(){
 	local docker_name="lucky"
 	local docker_img="gdy666/lucky"
 	local docker_port=8068
-	add_app_port "访问地址" 8068
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8068): " _user_port
+		_user_port=${_user_port:-8068}
+		docker_port=$_user_port
+
 		docker run -d \
 		--name lucky \
 		--restart=always \
 		-v /home/docker/lucky:/goodluck \
 		gdy666/lucky
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
@@ -1755,9 +1867,13 @@ libretv_app(){
 		local docker_name="libretv"
 		local docker_img="bestzwei/libretv:latest"
 		local docker_port=8073
-		add_app_port "访问地址" 8073
 
 		docker_run() {
+			# app 自管端口: 让用户输入实际对外服务端口
+			read -e -p "服务端口 (默认 8073): " _user_port
+			_user_port=${_user_port:-8073}
+			docker_port=$_user_port
+
 			read -e -p "设置LibreTV的登录密码: " app_passwd
 			docker run -d \
 				--name libretv \
@@ -1765,6 +1881,9 @@ libretv_app(){
 				-p ${docker_port}:8080 \
 				-e PASSWORD=${app_passwd} \
 				bestzwei/libretv:latest
+
+			# 注册到展示表 (app 自定 label)
+			add_app_port "Web 端口" "$docker_port"
 		}
 
 		local app_text="免费在线视频搜索与观看平台"
@@ -1782,7 +1901,6 @@ moontv_app(){
 	local app_url="官网介绍: https://github.com/MoonTechLab/LunaTV"
 	local docker_name="moontv-core"
 	local docker_port="8074"
-	add_app_port "访问地址" 8074
 	local app_size="2"
 
 	docker_app_install() {
@@ -1838,15 +1956,22 @@ melody_app(){
 	local docker_name="melody"
 	local docker_img="foamzou/melody:latest"
 	local docker_port=8075
-	add_app_port "访问地址" 8075
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8075): " _user_port
+		_user_port=${_user_port:-8075}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name melody \
 			--restart unless-stopped \
 			-p ${docker_port}:5566 \
 			-v /home/docker/melody/.profile:/app/backend/.profile \
 			foamzou/melody:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="你的音乐精灵, 旨在帮助你更好地管理音乐."
@@ -1862,9 +1987,13 @@ beszel_app(){
 	local docker_name="beszel"
 	local docker_img="henrygd/beszel"
 	local docker_port=8079
-	add_app_port "访问地址" 8079
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8079): " _user_port
+		_user_port=${_user_port:-8079}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/beszel && \
 		docker run -d \
 			--name beszel \
@@ -1872,6 +2001,9 @@ beszel_app(){
 			-v /home/docker/beszel:/beszel_data \
 			-p ${docker_port}:8090 \
 			henrygd/beszel
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="Beszel轻量易用的服务器监控"
@@ -1887,15 +2019,22 @@ synctv_app(){
 		local docker_name="synctv"
 		local docker_img="synctvorg/synctv"
 		local docker_port=8087
-		add_app_port "访问地址" 8087
 
 		docker_run() {
+			# app 自管端口: 让用户输入实际对外服务端口
+			read -e -p "服务端口 (默认 8087): " _user_port
+			_user_port=${_user_port:-8087}
+			docker_port=$_user_port
+
 			docker run -d \
 				--name synctv \
 				-v /home/docker/synctv:/root/.synctv \
 				-p ${docker_port}:8080 \
 				--restart=always \
 				synctvorg/synctv
+
+			# 注册到展示表 (app 自定 label)
+			add_app_port "Web 端口" "$docker_port"
 		}
 
 		local app_text="远程一起观看电影和直播的程序.它提供了同步观影、直播、聊天等功能"
@@ -1955,9 +2094,13 @@ e5_renew_x_app(){
 		local docker_name="angry_ellis"
 		local docker_img="mcr.microsoft.com/office/office365"
 		local docker_port=1066
-		add_app_port "访问地址" 1066
 
 		docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 1066): " _user_port
+		_user_port=${_user_port:-1066}
+		docker_port=$_user_port
+
 		read -e -p "请输入发送邮件的服务邮箱: " send_email
 		read -e -p "请输入服务邮箱的授权码: " token
 		read -e -p "请输入接收邮件的邮箱: " receiver_email
@@ -1971,6 +2114,9 @@ e5_renew_x_app(){
 				-e receiver="${receiver_email}" \
 				-e adminpwd="${admin_pwd}" \
 				hanhongyong/ms365-e5-renew-x:pubemail
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 		}
 
 		local app_text="Microsoft 365 E5 Renew X 一键续订脚本"
@@ -1988,7 +2134,6 @@ decotv_app(){
 	local app_url="官网介绍: https://github.com/decohererk/decotv"
 	local docker_name="decotv-core"
 	local docker_port="8076"
-	add_app_port "访问地址" 8076
 	local app_size="2"
 
 	docker_app_install() {
@@ -2075,7 +2220,6 @@ drawnix_app(){
 	local docker_name="drawnix"
 	local docker_img="pubuzhixing/drawnix:latest"
 	local docker_port=8077
-	add_app_port "访问地址" 8077
 
 	docker_run() {
 		docker run -d \
@@ -2353,9 +2497,13 @@ portainer_app(){
 	local docker_name="portainer"
 	local docker_img="portainer/portainer-ce:latest"
 	local docker_port=9000
-	add_app_port "访问地址" 9000
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 9000): " _user_port
+		_user_port=${_user_port:-9000}
+		docker_port=$_user_port
+
 		docker volume create portainer_data
 		docker run -d \
 			--name portainer \
@@ -2365,6 +2513,9 @@ portainer_app(){
 			-v /var/run/docker.sock:/var/run/docker.sock \
 			-v portainer_data:/data \
 			portainer/portainer-ce:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="轻量级的Docker容器管理UI面板, 支持容器/镜像/网络/卷的可视化管理"
@@ -2380,9 +2531,13 @@ cloudreve_app(){
 	local docker_name="cloudreve"
 	local docker_img="cloudreve/cloudreve:latest"
 	local docker_port=8088
-	add_app_port "访问地址" 8088
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8088): " _user_port
+		_user_port=${_user_port:-8088}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/cloudreve
 		docker run -d \
 			--name cloudreve \
@@ -2390,6 +2545,9 @@ cloudreve_app(){
 			-p ${docker_port}:5212 \
 			-v /home/docker/cloudreve:/cloudreve \
 			cloudreve/cloudreve:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="支持多种存储的云盘系统, 支持本地存储/对象存储/S3等"
@@ -2407,7 +2565,6 @@ nextcloud_app(){
 	local app_url="官网介绍: https://nextcloud.com/"
 	local docker_name="nextcloud-app"
 	local docker_port="8089"
-	add_app_port "访问地址" 8089
 	local app_size="2"
 
 	docker_app_install() {
@@ -2493,9 +2650,13 @@ emby_app(){
 	local docker_name="emby"
 	local docker_img="emby/embyserver:latest"
 	local docker_port=8096
-	add_app_port "访问地址" 8096
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8096): " _user_port
+		_user_port=${_user_port:-8096}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/emby/config /home/docker/emby/data
 		docker run -d \
 			--name emby \
@@ -2506,6 +2667,9 @@ emby_app(){
 			-v /home/docker/emby/data:/data \
 			--device=/dev/dri:/dev/dri \
 			emby/embyserver:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="功能强大的个人媒体服务器, 支持电影/电视剧/音乐管理和在线播放"
@@ -2521,9 +2685,13 @@ jellyfin_app(){
 	local docker_name="jellyfin"
 	local docker_img="jellyfin/jellyfin:latest"
 	local docker_port=8097
-	add_app_port "访问地址" 8097
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8097): " _user_port
+		_user_port=${_user_port:-8097}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/jellyfin/config /home/docker/jellyfin/cache
 		docker run -d \
 			--name jellyfin \
@@ -2533,6 +2701,9 @@ jellyfin_app(){
 			-v /home/docker/jellyfin/cache:/cache \
 			--device=/dev/dri:/dev/dri \
 			jellyfin/jellyfin:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="免费开源的媒体服务器, Emby的替代品, 支持电影/电视剧/音乐管理和在线播放"
@@ -2585,9 +2756,13 @@ navidrome_app(){
 	local docker_name="navidrome"
 	local docker_img="deluan/navidrome:latest"
 	local docker_port=8098
-	add_app_port "访问地址" 8098
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8098): " _user_port
+		_user_port=${_user_port:-8098}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/navidrome/music /home/docker/navidrome/data
 		docker run -d \
 			--name navidrome \
@@ -2596,6 +2771,9 @@ navidrome_app(){
 			-v /home/docker/navidrome/music:/music \
 			-v /home/docker/navidrome/data:/data \
 			navidrome/navidrome:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="现代的私人音乐流媒体服务器, 支持多用户, 兼容Subsonic/Airsonic API"
@@ -2611,9 +2789,13 @@ bitwarden_app(){
 	local docker_name="vaultwarden"
 	local docker_img="vaultwarden/server:latest"
 	local docker_port=8099
-	add_app_port "访问地址" 8099
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8099): " _user_port
+		_user_port=${_user_port:-8099}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/vaultwarden/data
 		docker run -d \
 			--name vaultwarden \
@@ -2622,6 +2804,9 @@ bitwarden_app(){
 			-e WEBSOCKET_ENABLED=true \
 			-v /home/docker/vaultwarden/data:/data \
 			vaultwarden/server:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="Bitwarden的轻量级替代(Vaultwarden), 自托管密码管理器"
@@ -2637,9 +2822,13 @@ stirlingpdf_app(){
 	local docker_name="stirlingpdf"
 	local docker_img="frooodle/s-pdf:latest"
 	local docker_port=8100
-	add_app_port "访问地址" 8100
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8100): " _user_port
+		_user_port=${_user_port:-8100}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/stirlingpdf/config /home/docker/stirlingpdf/logs
 		docker run -d \
 			--name stirlingpdf \
@@ -2649,6 +2838,9 @@ stirlingpdf_app(){
 			-v /home/docker/stirlingpdf/logs:/logs \
 			-e DOCKER_ENABLE_SECURITY=false \
 			frooodle/s-pdf:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="功能强大的PDF处理工具箱, 支持合并/拆分/转换/压缩/加水印等"
@@ -2664,15 +2856,22 @@ speedtest_app(){
 	local docker_name="speedtest"
 	local docker_img="adolfintel/speedtest:latest"
 	local docker_port=8101
-	add_app_port "访问地址" 8101
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8101): " _user_port
+		_user_port=${_user_port:-8101}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name speedtest \
 			--restart=always \
 			-p ${docker_port}:80 \
 			--network host \
 			adolfintel/speedtest:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="LibreSpeed测速面板, 自托管的网络测速工具"
@@ -2690,7 +2889,6 @@ photoprism_app(){
 	local app_url="官网介绍: https://photoprism.app/"
 	local docker_name="photoprism-app"
 	local docker_port="8102"
-	add_app_port "访问地址" 8102
 	local app_size="3"
 
 	docker_app_install() {
@@ -2752,9 +2950,13 @@ searxng_app(){
 	local docker_name="searxng"
 	local docker_img="searxng/searxng:latest"
 	local docker_port=8103
-	add_app_port "访问地址" 8103
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8103): " _user_port
+		_user_port=${_user_port:-8103}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/searxng
 		docker run -d \
 			--name searxng \
@@ -2764,6 +2966,9 @@ searxng_app(){
 			-e SEARXNG_BASE_URL: "http://localhost:${docker_port}/" \
 			-e SEARXNG_SECRET: "$(openssl rand -hex 32)" \
 			searxng/searxng:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="注重隐私的元搜索引擎聚合平台, 不追踪用户"
@@ -2779,9 +2984,13 @@ pingvinshare_app(){
 	local docker_name="pingvin-share"
 	local docker_img="stonith404/pingvin-share:latest"
 	local docker_port=8104
-	add_app_port "访问地址" 8104
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8104): " _user_port
+		_user_port=${_user_port:-8104}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/pingvin/data /home/docker/pingvin/images
 		docker run -d \
 			--name pingvin-share \
@@ -2790,6 +2999,9 @@ pingvinshare_app(){
 			-v /home/docker/pingvin/data:/app/data \
 			-v /home/docker/pingvin/images:/app/backend/images \
 			stonith404/pingvin-share:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="自托管文件分享平台, 支持创建分享链接和上传文件"
@@ -2805,9 +3017,13 @@ dockge_app(){
 	local docker_name="dockge"
 	local docker_img="louislam/dockge:latest"
 	local docker_port=8105
-	add_app_port "访问地址" 8105
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8105): " _user_port
+		_user_port=${_user_port:-8105}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/dockge/stacks
 		docker run -d \
 			--name dockge \
@@ -2817,6 +3033,9 @@ dockge_app(){
 			-v /home/docker/dockge/data:/app/data \
 			-v /home/docker/dockge/stacks:/opt/stacks \
 			louislam/dockge:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="简洁优雅的Docker Compose堆栈管理面板"
@@ -2832,9 +3051,13 @@ ittools_app(){
 	local docker_name="it-tools"
 	local docker_img="corentintho/it-tools:latest"
 	local docker_port=8106
-	add_app_port "访问地址" 8106
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8106): " _user_port
+		_user_port=${_user_port:-8106}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name it-tools \
 			--restart=always \
@@ -2854,7 +3077,6 @@ n8n_app(){
 	local docker_name="n8n"
 	local docker_img="n8nio/n8n:latest"
 	local docker_port=8107
-	add_app_port "访问地址" 8107
 
 	docker_run() {
 		mkdir -p /home/docker/n8n/data
@@ -2865,6 +3087,9 @@ n8n_app(){
 			-v /home/docker/n8n/data:/home/node/.n8n \
 			-e N8N_HOST=0.0.0.0 \
 			n8nio/n8n:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的工作流自动化平台, 可视化连接各种API和服务"
@@ -2880,9 +3105,13 @@ openwebui_app(){
 	local docker_name="open-webui"
 	local docker_img="ghcr.io/open-webui/open-webui:main"
 	local docker_port=8108
-	add_app_port "访问地址" 8108
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8108): " _user_port
+		_user_port=${_user_port:-8108}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/open-webui/data
 		docker run -d \
 			--name open-webui \
@@ -2891,6 +3120,9 @@ openwebui_app(){
 			-v /home/docker/open-webui/data:/app/backend/data \
 			-e WEBUI_AUTH=true \
 			ghcr.io/open-webui/open-webui:main
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="自托管的AI对话界面, 支持Ollama/OpenAI等多种后端"
@@ -2908,7 +3140,6 @@ dify_app(){
 	local app_url="官网介绍: https://dify.ai/"
 	local docker_name="dify-app"
 	local docker_port="8109"
-	add_app_port "访问地址" 8109
 	local app_size="3"
 
 	docker_app_install() {
@@ -2948,9 +3179,13 @@ gitea_app(){
 	local docker_name="gitea"
 	local docker_img="gitea/gitea:latest"
 	local docker_port=8110
-	add_app_port "访问地址" 8110
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8110): " _user_port
+		_user_port=${_user_port:-8110}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/gitea/data /home/docker/gitea/mysql
 		docker run -d \
 			--name gitea \
@@ -2961,6 +3196,9 @@ gitea_app(){
 			-v /etc/timezone:/etc/timezone:ro \
 			-v /etc/localtime:/etc/localtime:ro \
 			gitea/gitea:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="轻量级的自托管Git服务, 类似GitHub/GitLab"
@@ -2976,9 +3214,13 @@ filebrowser_app(){
 	local docker_name="filebrowser"
 	local docker_img="filebrowser/filebrowser:latest"
 	local docker_port=8111
-	add_app_port "访问地址" 8111
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8111): " _user_port
+		_user_port=${_user_port:-8111}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/filebrowser/database /home/docker/filebrowser/srv
 		docker run -d \
 			--name filebrowser \
@@ -2987,6 +3229,9 @@ filebrowser_app(){
 			-v /home/docker/filebrowser/database:/database \
 			-v /home/docker/filebrowser/srv:/srv \
 			filebrowser/filebrowser:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="轻量级的网页文件管理器, 支持文件上传/下载/编辑/分享"
@@ -3003,7 +3248,6 @@ frp_server_app(){
 	local docker_name="frps"
 	local docker_img="snowdreamtech/frps:latest"
 	local docker_port=7500
-	add_app_port "访问地址" 7500
 	local app_text="FRP内网穿透服务端, 让内网服务暴露到公网"
 	local app_url="官网介绍: https://github.com/fatedier/frp"
 	local app_size="1"
@@ -3051,7 +3295,6 @@ wireguard_server_app(){
 	local docker_name="wg-easy"
 	local docker_img="ghcr.io/wg-easy/wg-easy:latest"
 	local docker_port=8113
-	add_app_port "访问地址" 8113
 	local app_text="WireGuard VPN服务端, 简单易用的虚拟组网工具"
 	local app_url="官网介绍: https://github.com/wg-easy/wg-easy"
 	local app_size="1"
@@ -3195,7 +3438,6 @@ immich_app(){
 	local app_url="官网介绍: https://immich.app/"
 	local docker_name="immich-server"
 	local docker_port="8115"
-	add_app_port "访问地址" 8115
 	local app_size="3"
 
 	docker_app_install() {
@@ -3262,9 +3504,13 @@ umami_app(){
 	local docker_name="umami"
 	local docker_img="ghcr.io/umami-software/umami:postgresql-latest"
 	local docker_port=8117
-	add_app_port "访问地址" 8117
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8117): " _user_port
+		_user_port=${_user_port:-8117}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/umami/data
 		docker run -d \
 			--name umami \
@@ -3273,6 +3519,9 @@ umami_app(){
 			-e DATABASE_URL=postgresql://umami:umami_pwd@db:5432/umami \
 			-e UMAMI_APP_SECRET="$(openssl rand -hex 32)" \
 			umami/umami:postgresql-latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的网站分析统计工具, Google Analytics的隐私友好替代"
@@ -3288,9 +3537,13 @@ siyuan_app(){
 	local docker_name="siyuan"
 	local docker_img="b3log/siyuan:latest"
 	local docker_port=8118
-	add_app_port "访问地址" 8118
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8118): " _user_port
+		_user_port=${_user_port:-8118}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/siyuan/workspace
 		docker run -d \
 			--name siyuan \
@@ -3298,6 +3551,9 @@ siyuan_app(){
 			-p ${docker_port}:6806 \
 			-v /home/docker/siyuan/workspace:/siyuan/workspace \
 			b3log/siyuan:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="本地优先的个人知识管理系统, 支持块级引用和双向链接"
@@ -3313,9 +3569,13 @@ sftpgp_app(){
 	local docker_name="sftpgo"
 	local docker_img="drakkan/sftpgo:latest"
 	local docker_port=8119
-	add_app_port "访问地址" 8119
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8119): " _user_port
+		_user_port=${_user_port:-8119}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/sftpgo/data /home/docker/sftpgo/config
 		docker run -d \
 			--name sftpgo \
@@ -3325,6 +3585,9 @@ sftpgp_app(){
 			-v /home/docker/sftpgo/data:/srv/sftpgo \
 			-v /home/docker/sftpgo/config:/etc/sftpgo \
 			drakkan/sftpgo:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="功能齐全的SFTP/FTP/WebDAV服务器, 支持多种协议"
@@ -3340,9 +3603,13 @@ owncast_app(){
 	local docker_name="owncast"
 	local docker_img="owncast/owncast:latest"
 	local docker_port=8120
-	add_app_port "访问地址" 8120
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8120): " _user_port
+		_user_port=${_user_port:-8120}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/owncast/data
 		docker run -d \
 			--name owncast \
@@ -3351,6 +3618,9 @@ owncast_app(){
 			-p 1935:1935 \
 			-v /home/docker/owncast/data:/app/data \
 			owncast/owncast:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="自托管的视频直播平台, 支持RTMP推流和Web观看"
@@ -3366,15 +3636,22 @@ deepseek_app(){
 	local docker_name="deepseek"
 	local docker_img="deepseek-ai/deepseek-coder:6.7b-instruct-q4_0"
 	local docker_port=8121
-	add_app_port "访问地址" 8121
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8121): " _user_port
+		_user_port=${_user_port:-8121}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name deepseek \
 			--restart=always \
 			-p ${docker_port}:8000 \
 			-v /home/docker/deepseek:/root/.ollama \
 			deepseek-ai/deepseek-coder:6.7b-instruct-q4_0
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="DeepSeek AI大模型本地部署, 支持代码生成和对话"
@@ -3392,7 +3669,6 @@ rocketchat_app(){
 	local app_url="官网介绍: https://rocket.chat/"
 	local docker_name="rocketchat-app"
 	local docker_port="8122"
-	add_app_port "访问地址" 8122
 	local app_size="3"
 
 	docker_app_install() {
@@ -3473,9 +3749,13 @@ gopeed_app(){
 	local docker_name="gopeed"
 	local docker_img="liwei2633/gopeed:latest"
 	local docker_port=8123
-	add_app_port "访问地址" 8123
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8123): " _user_port
+		_user_port=${_user_port:-8123}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/gopeed
 		docker run -d \
 			--name gopeed \
@@ -3483,6 +3763,9 @@ gopeed_app(){
 			-p ${docker_port}:9999 \
 			-v /home/docker/gopeed:/app/data \
 			liwei2633/gopeed:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="高速下载工具, 支持HTTP/BitTorrent等协议"
@@ -3498,9 +3781,13 @@ twofauth_app(){
 	local docker_name="2fauth"
 	local docker_img="2fauth/2fauth:latest"
 	local docker_port=8124
-	add_app_port "访问地址" 8124
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8124): " _user_port
+		_user_port=${_user_port:-8124}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/2fauth
 		docker run -d \
 			--name 2fauth \
@@ -3510,6 +3797,9 @@ twofauth_app(){
 			-e APP_ENV=production \
 			-e APP_KEY=base64:$(openssl rand -base64 32) \
 			2fauth/2fauth:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="自托管的二步验证(2FA)管理器, 管理所有TOTP/HOTP令牌"
@@ -3525,9 +3815,13 @@ zfile_app(){
 	local docker_name="zfile"
 	local docker_img="zhaojun1998/zfile:latest"
 	local docker_port=8125
-	add_app_port "访问地址" 8125
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8125): " _user_port
+		_user_port=${_user_port:-8125}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/zfile/data
 		docker run -d \
 			--name zfile \
@@ -3535,6 +3829,9 @@ zfile_app(){
 			-p ${docker_port}:8080 \
 			-v /home/docker/zfile/data:/data \
 			zhaojun1998/zfile:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的在线网盘系统, 支持多种存储策略"
@@ -3550,9 +3847,13 @@ nexterm_app(){
 	local docker_name="nexterm"
 	local docker_img="germannewsmaker/nexterm:latest"
 	local docker_port=8126
-	add_app_port "访问地址" 8126
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8126): " _user_port
+		_user_port=${_user_port:-8126}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/nexterm
 		docker run -d \
 			--name nexterm \
@@ -3560,6 +3861,9 @@ nexterm_app(){
 			-p ${docker_port}:6989 \
 			-v /home/docker/nexterm:/app/data \
 			germannewsmaker/nexterm:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的远程连接管理工具, 支持SSH/VNC/RDP"
@@ -3575,9 +3879,13 @@ jitsimeet_app(){
 	local docker_name="jitsi-meet"
 	local docker_img="jitsi/web:latest"
 	local docker_port=8127
-	add_app_port "访问地址" 8127
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8127): " _user_port
+		_user_port=${_user_port:-8127}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/jitsi/{web,prosody,jicofo,jvb}
 		docker run -d \
 			--name jitsi-web \
@@ -3586,6 +3894,9 @@ jitsimeet_app(){
 			-v /home/docker/jitsi/web:/config \
 			-e ENABLE_LETSENCRYPT=0 \
 			jitsi/web:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的视频会议系统, 支持多人视频会议"
@@ -3601,9 +3912,13 @@ stream_app(){
 	local docker_name="stream"
 	local docker_img="nginx:alpine"
 	local docker_port=8128
-	add_app_port "访问地址" 8128
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8128): " _user_port
+		_user_port=${_user_port:-8128}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/stream
 		cat > /home/docker/stream/nginx.conf << 'EOF'
 stream {
@@ -3619,6 +3934,9 @@ EOF
 			-p ${docker_port}:8128 \
 			-v /home/docker/stream/nginx.conf:/etc/nginx/nginx.conf \
 			nginx:alpine
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="四层代理转发服务, 基于Nginx Stream模块"
@@ -3634,9 +3952,13 @@ filecodebox_app(){
 	local docker_name="filecodebox"
 	local docker_img="lanol/filecodebox:latest"
 	local docker_port=8129
-	add_app_port "访问地址" 8129
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8129): " _user_port
+		_user_port=${_user_port:-8129}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/filecodebox
 		docker run -d \
 			--name filecodebox \
@@ -3644,6 +3966,9 @@ filecodebox_app(){
 			-p ${docker_port}:12345 \
 			-v /home/docker/filecodebox:/app/data \
 			lanol/filecodebox:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="文件快递柜, 匿名口令分享文件"
@@ -3659,9 +3984,13 @@ matrix_app(){
 	local docker_name="matrix"
 	local docker_img="matrixdotorg/synapse:latest"
 	local docker_port=8130
-	add_app_port "访问地址" 8130
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8130): " _user_port
+		_user_port=${_user_port:-8130}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/matrix/data
 		docker run -d \
 			--name matrix \
@@ -3671,6 +4000,9 @@ matrix_app(){
 			-e SYNAPSE_SERVER_NAME=matrix.local \
 			-e SYNAPSE_REPORT_STATS=no \
 			matrixdotorg/synapse:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="去中心化的即时通讯协议, 支持端到端加密"
@@ -3686,9 +4018,13 @@ ytdlp_app(){
 	local docker_name="yt-dlp"
 	local docker_img="mikenye/yt-dlp:latest"
 	local docker_port=8131
-	add_app_port "访问地址" 8131
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8131): " _user_port
+		_user_port=${_user_port:-8131}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/ytdlp/downloads
 		docker run -d \
 			--name yt-dlp \
@@ -3696,6 +4032,9 @@ ytdlp_app(){
 			-p ${docker_port}:8080 \
 			-v /home/docker/ytdlp/downloads:/downloads \
 			mikenye/yt-dlp:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="强大的视频下载工具, 支持YouTube等数百个网站"
@@ -3711,9 +4050,13 @@ paperless_app(){
 	local docker_name="paperless"
 	local docker_img="ghcr.io/paperless-ngx/paperless-ngx:latest"
 	local docker_port=8132
-	add_app_port "访问地址" 8132
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8132): " _user_port
+		_user_port=${_user_port:-8132}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/paperless/{data,media}
 		docker run -d \
 			--name paperless \
@@ -3723,6 +4066,9 @@ paperless_app(){
 			-v /home/docker/paperless/media:/usr/src/paperless/media \
 			-e PAPERLESS_REDIS=redis://localhost:6379 \
 			ghcr.io/paperless-ngx/paperless-ngx:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的文档管理系统, 支持OCR和全文搜索"
@@ -3738,9 +4084,13 @@ wallos_app(){
 	local docker_name="wallos"
 	local docker_img="bellamy/wallos:latest"
 	local docker_port=8133
-	add_app_port "访问地址" 8133
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8133): " _user_port
+		_user_port=${_user_port:-8133}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/wallos
 		docker run -d \
 			--name wallos \
@@ -3748,6 +4098,9 @@ wallos_app(){
 			-p ${docker_port}:80 \
 			-v /home/docker/wallos:/var/www/html \
 			bellamy/wallos:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的个人财务管理工具, 追踪订阅和支出"
@@ -3763,9 +4116,13 @@ komari_app(){
 	local docker_name="komari"
 	local docker_img="komari-server:latest"
 	local docker_port=8134
-	add_app_port "访问地址" 8134
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8134): " _user_port
+		_user_port=${_user_port:-8134}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/komari
 		docker run -d \
 			--name komari \
@@ -3773,6 +4130,9 @@ komari_app(){
 			-p ${docker_port}:8080 \
 			-v /home/docker/komari:/data \
 			komari-server:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="轻量级服务器监控面板"
@@ -3788,9 +4148,13 @@ dufs_app(){
 	local docker_name="dufs"
 	local docker_img="sigoden/dufs:latest"
 	local docker_port=8135
-	add_app_port "访问地址" 8135
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8135): " _user_port
+		_user_port=${_user_port:-8135}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/dufs/data
 		docker run -d \
 			--name dufs \
@@ -3798,6 +4162,9 @@ dufs_app(){
 			-p ${docker_port}:5000 \
 			-v /home/docker/dufs/data:/data \
 			sigoden/dufs:latest /data
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="简单的静态文件服务器, 支持上传下载"
@@ -3813,9 +4180,13 @@ pandawiki_app(){
 	local docker_name="pandawiki"
 	local docker_img="pandawiki/pandawiki:latest"
 	local docker_port=8136
-	add_app_port "访问地址" 8136
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8136): " _user_port
+		_user_port=${_user_port:-8136}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/pandawiki
 		docker run -d \
 			--name pandawiki \
@@ -3823,6 +4194,9 @@ pandawiki_app(){
 			-p ${docker_port}:80 \
 			-v /home/docker/pandawiki:/data \
 			pandawiki/pandawiki:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的Wiki文档管理系统"
@@ -3838,9 +4212,13 @@ linkwarden_app(){
 	local docker_name="linkwarden"
 	local docker_img="ghcr.io/linkwarden/linkwarden:latest"
 	local docker_port=8137
-	add_app_port "访问地址" 8137
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8137): " _user_port
+		_user_port=${_user_port:-8137}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/linkwarden
 		docker run -d \
 			--name linkwarden \
@@ -3849,6 +4227,9 @@ linkwarden_app(){
 			-v /home/docker/linkwarden:/data \
 			-e NEXTAUTH_SECRET=$(openssl rand -base64 32) \
 			ghcr.io/linkwarden/linkwarden:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的书签管理工具, 支持网页归档"
@@ -3864,9 +4245,13 @@ vocechat_app(){
 	local docker_name="vocechat"
 	local docker_img="privoce/vocechat-server:latest"
 	local docker_port=8138
-	add_app_port "访问地址" 8138
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8138): " _user_port
+		_user_port=${_user_port:-8138}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/vocechat
 		docker run -d \
 			--name vocechat \
@@ -3874,6 +4259,9 @@ vocechat_app(){
 			-p ${docker_port}:3000 \
 			-v /home/docker/vocechat:/home/vocechat-server/data \
 			privoce/vocechat-server:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的轻量级聊天系统, 支持自托管"
@@ -3889,9 +4277,13 @@ karakeep_app(){
 	local docker_name="karakeep"
 	local docker_img="ghcr.io/karakeep-app/karakeep:latest"
 	local docker_port=8139
-	add_app_port "访问地址" 8139
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8139): " _user_port
+		_user_port=${_user_port:-8139}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/karakeep
 		docker run -d \
 			--name karakeep \
@@ -3899,6 +4291,9 @@ karakeep_app(){
 			-p ${docker_port}:3000 \
 			-v /home/docker/karakeep:/data \
 			ghcr.io/karakeep-app/karakeep:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="智能书签管理工具, 支持AI自动标签"
@@ -3914,9 +4309,13 @@ newapi_app(){
 	local docker_name="newapi"
 	local docker_img="calciumion/new-api:latest"
 	local docker_port=8140
-	add_app_port "访问地址" 8140
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8140): " _user_port
+		_user_port=${_user_port:-8140}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/newapi
 		docker run -d \
 			--name newapi \
@@ -3924,6 +4323,9 @@ newapi_app(){
 			-p ${docker_port}:3000 \
 			-v /home/docker/newapi:/data \
 			calciumion/new-api:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="大模型API管理和分发系统"
@@ -3939,9 +4341,13 @@ ragflow_app(){
 	local docker_name="ragflow"
 	local docker_img="infiniflow/ragflow:latest"
 	local docker_port=8141
-	add_app_port "访问地址" 8141
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8141): " _user_port
+		_user_port=${_user_port:-8141}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/ragflow
 		docker run -d \
 			--name ragflow \
@@ -3949,6 +4355,9 @@ ragflow_app(){
 			-p ${docker_port}:80 \
 			-v /home/docker/ragflow:/ragflow \
 			infiniflow/ragflow:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的RAG引擎, 构建企业知识库"
@@ -3964,9 +4373,13 @@ astrbot_app(){
 	local docker_name="astrbot"
 	local docker_img="soulter/astrbot:latest"
 	local docker_port=8142
-	add_app_port "访问地址" 8142
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8142): " _user_port
+		_user_port=${_user_port:-8142}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/astrbot
 		docker run -d \
 			--name astrbot \
@@ -3974,6 +4387,9 @@ astrbot_app(){
 			-p ${docker_port}:6185 \
 			-v /home/docker/astrbot:/AstrBot/data \
 			soulter/astrbot:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="多平台聊天机器人框架, 支持QQ/微信/飞书"
@@ -3989,9 +4405,13 @@ langbot_app(){
 	local docker_name="langbot"
 	local docker_img="rockchin/langbot:latest"
 	local docker_port=8143
-	add_app_port "访问地址" 8143
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8143): " _user_port
+		_user_port=${_user_port:-8143}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/langbot
 		docker run -d \
 			--name langbot \
@@ -3999,6 +4419,9 @@ langbot_app(){
 			-p ${docker_port}:2280 \
 			-v /home/docker/langbot:/app \
 			rockchin/langbot:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="大模型原生即时通信机器人平台"
@@ -4014,14 +4437,21 @@ gotenberg_app(){
 	local docker_name="gotenberg"
 	local docker_img="gotenberg/gotenberg:latest"
 	local docker_port=8144
-	add_app_port "访问地址" 8144
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8144): " _user_port
+		_user_port=${_user_port:-8144}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name gotenberg \
 			--restart=always \
 			-p ${docker_port}:3000 \
 			gotenberg/gotenberg:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的文档转换服务, 支持多种格式互转"
@@ -4037,14 +4467,21 @@ librespeed_app(){
 	local docker_name="librespeed"
 	local docker_img="adolfintel/speedtest:latest"
 	local docker_port=8145
-	add_app_port "访问地址" 8145
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8145): " _user_port
+		_user_port=${_user_port:-8145}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name librespeed \
 			--restart=always \
 			-p ${docker_port}:80 \
 			adolfintel/speedtest:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的网络测速工具, 类似Speedtest"
@@ -4060,9 +4497,13 @@ gptload_app(){
 	local docker_name="gpt-load"
 	local docker_img="ghcr.io/gpt-load/gpt-load:latest"
 	local docker_port=8146
-	add_app_port "访问地址" 8146
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8146): " _user_port
+		_user_port=${_user_port:-8146}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/gptload
 		docker run -d \
 			--name gpt-load \
@@ -4070,6 +4511,9 @@ gptload_app(){
 			-p ${docker_port}:8080 \
 			-v /home/docker/gptload:/data \
 			ghcr.io/gpt-load/gpt-load:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="AI服务透明代理工具"
@@ -4085,9 +4529,13 @@ stockmonitor_app(){
 	local docker_name="stockmonitor"
 	local docker_img="stock-monitor:latest"
 	local docker_port=8147
-	add_app_port "访问地址" 8147
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8147): " _user_port
+		_user_port=${_user_port:-8147}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/stockmonitor
 		docker run -d \
 			--name stockmonitor \
@@ -4095,6 +4543,9 @@ stockmonitor_app(){
 			-p ${docker_port}:8080 \
 			-v /home/docker/stockmonitor:/data \
 			stock-monitor:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="商品库存监控和补货提醒工具"
@@ -4110,9 +4561,13 @@ pve_app(){
 	local docker_name="pve"
 	local docker_img="pve-manager:latest"
 	local docker_port=8148
-	add_app_port "访问地址" 8148
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8148): " _user_port
+		_user_port=${_user_port:-8148}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/pve
 		docker run -d \
 			--name pve \
@@ -4121,6 +4576,9 @@ pve_app(){
 			--privileged \
 			-v /home/docker/pve:/data \
 			pve-manager:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="Proxmox VE虚拟化管理平台"
@@ -4136,9 +4594,13 @@ dsm_app(){
 	local docker_name="dsm"
 	local docker_img="kroese/virtual-dsm:latest"
 	local docker_port=8149
-	add_app_port "访问地址" 8149
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8149): " _user_port
+		_user_port=${_user_port:-8149}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/dsm
 		docker run -d \
 			--name dsm \
@@ -4147,6 +4609,9 @@ dsm_app(){
 			--privileged \
 			-v /home/docker/dsm:/storage \
 			kroese/virtual-dsm:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="在Docker中运行群晖DSM系统"
@@ -4162,14 +4627,21 @@ dosgame_app(){
 	local docker_name="dosgame"
 	local docker_img="oldiy/dosgame-web-docker:latest"
 	local docker_port=8150
-	add_app_port "访问地址" 8150
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8150): " _user_port
+		_user_port=${_user_port:-8150}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name dosgame \
 			--restart=always \
 			-p ${docker_port}:262 \
 			oldiy/dosgame-web-docker:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="在线DOS游戏合集, 怀旧经典游戏"
@@ -4185,9 +4657,13 @@ xunlei_app(){
 	local docker_name="xunlei"
 	local docker_img="cnk3x/xunlei:latest"
 	local docker_port=8151
-	add_app_port "访问地址" 8151
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8151): " _user_port
+		_user_port=${_user_port:-8151}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/xunlei/downloads
 		docker run -d \
 			--name xunlei \
@@ -4196,6 +4672,9 @@ xunlei_app(){
 			-v /home/docker/xunlei:/xunlei \
 			-v /home/docker/xunlei/downloads:/downloads \
 			cnk3x/xunlei:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="迅雷离线下载服务, 支持远程下载"
@@ -4211,9 +4690,13 @@ xiaoya_app(){
 	local docker_name="xiaoya"
 	local docker_img="xiaoyaliu/alist:latest"
 	local docker_port=8152
-	add_app_port "访问地址" 8152
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8152): " _user_port
+		_user_port=${_user_port:-8152}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/xiaoya
 		docker run -d \
 			--name xiaoya \
@@ -4221,6 +4704,9 @@ xiaoya_app(){
 			-p ${docker_port}:5244 \
 			-v /home/docker/xiaoya:/data \
 			xiaoyaliu/alist:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="小雅Alist, 整合多网盘资源"
@@ -4236,9 +4722,13 @@ bililive_app(){
 	local docker_name="bililive"
 	local docker_img="bililive/recorder:latest"
 	local docker_port=8153
-	add_app_port "访问地址" 8153
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8153): " _user_port
+		_user_port=${_user_port:-8153}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/bililive
 		docker run -d \
 			--name bililive \
@@ -4246,6 +4736,9 @@ bililive_app(){
 			-p ${docker_port}:2356 \
 			-v /home/docker/bililive:/rec \
 			bililive/recorder:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="B站直播录制工具, 自动录制直播间"
@@ -4261,9 +4754,13 @@ moments_app(){
 	local docker_name="moments"
 	local docker_img="moments-app:latest"
 	local docker_port=8154
-	add_app_port "访问地址" 8154
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8154): " _user_port
+		_user_port=${_user_port:-8154}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/moments
 		docker run -d \
 			--name moments \
@@ -4271,6 +4768,9 @@ moments_app(){
 			-p ${docker_port}:3000 \
 			-v /home/docker/moments:/data \
 			moments-app:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="极简风格的朋友圈/微博系统"
@@ -4286,9 +4786,13 @@ pansou_app(){
 	local docker_name="pansou"
 	local docker_img="pansou-search:latest"
 	local docker_port=8155
-	add_app_port "访问地址" 8155
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8155): " _user_port
+		_user_port=${_user_port:-8155}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/pansou
 		docker run -d \
 			--name pansou \
@@ -4296,6 +4800,9 @@ pansou_app(){
 			-p ${docker_port}:8080 \
 			-v /home/docker/pansou:/data \
 			pansou-search:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="网盘资源搜索引擎"
@@ -4311,9 +4818,13 @@ lskypro_app(){
 	local docker_name="lskypro"
 	local docker_img="halcyonazure/lsky-pro-docker:latest"
 	local docker_port=8156
-	add_app_port "访问地址" 8156
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8156): " _user_port
+		_user_port=${_user_port:-8156}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/lskypro
 		docker run -d \
 			--name lskypro \
@@ -4321,6 +4832,9 @@ lskypro_app(){
 			-p ${docker_port}:8089 \
 			-v /home/docker/lskypro:/var/www/html \
 			halcyonazure/lsky-pro-docker:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="简单图床系统, 支持多存储策略"
@@ -4336,9 +4850,13 @@ zentao_app(){
 	local docker_name="zentao"
 	local docker_img="idoop/zentao:latest"
 	local docker_port=8157
-	add_app_port "访问地址" 8157
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8157): " _user_port
+		_user_port=${_user_port:-8157}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/zentao
 		docker run -d \
 			--name zentao \
@@ -4346,6 +4864,9 @@ zentao_app(){
 			-p ${docker_port}:80 \
 			-v /home/docker/zentao:/www/zentaopms \
 			idoop/zentao:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的项目管理软件, 支持敏捷开发"
@@ -4361,9 +4882,13 @@ qdtoday_app(){
 	local docker_name="qdtoday"
 	local docker_img="qdtoday/qd:latest"
 	local docker_port=8158
-	add_app_port "访问地址" 8158
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8158): " _user_port
+		_user_port=${_user_port:-8158}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/qdtoday
 		docker run -d \
 			--name qdtoday \
@@ -4371,6 +4896,9 @@ qdtoday_app(){
 			-p ${docker_port}:80 \
 			-v /home/docker/qdtoday:/usr/src/app \
 			qdtoday/qd:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="HTTP请求定时任务框架, 自动签到"
@@ -4386,9 +4914,13 @@ haizi_app(){
 	local docker_name="haizi"
 	local docker_img="haizi-panel:latest"
 	local docker_port=8159
-	add_app_port "访问地址" 8159
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8159): " _user_port
+		_user_port=${_user_port:-8159}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/haizi
 		docker run -d \
 			--name haizi \
@@ -4396,6 +4928,9 @@ haizi_app(){
 			-p ${docker_port}:8080 \
 			-v /home/docker/haizi:/data \
 			haizi-panel:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="耗子管理面板, 轻量级服务器管理"
@@ -4411,9 +4946,13 @@ amh_app(){
 	local docker_name="amh"
 	local docker_img="amh-panel:latest"
 	local docker_port=8160
-	add_app_port "访问地址" 8160
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8160): " _user_port
+		_user_port=${_user_port:-8160}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/amh
 		docker run -d \
 			--name amh \
@@ -4421,6 +4960,9 @@ amh_app(){
 			-p ${docker_port}:8888 \
 			-v /home/docker/amh:/data \
 			amh-panel:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="AMH云主机面板, 建站管理工具"
@@ -4436,14 +4978,21 @@ libretranslate_app(){
 	local docker_name="libretranslate"
 	local docker_img="libretranslate/libretranslate:latest"
 	local docker_port=8161
-	add_app_port "访问地址" 8161
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8161): " _user_port
+		_user_port=${_user_port:-8161}
+		docker_port=$_user_port
+
 		docker run -d \
 			--name libretranslate \
 			--restart=always \
 			-p ${docker_port}:5000 \
 			libretranslate/libretranslate:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的神经网络翻译API服务"
@@ -4459,9 +5008,13 @@ videogen_app(){
 	local docker_name="videogen"
 	local docker_img="videogen-ai:latest"
 	local docker_port=8162
-	add_app_port "访问地址" 8162
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8162): " _user_port
+		_user_port=${_user_port:-8162}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/videogen
 		docker run -d \
 			--name videogen \
@@ -4470,6 +5023,9 @@ videogen_app(){
 			-v /home/docker/videogen:/data \
 			--gpus all \
 			videogen-ai:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="AI视频生成工具, 文本生成视频"
@@ -4518,9 +5074,13 @@ firefox_app(){
 	local docker_name="firefox"
 	local docker_img="jlesage/firefox:latest"
 	local docker_port=8164
-	add_app_port "访问地址" 8164
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8164): " _user_port
+		_user_port=${_user_port:-8164}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/firefox
 		docker run -d \
 			--name firefox \
@@ -4528,6 +5088,9 @@ firefox_app(){
 			-p ${docker_port}:5800 \
 			-v /home/docker/firefox:/config \
 			jlesage/firefox:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="在浏览器中运行的Firefox浏览器"
@@ -4543,9 +5106,13 @@ dpanel_app(){
 	local docker_name="dpanel"
 	local docker_img="dpanel/dpanel:latest"
 	local docker_port=8165
-	add_app_port "访问地址" 8165
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8165): " _user_port
+		_user_port=${_user_port:-8165}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/dpanel
 		docker run -d \
 			--name dpanel \
@@ -4554,6 +5121,9 @@ dpanel_app(){
 			-v /var/run/docker.sock:/var/run/docker.sock \
 			-v /home/docker/dpanel:/dpanel \
 			dpanel/dpanel:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="Docker容器可视化管理面板"
@@ -4569,9 +5139,13 @@ prometheus_app(){
 	local docker_name="prometheus"
 	local docker_img="prom/prometheus:latest"
 	local docker_port=8166
-	add_app_port "访问地址" 8166
 
 	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 8166): " _user_port
+		_user_port=${_user_port:-8166}
+		docker_port=$_user_port
+
 		mkdir -p /home/docker/prometheus
 		cat > /home/docker/prometheus/prometheus.yml << 'EOF'
 global:
@@ -4588,6 +5162,9 @@ EOF
 			-p ${docker_port}:9090 \
 			-v /home/docker/prometheus:/etc/prometheus \
 			prom/prometheus:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
 	local app_text="开源的系统监控和报警工具"
