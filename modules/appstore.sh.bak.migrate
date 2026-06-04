@@ -619,32 +619,21 @@ get_docker_app_status() {
 	fi
 }
 
-# 把秒数格式化成 "X天Y小时Z分" / "X小时Y分" / "X分Y秒"
+# 把秒数格式化成 "X天Y小时" / "X小时Y分" / "X分Y秒"
 format_uptime() {
 	local secs=$1
 	if [ -z "$secs" ] || ! [[ "$secs" =~ ^[0-9]+$ ]]; then
 		echo ""
 		return
 	fi
-	local d=$((secs/86400))
-	local h=$(((secs%86400)/3600))
-	local m=$(((secs%3600)/60))
-	local s=$((secs%60))
-	if [ "$d" -gt 0 ]; then
-		# 天+小时+分 (分可选, 不显示秒)
-		if [ "$m" -gt 0 ]; then
-			echo "${d}天${h}小时${m}分"
-		elif [ "$h" -gt 0 ]; then
-			echo "${d}天${h}小时"
-		else
-			echo "${d}天"
-		fi
-	elif [ "$h" -gt 0 ]; then
-		echo "${h}小时${m}分"
-	elif [ "$m" -gt 0 ]; then
-		echo "${m}分${s}秒"
+	if [ "$secs" -ge 86400 ]; then
+		echo "$((secs/86400))天$((secs%86400/3600))小时"
+	elif [ "$secs" -ge 3600 ]; then
+		echo "$((secs/3600))小时$((secs%3600/60))分"
+	elif [ "$secs" -ge 60 ]; then
+		echo "$((secs/60))分$((secs%60))秒"
 	else
-		echo "${s}秒"
+		echo "${secs}秒"
 	fi
 }
 
@@ -1010,9 +999,6 @@ docker_app() {
 # 宝塔面板
 bt_app(){
 	local app_id="2"
-	local app_name="宝塔面板"
-	local app_text="宝塔面板是一款流行的国产 Linux 运维管理面板"
-	local app_url="官网介绍: https://www.bt.cn"
 	local panel_path="[ -d "/www/server/panel" ]"
 	local panelname="宝塔面板"
 	local panelurl="https://www.bt.cn"
@@ -1036,9 +1022,6 @@ bt_app(){
 # aapanel面板
 aapanel_app(){
 	local app_id="3"
-	local app_name="aaPanel面板"
-	local app_text="aaPanel 是宝塔面板的国际版, 界面英文, 适合海外用户"
-	local app_url="官网介绍: https://www.aapanel.com/"
 	local panel_path="[ -d "/www/server/panel" ]"
 	local panelname="aapanel"
 	local panelurl="https://www.aapanel.com/"
@@ -1062,11 +1045,9 @@ aapanel_app(){
 # NginxProxyManager可视化面板
 npm_app(){
 		local app_id="4"
-	local app_name="NginxProxyManager面板"
 		local docker_name="npm"
 		local docker_img="jc21/nginx-proxy-manager:latest"
 		local docker_port=81
-		add_app_port "访问地址" 81
 
 		docker_run() {
 			docker run -d \
@@ -1080,8 +1061,10 @@ npm_app(){
 				$docker_img
 		}
 
-		local app_text="一个Nginx反向代理工具面板, 不支持添加域名访问."
-		local app_url="官网介绍: https://nginxproxymanager.com/"
+		local docker_describe="一个Nginx反向代理工具面板, 不支持添加域名访问."
+		local docker_url="官网介绍: https://nginxproxymanager.com/"
+		local docker_use="echo \"初始用户名: admin@example.com\""
+		local docker_passwd="echo \"初始密码: changeme\""
 		local app_size="1"
 
 		docker_app
@@ -1090,11 +1073,9 @@ npm_app(){
 # openlist
 openlist_app(){
 		local app_id="5"
-	local app_name="OpenList面板"
 		local docker_name="openlist"
 		local docker_img="openlistteam/openlist:latest"
 		local docker_port=5244
-		add_app_port "访问地址" 5244
 
 		docker_run() {
 			docker run -d \
@@ -1110,8 +1091,10 @@ openlist_app(){
 				openlistteam/openlist:latest
 		}
 
-		local app_text="一个支持多种存储, 支持网页浏览和 WebDAV 的文件列表程序, 由 gin 和 Solidjs 驱动"
-		local app_url="官网介绍: https://github.com/OpenListTeam/OpenList"
+		local docker_describe="一个支持多种存储, 支持网页浏览和 WebDAV 的文件列表程序, 由 gin 和 Solidjs 驱动"
+		local docker_url="官网介绍: https://github.com/OpenListTeam/OpenList"
+		local docker_use="docker exec -it openlist ./openlist admin random"
+		local docker_passwd=""
 		local app_size="1"
 
 		docker_app
@@ -1120,11 +1103,9 @@ openlist_app(){
 # webtop(浏览器访问linux系统)
 webtop_app(){
 		local app_id="6"
-	local app_name="WebTop远程桌面网页版"
 		local docker_name="webtop-ubuntu"
 		local docker_img="lscr.io/linuxserver/webtop:ubuntu-kde"
 		local docker_port=3006
-		add_app_port "访问地址" 3006
 
 		docker_run() {
 			read -e -p "设置登录用户名: " admin
@@ -1147,8 +1128,10 @@ webtop_app(){
 				lscr.io/linuxserver/webtop:ubuntu-kde
 		}
 
-		local app_text="webtop基于Ubuntu的容器.若IP无法访问, 请添加域名访问."
-		local app_url="官网介绍: https://docs.linuxserver.io/images/docker-webtop/"
+		local docker_describe="webtop基于Ubuntu的容器.若IP无法访问, 请添加域名访问."
+		local docker_url="官网介绍: https://docs.linuxserver.io/images/docker-webtop/"
+		local docker_use=""
+		local docker_passwd=""
 		local app_size="2"
 		docker_app
 }
@@ -1157,12 +1140,8 @@ webtop_app(){
 nezha_app(){
 	clear
 	local app_id="7"
-	local app_name="哪吒探针"
-	local app_text="开源、轻量、易用的服务器监控与运维工具"
-	local app_url="官网搭建文档: https://nezha.wiki/guide/dashboard.html"
 	local docker_name="nezha-dashboard"
 	local docker_port=8008
-	add_app_port "访问地址" 8008
 	while true; do
 		check_docker_app
 		check_docker_image_update $docker_name
@@ -1203,12 +1182,9 @@ nezha_app(){
 # qbittorrent
 qb_app(){
 	local app_id="8"
-	local app_name="qbittorrent离线下载"
 	local docker_name="qbittorrent"
 	local docker_img="lscr.io/linuxserver/qbittorrent:latest"
 	local docker_port=8081
-	add_app_port "Web管理界面" 8081
-	add_app_port "BT下载端口 (TCP+UDP)" 56881
 
 	docker_run() {
 		docker run -d \
@@ -1227,8 +1203,10 @@ qb_app(){
 			lscr.io/linuxserver/qbittorrent:latest
 	}
 
-	local app_text="qbittorrent离线BT磁力下载服务"
-	local app_url="官网介绍: https://hub.docker.com/r/linuxserver/qbittorrent"
+	local docker_describe="qbittorrent离线BT磁力下载服务"
+	local docker_url="官网介绍: https://hub.docker.com/r/linuxserver/qbittorrent"
+	local docker_use="sleep 3"
+	local docker_passwd="docker logs qbittorrent"
 	local app_size="1"
 	docker_app
 }
@@ -1238,9 +1216,6 @@ poste_mail_app(){
 	clear
 	install telnet
 	local app_id="9"
-	local app_name="Poste.io邮件服务器程序"
-	local app_text="poste.io 是一个开源的邮件服务器解决方案, 支持 Webmail / 反垃圾 / 病毒扫描"
-	local app_url="官网介绍: https://poste.io/"
 	local docker_name="mailserver"
 	while true; do
 		check_docker_app
@@ -1362,11 +1337,9 @@ poste_mail_app(){
 # 青龙面板
 qinglong_app(){
 	local app_id="10"
-	local app_name="青龙面板"
 	local docker_name="qinglong"
 	local docker_img="whyour/qinglong:latest"
 	local docker_port=5700
-	add_app_port "访问地址" 5700
 
 	docker_run() {
 		docker run -d \
@@ -1378,8 +1351,10 @@ qinglong_app(){
 			whyour/qinglong:latest
 	}
 
-	local app_text="青龙面板是一个定时任务管理平台"
-	local app_url="官网介绍: ${url_proxy}github.com/whyour/qinglong"
+	local docker_describe="青龙面板是一个定时任务管理平台"
+	local docker_url="官网介绍: ${url_proxy}github.com/whyour/qinglong"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1387,18 +1362,18 @@ qinglong_app(){
 # vscode网页版(code-server)
 code_server_app(){
 	local app_id="11"
-	local app_name="Code-Server(网页vscode)"
 	local docker_name="code-server"
 	local docker_img="codercom/code-server"
 	local docker_port=8021
-	add_app_port "访问地址" 8021
 
 	docker_run() {
 		docker run -d -p ${docker_port}:8080 -v /home/docker/vscode-web:/home/coder/.local/share/code-server --name vscode-web --restart always codercom/code-server
 	}
 
-	local app_text="VScode是一款强大的在线代码编写工具"
-	local app_url="官网介绍: ${url_proxy}github.com/coder/code-server"
+	local docker_describe="VScode是一款强大的在线代码编写工具"
+	local docker_url="官网介绍: ${url_proxy}github.com/coder/code-server"
+	local docker_use="sleep 3"
+	local docker_passwd="docker exec vscode-web cat /home/coder/.config/code-server/config.yaml"
 	local app_size="1"
 	docker_app
 
@@ -1407,17 +1382,17 @@ code_server_app(){
 # Looking Glass测速面板
 looking_glass_app(){
 		local app_id="12"
-	local app_name="Looking Glass(测速面板)"
 		local docker_name="looking-glass"
 		local docker_img="wikihostinc/looking-glass-server"
 		local docker_port=8016
-		add_app_port "访问地址" 8016
 
 		docker_run() {
 			docker run -d --name looking-glass --restart always -p ${docker_port}:80 wikihostinc/looking-glass-server
 		}
-		local app_text="Looking Glass是一个VPS网速测试工具, 多项测试功能, 还可以实时监控VPS进出站流量"
-		local app_url="官网介绍: ${url_proxy}github.com/wikihost-opensource/als"
+		local docker_describe="Looking Glass是一个VPS网速测试工具, 多项测试功能, 还可以实时监控VPS进出站流量"
+		local docker_url="官网介绍: ${url_proxy}github.com/wikihost-opensource/als"
+		local docker_use=""
+		local docker_passwd=""
 		local app_size="1"
 		docker_app
 }
@@ -1425,12 +1400,8 @@ looking_glass_app(){
 # 雷池WAF防火墙面板
 safeline_app(){
 	local app_id="13"
-	local app_name="雷池WAF防火墙面板"
-	local app_text="雷池是长亭科技开发的 WAF 站点防火墙程序面板, 可以反代站点进行自动化防御"
-	local app_url="官网介绍: https://waf-ce.chaitin.cn/"
 	local docker_name=safeline-mgt
 	local docker_port=9443
-	add_app_port "访问地址" 9443
 	while true; do
 		check_docker_app
 		clear
@@ -1494,11 +1465,9 @@ safeline_app(){
 # onlyoffice在线办公OFFICE
 onlyoffice_app(){
 	local app_id="14"
-	local app_name="onlyoffice在线办公OFFICE"
 	local docker_name="onlyoffice"
 	local docker_img="onlyoffice/documentserver"
 	local docker_port=8018
-	add_app_port "访问地址" 8018
 
 	docker_run() {
 		docker run -d -p ${docker_port}:80 \
@@ -1509,8 +1478,10 @@ onlyoffice_app(){
 				onlyoffice/documentserver
 	}
 
-	local app_text="onlyoffice是一款开源的在线office工具, 太强大了!"
-	local app_url="官网介绍: https://www.onlyoffice.com/"
+	local docker_describe="onlyoffice是一款开源的在线office工具, 太强大了!"
+	local docker_url="官网介绍: https://www.onlyoffice.com/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -1518,11 +1489,9 @@ onlyoffice_app(){
 # UptimeKuma监控工具
 uptimekuma_app(){
 	local app_id="15"
-	local app_name="UptimeKuma监控工具"
 	local docker_name="uptime-kuma"
 	local docker_img="louislam/uptime-kuma:latest"
 	local docker_port=8022
-	add_app_port "访问地址" 8022
 
 	docker_run() {
 		docker run -d \
@@ -1533,8 +1502,10 @@ uptimekuma_app(){
 			louislam/uptime-kuma:latest
 	}
 
-	local app_text="Uptime Kuma 易于使用的自托管监控工具"
-	local app_url="官网介绍: ${url_proxy}github.com/louislam/uptime-kuma"
+	local docker_describe="Uptime Kuma 易于使用的自托管监控工具"
+	local docker_url="官网介绍: ${url_proxy}github.com/louislam/uptime-kuma"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1542,18 +1513,18 @@ uptimekuma_app(){
 # Memos网页备忘录
 memos_app(){
 	local app_id="16"
-	local app_name="Memos网页备忘录"
 	local docker_name="memos"
 	local docker_img="ghcr.io/usememos/memos:latest"
 	local docker_port=8023
-	add_app_port "访问地址" 8023
 
 	docker_run() {
 		docker run -d --name memos -p ${docker_port}:5230 -v /home/docker/memos:/var/opt/memos --restart always ghcr.io/usememos/memos:latest
 	}
 
-	local app_text="Memos是一款轻量级、自托管的备忘录中心"
-	local app_url="官网介绍: ${url_proxy}github.com/usememos/memos"
+	local docker_describe="Memos是一款轻量级、自托管的备忘录中心"
+	local docker_url="官网介绍: ${url_proxy}github.com/usememos/memos"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1561,18 +1532,18 @@ memos_app(){
 # drawio免费的在线图表软件
 drawio_app(){
 	local app_id="17"
-	local app_name="drawio免费的在线图表软件"
 	local docker_name="drawio"
 	local docker_img="jgraph/drawio"
 	local docker_port=8032
-	add_app_port "访问地址" 8032
 
 	docker_run() {
 		docker run -d --restart=always --name drawio -p ${docker_port}:8080 -v /home/docker/drawio:/var/lib/drawio jgraph/drawio
 	}
 
-	local app_text="这是一个强大图表绘制软件.思维导图, 拓扑图, 流程图, 都能画"
-	local app_url="官网介绍: https://www.drawio.com/"
+	local docker_describe="这是一个强大图表绘制软件.思维导图, 拓扑图, 流程图, 都能画"
+	local docker_url="官网介绍: https://www.drawio.com/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1580,11 +1551,9 @@ drawio_app(){
 # Sun-Panel导航面板
 sun_panel_app(){
 	local app_id="18"
-	local app_name="Sun-Panel导航面板"
 	local docker_name="sun-panel"
 	local docker_img="hslr/sun-panel"
 	local docker_port=8033
-	add_app_port "访问地址" 8033
 
 	docker_run() {
 		docker run -d --restart=always -p ${docker_port}:3002 \
@@ -1595,8 +1564,10 @@ sun_panel_app(){
 			hslr/sun-panel
 	}
 
-	local app_text="Sun-Panel服务器、NAS导航面板、Homepage、浏览器首页"
-	local app_url="官网介绍: https://doc.sun-panel.top/zh_cn/"
+	local docker_describe="Sun-Panel服务器、NAS导航面板、Homepage、浏览器首页"
+	local docker_url="官网介绍: https://doc.sun-panel.top/zh_cn/"
+	local docker_use="echo \"账号: admin@sun.cc  密码: 12345678\""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1604,17 +1575,17 @@ sun_panel_app(){
 # webssh网页版SSH连接工具
 webssh_app(){
 	local app_id="19"
-	local app_name="webssh网页版SSH连接工具"
 	local docker_name="webssh"
 	local docker_img="jrohy/webssh"
 	local docker_port=8040
-	add_app_port "访问地址" 8040
 	docker_run() {
 		docker run -d -p ${docker_port}:5032 --restart always --name webssh -e TZ=Asia/Shanghai jrohy/webssh
 	}
 
-	local app_text="简易在线ssh连接工具和sftp工具"
-	local app_url="官网介绍: ${url_proxy}github.com/Jrohy/webssh"
+	local docker_describe="简易在线ssh连接工具和sftp工具"
+	local docker_url="官网介绍: ${url_proxy}github.com/Jrohy/webssh"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1625,7 +1596,6 @@ lobe_chat(){
 	local docker_name="lobe-chat"
 	local docker_img="lobehub/lobe-chat:latest"
 	local docker_port=8036
-	add_app_port "访问地址" 8036
 
 	docker_run() {
 		docker run -d -p ${docker_port}:3210 \
@@ -1634,8 +1604,10 @@ lobe_chat(){
 			lobehub/lobe-chat
 	}
 
-	local app_text="LobeChat聚合市面上主流的AI大模型, ChatGPT/Claude/Gemini/Groq/Ollama"
-	local app_url="官网介绍: ${url_proxy}github.com/lobehub/lobe-chat"
+	local docker_describe="LobeChat聚合市面上主流的AI大模型, ChatGPT/Claude/Gemini/Groq/Ollama"
+	local docker_url="官网介绍: ${url_proxy}github.com/lobehub/lobe-chat"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -1643,18 +1615,18 @@ lobe_chat(){
 # MyIP工具箱
 myip_app(){
 	local app_id="21"
-	local app_name="MyIP工具箱"
 	local docker_name="myip"
 	local docker_img="jason5ng32/myip:latest"
 	local docker_port=8037
-	add_app_port "访问地址" 8037
 
 	docker_run() {
 		docker run -d -p ${docker_port}:18966 --name myip jason5ng32/myip:latest
 	}
 
-	local app_text="是一个多功能IP工具箱, 可以查看自己IP信息及连通性, 用网页面板呈现"
-	local app_url="官网介绍: ${url_proxy}github.com/jason5ng32/MyIP/blob/main/README_ZH.md"
+	local docker_describe="是一个多功能IP工具箱, 可以查看自己IP信息及连通性, 用网页面板呈现"
+	local docker_url="官网介绍: ${url_proxy}github.com/jason5ng32/MyIP/blob/main/README_ZH.md"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1662,11 +1634,9 @@ myip_app(){
 # ghproxy(GitHub加速站)
 ghproxy_app(){
 	local app_id="22"
-	local app_name="ghproxy(GitHub加速站)"
 	local docker_name="ghproxy"
 	local docker_img="wjqserver/ghproxy:latest"
 	local docker_port=8046
-	add_app_port "访问地址" 8046
 
 	docker_run() {
 		docker run -d \
@@ -1676,8 +1646,10 @@ ghproxy_app(){
 		-v /home/docker/ghproxy/config:/data/ghproxy/config wjqserver/ghproxy:latest
 	}
 
-	local app_text="使用Go实现的GHProxy, 用于加速部分地区Github仓库的拉取."
-	local app_url="官网介绍: https://github.com/WJQSERVER-STUDIO/ghproxy"
+	local docker_describe="使用Go实现的GHProxy, 用于加速部分地区Github仓库的拉取."
+	local docker_url="官网介绍: https://github.com/WJQSERVER-STUDIO/ghproxy"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1685,18 +1657,18 @@ ghproxy_app(){
 # AllinSSL证书管理平台
 allinssl_app(){
 	local app_id="23"
-	local app_name="AllinSSL证书管理平台"
 	local docker_name="allinssl"
 	local docker_img="allinssl/allinssl:latest"
 	local docker_port=8068
-	add_app_port "访问地址" 8068
 
 	docker_run() {
 		docker run -itd --name allinssl -p ${docker_port}:8888 -v /home/docker/allinssl/data:/www/allinssl/data -e ALLINSSL_USER=allinssl -e ALLINSSL_PWD=allinssldocker -e ALLINSSL_URL=allinssl allinssl/allinssl:latest
 	}
 
-	local app_text="开源免费的 SSL 证书自动化管理平台"
-	local app_url="官网介绍: https://allinssl.com"
+	local docker_describe="开源免费的 SSL 证书自动化管理平台"
+	local docker_url="官网介绍: https://allinssl.com"
+	local docker_use="echo \"安全入口: /allinssl\""
+	local docker_passwd="echo \"用户名: allinssl  密码: allinssldocker\""
 	local app_size="1"
 	docker_app
 }
@@ -1704,11 +1676,9 @@ allinssl_app(){
 # DDNS-GO
 ddnsgo_app(){
 	local app_id="24"
-	local app_name="DDNS-GO"
 	local docker_name="ddns-go"
 	local docker_img="jeessy/ddns-go"
 	local docker_port=8067
-	add_app_port "访问地址" 8067
 
 	docker_run() {
 		docker run -d \
@@ -1719,8 +1689,10 @@ ddnsgo_app(){
 			jeessy/ddns-go
 	}
 
-	local app_text="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
-	local app_url="官网介绍: https://github.com/jeessy2/ddns-go"
+	local docker_describe="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
+	local docker_url="官网介绍: https://github.com/jeessy2/ddns-go"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1728,11 +1700,9 @@ ddnsgo_app(){
 # Lucky
 lucky_app(){
 	local app_id="25"
-	local app_name="Lucky"
 	local docker_name="lucky"
 	local docker_img="gdy666/lucky"
 	local docker_port=8068
-	add_app_port "访问地址" 8068
 
 	docker_run() {
 		docker run -d \
@@ -1742,8 +1712,10 @@ lucky_app(){
 		gdy666/lucky
 	}
 
-	local app_text="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
-	local app_url="官网介绍: https://github.com/gdy666/lucky"
+	local docker_describe="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
+	local docker_url="官网介绍: https://github.com/gdy666/lucky"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1751,11 +1723,9 @@ lucky_app(){
 # LibreTV私有影视
 libretv_app(){
 		local app_id="26"
-	local app_name="LibreTV私有影视"
 		local docker_name="libretv"
 		local docker_img="bestzwei/libretv:latest"
 		local docker_port=8073
-		add_app_port "访问地址" 8073
 
 		docker_run() {
 			read -e -p "设置LibreTV的登录密码: " app_passwd
@@ -1767,8 +1737,10 @@ libretv_app(){
 				bestzwei/libretv:latest
 		}
 
-		local app_text="免费在线视频搜索与观看平台"
-		local app_url="官网介绍: https://github.com/LibreSpark/LibreTV"
+		local docker_describe="免费在线视频搜索与观看平台"
+		local docker_url="官网介绍: https://github.com/LibreSpark/LibreTV"
+		local docker_use=""
+		local docker_passwd=""
 		local app_size="1"
 		docker_app
 }
@@ -1782,7 +1754,6 @@ moontv_app(){
 	local app_url="官网介绍: https://github.com/MoonTechLab/LunaTV"
 	local docker_name="moontv-core"
 	local docker_port="8074"
-	add_app_port "访问地址" 8074
 	local app_size="2"
 
 	docker_app_install() {
@@ -1834,11 +1805,9 @@ moontv_app(){
 # Melody音乐精灵
 melody_app(){
 	local app_id="28"
-	local app_name="Melody音乐精灵"
 	local docker_name="melody"
 	local docker_img="foamzou/melody:latest"
 	local docker_port=8075
-	add_app_port "访问地址" 8075
 
 	docker_run() {
 		docker run -d \
@@ -1849,8 +1818,10 @@ melody_app(){
 			foamzou/melody:latest
 	}
 
-	local app_text="你的音乐精灵, 旨在帮助你更好地管理音乐."
-	local app_url="官网介绍: https://github.com/foamzou/melody"
+	local docker_describe="你的音乐精灵, 旨在帮助你更好地管理音乐."
+	local docker_url="官网介绍: https://github.com/foamzou/melody"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1858,11 +1829,9 @@ melody_app(){
 # Beszel服务器监控
 beszel_app(){
 	local app_id="29"
-	local app_name="Beszel服务器监控"
 	local docker_name="beszel"
 	local docker_img="henrygd/beszel"
 	local docker_port=8079
-	add_app_port "访问地址" 8079
 
 	docker_run() {
 		mkdir -p /home/docker/beszel && \
@@ -1874,8 +1843,10 @@ beszel_app(){
 			henrygd/beszel
 	}
 
-	local app_text="Beszel轻量易用的服务器监控"
-	local app_url="官网介绍: https://beszel.dev/zh/"
+	local docker_describe="Beszel轻量易用的服务器监控"
+	local docker_url="官网介绍: https://beszel.dev/zh/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -1883,11 +1854,9 @@ beszel_app(){
 # SyncTV一起看片神器
 synctv_app(){
 		local app_id="30"
-	local app_name="SyncTV一起看片神器"
 		local docker_name="synctv"
 		local docker_img="synctvorg/synctv"
 		local docker_port=8087
-		add_app_port "访问地址" 8087
 
 		docker_run() {
 			docker run -d \
@@ -1898,8 +1867,10 @@ synctv_app(){
 				synctvorg/synctv
 		}
 
-		local app_text="远程一起观看电影和直播的程序.它提供了同步观影、直播、聊天等功能"
-		local app_url="官网介绍: https://github.com/synctv-org/synctv"
+		local docker_describe="远程一起观看电影和直播的程序.它提供了同步观影、直播、聊天等功能"
+		local docker_url="官网介绍: https://github.com/synctv-org/synctv"
+		local docker_use="echo \"初始账号和密码: root  登陆后请及时修改登录密码\""
+		local docker_passwd=""
 		local app_size="1"
 		docker_app
 }
@@ -1907,7 +1878,6 @@ synctv_app(){
 # X-UI面板
 xui_app(){
 	local app_id="31"
-	local app_name="X-UI面板"
 	local panel_path="[ -d "/usr/local/x-ui/" ]"
 	local panelname="xui"
 	local panelurl="https://github.com/FranzKafkaYu/x-ui"
@@ -1955,7 +1925,6 @@ e5_renew_x_app(){
 		local docker_name="angry_ellis"
 		local docker_img="mcr.microsoft.com/office/office365"
 		local docker_port=1066
-		add_app_port "访问地址" 1066
 
 		docker_run() {
 		read -e -p "请输入发送邮件的服务邮箱: " send_email
@@ -1973,8 +1942,10 @@ e5_renew_x_app(){
 				hanhongyong/ms365-e5-renew-x:pubemail
 		}
 
-		local app_text="Microsoft 365 E5 Renew X 一键续订脚本"
-		local app_url="官网介绍: https://github.com/hongyonghan/Docker_Microsoft365_E5_Renew_X"
+		local docker_describe="Microsoft 365 E5 Renew X 一键续订脚本"
+		local docker_url="官网介绍: https://github.com/hongyonghan/Docker_Microsoft365_E5_Renew_X"
+		local docker_use=""
+		local docker_passwd=""
 		local app_size="1"
 		docker_app
 }
@@ -1988,7 +1959,6 @@ decotv_app(){
 	local app_url="官网介绍: https://github.com/decohererk/decotv"
 	local docker_name="decotv-core"
 	local docker_port="8076"
-	add_app_port "访问地址" 8076
 	local app_size="2"
 
 	docker_app_install() {
@@ -2071,11 +2041,9 @@ EOF
 # Drawnix在线白板
 drawnix_app(){
 	local app_id="35"
-	local app_name="Drawnix在线白板"
 	local docker_name="drawnix"
 	local docker_img="pubuzhixing/drawnix:latest"
 	local docker_port=8077
-	add_app_port "访问地址" 8077
 
 	docker_run() {
 		docker run -d \
@@ -2085,8 +2053,10 @@ drawnix_app(){
 			pubuzhixing/drawnix:latest
 	}
 
-	local app_text="一款开源的在线白板工具，类似Excalidraw，支持思维导图、流程图和自由绘图。"
-	local app_url="官网介绍: https://github.com/pubuzhixing/drawnix"
+	local docker_describe="一款开源的在线白板工具，类似Excalidraw，支持思维导图、流程图和自由绘图。"
+	local docker_url="官网介绍: https://github.com/pubuzhixing/drawnix"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2349,11 +2319,9 @@ linux_app() {
 # portainer容器管理面板
 portainer_app(){
 	local app_id="36"
-	local app_name="Portainer容器管理"
 	local docker_name="portainer"
 	local docker_img="portainer/portainer-ce:latest"
 	local docker_port=9000
-	add_app_port "访问地址" 9000
 
 	docker_run() {
 		docker volume create portainer_data
@@ -2367,8 +2335,10 @@ portainer_app(){
 			portainer/portainer-ce:latest
 	}
 
-	local app_text="轻量级的Docker容器管理UI面板, 支持容器/镜像/网络/卷的可视化管理"
-	local app_url="官网介绍: https://www.portainer.io/"
+	local docker_describe="轻量级的Docker容器管理UI面板, 支持容器/镜像/网络/卷的可视化管理"
+	local docker_url="官网介绍: https://www.portainer.io/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2376,11 +2346,9 @@ portainer_app(){
 # Cloudreve网盘
 cloudreve_app(){
 	local app_id="37"
-	local app_name="Cloudreve网盘"
 	local docker_name="cloudreve"
 	local docker_img="cloudreve/cloudreve:latest"
 	local docker_port=8088
-	add_app_port "访问地址" 8088
 
 	docker_run() {
 		mkdir -p /home/docker/cloudreve
@@ -2392,8 +2360,10 @@ cloudreve_app(){
 			cloudreve/cloudreve:latest
 	}
 
-	local app_text="支持多种存储的云盘系统, 支持本地存储/对象存储/S3等"
-	local app_url="官网介绍: https://github.com/cloudreve/Cloudreve"
+	local docker_describe="支持多种存储的云盘系统, 支持本地存储/对象存储/S3等"
+	local docker_url="官网介绍: https://github.com/cloudreve/Cloudreve"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2407,7 +2377,6 @@ nextcloud_app(){
 	local app_url="官网介绍: https://nextcloud.com/"
 	local docker_name="nextcloud-app"
 	local docker_port="8089"
-	add_app_port "访问地址" 8089
 	local app_size="2"
 
 	docker_app_install() {
@@ -2489,11 +2458,9 @@ EOF
 # emby多媒体管理系统
 emby_app(){
 	local app_id="39"
-	local app_name="emby媒体管理"
 	local docker_name="emby"
 	local docker_img="emby/embyserver:latest"
 	local docker_port=8096
-	add_app_port "访问地址" 8096
 
 	docker_run() {
 		mkdir -p /home/docker/emby/config /home/docker/emby/data
@@ -2508,8 +2475,10 @@ emby_app(){
 			emby/embyserver:latest
 	}
 
-	local app_text="功能强大的个人媒体服务器, 支持电影/电视剧/音乐管理和在线播放"
-	local app_url="官网介绍: https://emby.media/"
+	local docker_describe="功能强大的个人媒体服务器, 支持电影/电视剧/音乐管理和在线播放"
+	local docker_url="官网介绍: https://emby.media/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="3"
 	docker_app
 }
@@ -2517,11 +2486,9 @@ emby_app(){
 # jellyfin媒体管理系统
 jellyfin_app(){
 	local app_id="40"
-	local app_name="jellyfin媒体管理"
 	local docker_name="jellyfin"
 	local docker_img="jellyfin/jellyfin:latest"
 	local docker_port=8097
-	add_app_port "访问地址" 8097
 
 	docker_run() {
 		mkdir -p /home/docker/jellyfin/config /home/docker/jellyfin/cache
@@ -2535,8 +2502,10 @@ jellyfin_app(){
 			jellyfin/jellyfin:latest
 	}
 
-	local app_text="免费开源的媒体服务器, Emby的替代品, 支持电影/电视剧/音乐管理和在线播放"
-	local app_url="官网介绍: https://jellyfin.org/"
+	local docker_describe="免费开源的媒体服务器, Emby的替代品, 支持电影/电视剧/音乐管理和在线播放"
+	local docker_url="官网介绍: https://jellyfin.org/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -2544,16 +2513,9 @@ jellyfin_app(){
 # AdGuardHome去广告软件
 adguardhome_app(){
 	local app_id="41"
-	local app_name="AdGuardHome去广告"
 	local docker_name="adguardhome"
 	local docker_img="adguard/adguardhome:latest"
 	local docker_port=3000
-	add_app_port "Web管理界面" 3000
-	add_app_port "DNS端口 (TCP+UDP)" 53
-	add_app_port "DHCP客户端" 67
-	add_app_port "DHCP服务端" 68
-	add_app_port "DNS-over-HTTPS" 443
-	add_app_port "DNS-over-TLS" 853
 
 	docker_run() {
 		mkdir -p /home/docker/adguardhome/work /home/docker/adguardhome/conf
@@ -2572,8 +2534,10 @@ adguardhome_app(){
 			adguard/adguardhome:latest
 	}
 
-	local app_text="全网广告拦截与隐私保护DNS服务, 支持DNS-over-HTTPS/TLS"
-	local app_url="官网介绍: https://adguard.com/adguard-home/overview.html"
+	local docker_describe="全网广告拦截与隐私保护DNS服务, 支持DNS-over-HTTPS/TLS"
+	local docker_url="官网介绍: https://adguard.com/adguard-home/overview.html"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2581,11 +2545,9 @@ adguardhome_app(){
 # Navidrome私有音乐服务器
 navidrome_app(){
 	local app_id="42"
-	local app_name="Navidrome音乐服务器"
 	local docker_name="navidrome"
 	local docker_img="deluan/navidrome:latest"
 	local docker_port=8098
-	add_app_port "访问地址" 8098
 
 	docker_run() {
 		mkdir -p /home/docker/navidrome/music /home/docker/navidrome/data
@@ -2598,8 +2560,10 @@ navidrome_app(){
 			navidrome/navidrome:latest
 	}
 
-	local app_text="现代的私人音乐流媒体服务器, 支持多用户, 兼容Subsonic/Airsonic API"
-	local app_url="官网介绍: https://github.com/navidrome/navidrome"
+	local docker_describe="现代的私人音乐流媒体服务器, 支持多用户, 兼容Subsonic/Airsonic API"
+	local docker_url="官网介绍: https://github.com/navidrome/navidrome"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2607,11 +2571,9 @@ navidrome_app(){
 # bitwarden密码管理器 (使用Vaultwarden轻量替代)
 bitwarden_app(){
 	local app_id="43"
-	local app_name="Vaultwarden密码管理"
 	local docker_name="vaultwarden"
 	local docker_img="vaultwarden/server:latest"
 	local docker_port=8099
-	add_app_port "访问地址" 8099
 
 	docker_run() {
 		mkdir -p /home/docker/vaultwarden/data
@@ -2624,8 +2586,10 @@ bitwarden_app(){
 			vaultwarden/server:latest
 	}
 
-	local app_text="Bitwarden的轻量级替代(Vaultwarden), 自托管密码管理器"
-	local app_url="官网介绍: https://github.com/dani-garcia/vaultwarden"
+	local docker_describe="Bitwarden的轻量级替代(Vaultwarden), 自托管密码管理器"
+	local docker_url="官网介绍: https://github.com/dani-garcia/vaultwarden"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2633,11 +2597,9 @@ bitwarden_app(){
 # StirlingPDF工具大全
 stirlingpdf_app(){
 	local app_id="44"
-	local app_name="StirlingPDF工具大全"
 	local docker_name="stirlingpdf"
 	local docker_img="frooodle/s-pdf:latest"
 	local docker_port=8100
-	add_app_port "访问地址" 8100
 
 	docker_run() {
 		mkdir -p /home/docker/stirlingpdf/config /home/docker/stirlingpdf/logs
@@ -2651,8 +2613,10 @@ stirlingpdf_app(){
 			frooodle/s-pdf:latest
 	}
 
-	local app_text="功能强大的PDF处理工具箱, 支持合并/拆分/转换/压缩/加水印等"
-	local app_url="官网介绍: https://github.com/Stirling-Tools/Stirling-PDF"
+	local docker_describe="功能强大的PDF处理工具箱, 支持合并/拆分/转换/压缩/加水印等"
+	local docker_url="官网介绍: https://github.com/Stirling-Tools/Stirling-PDF"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -2660,11 +2624,9 @@ stirlingpdf_app(){
 # Speedtest测速面板
 speedtest_app(){
 	local app_id="45"
-	local app_name="Speedtest测速面板"
 	local docker_name="speedtest"
 	local docker_img="adolfintel/speedtest:latest"
 	local docker_port=8101
-	add_app_port "访问地址" 8101
 
 	docker_run() {
 		docker run -d \
@@ -2675,8 +2637,10 @@ speedtest_app(){
 			adolfintel/speedtest:latest
 	}
 
-	local app_text="LibreSpeed测速面板, 自托管的网络测速工具"
-	local app_url="官网介绍: https://github.com/librespeed/speedtest"
+	local docker_describe="LibreSpeed测速面板, 自托管的网络测速工具"
+	local docker_url="官网介绍: https://github.com/librespeed/speedtest"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2690,7 +2654,6 @@ photoprism_app(){
 	local app_url="官网介绍: https://photoprism.app/"
 	local docker_name="photoprism-app"
 	local docker_port="8102"
-	add_app_port "访问地址" 8102
 	local app_size="3"
 
 	docker_app_install() {
@@ -2748,11 +2711,9 @@ EOF
 # searxng聚合搜索站
 searxng_app(){
 	local app_id="47"
-	local app_name="searxng聚合搜索"
 	local docker_name="searxng"
 	local docker_img="searxng/searxng:latest"
 	local docker_port=8103
-	add_app_port "访问地址" 8103
 
 	docker_run() {
 		mkdir -p /home/docker/searxng
@@ -2766,8 +2727,10 @@ searxng_app(){
 			searxng/searxng:latest
 	}
 
-	local app_text="注重隐私的元搜索引擎聚合平台, 不追踪用户"
-	local app_url="官网介绍: https://github.com/searxng/searxng"
+	local docker_describe="注重隐私的元搜索引擎聚合平台, 不追踪用户"
+	local docker_url="官网介绍: https://github.com/searxng/searxng"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2775,11 +2738,9 @@ searxng_app(){
 # Pingvin-Share文件分享平台
 pingvinshare_app(){
 	local app_id="48"
-	local app_name="Pingvin-Share文件分享"
 	local docker_name="pingvin-share"
 	local docker_img="stonith404/pingvin-share:latest"
 	local docker_port=8104
-	add_app_port "访问地址" 8104
 
 	docker_run() {
 		mkdir -p /home/docker/pingvin/data /home/docker/pingvin/images
@@ -2792,8 +2753,10 @@ pingvinshare_app(){
 			stonith404/pingvin-share:latest
 	}
 
-	local app_text="自托管文件分享平台, 支持创建分享链接和上传文件"
-	local app_url="官网介绍: https://github.com/stonith404/pingvin-share"
+	local docker_describe="自托管文件分享平台, 支持创建分享链接和上传文件"
+	local docker_url="官网介绍: https://github.com/stonith404/pingvin-share"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2801,11 +2764,9 @@ pingvinshare_app(){
 # Dockge容器堆栈管理面板
 dockge_app(){
 	local app_id="49"
-	local app_name="Dockge容器管理"
 	local docker_name="dockge"
 	local docker_img="louislam/dockge:latest"
 	local docker_port=8105
-	add_app_port "访问地址" 8105
 
 	docker_run() {
 		mkdir -p /home/docker/dockge/stacks
@@ -2819,8 +2780,10 @@ dockge_app(){
 			louislam/dockge:latest
 	}
 
-	local app_text="简洁优雅的Docker Compose堆栈管理面板"
-	local app_url="官网介绍: https://github.com/louislam/dockge"
+	local docker_describe="简洁优雅的Docker Compose堆栈管理面板"
+	local docker_url="官网介绍: https://github.com/louislam/dockge"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2828,11 +2791,9 @@ dockge_app(){
 # it-tools工具箱
 ittools_app(){
 	local app_id="50"
-	local app_name="it-tools工具箱"
 	local docker_name="it-tools"
 	local docker_img="corentintho/it-tools:latest"
 	local docker_port=8106
-	add_app_port "访问地址" 8106
 
 	docker_run() {
 		docker run -d \
@@ -2842,8 +2803,10 @@ ittools_app(){
 			corentintho/it-tools:latest
 	}
 
-	local app_text="开发者常用工具集合, 包含JSON格式化/Base64编解码/UUID生成等数百个工具"
-	local app_url="官网介绍: https://github.com/CorentinTh/it-tools"
+	local docker_describe="开发者常用工具集合, 包含JSON格式化/Base64编解码/UUID生成等数百个工具"
+	local docker_url="官网介绍: https://github.com/CorentinTh/it-tools"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -2854,7 +2817,6 @@ n8n_app(){
 	local docker_name="n8n"
 	local docker_img="n8nio/n8n:latest"
 	local docker_port=8107
-	add_app_port "访问地址" 8107
 
 	docker_run() {
 		mkdir -p /home/docker/n8n/data
@@ -2867,8 +2829,10 @@ n8n_app(){
 			n8nio/n8n:latest
 	}
 
-	local app_text="开源的工作流自动化平台, 可视化连接各种API和服务"
-	local app_url="官网介绍: https://n8n.io/"
+	local docker_describe="开源的工作流自动化平台, 可视化连接各种API和服务"
+	local docker_url="官网介绍: https://n8n.io/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -2876,11 +2840,9 @@ n8n_app(){
 # OpenWebUI自托管AI平台
 openwebui_app(){
 	local app_id="52"
-	local app_name="OpenWebUI自托管AI"
 	local docker_name="open-webui"
 	local docker_img="ghcr.io/open-webui/open-webui:main"
 	local docker_port=8108
-	add_app_port "访问地址" 8108
 
 	docker_run() {
 		mkdir -p /home/docker/open-webui/data
@@ -2893,8 +2855,10 @@ openwebui_app(){
 			ghcr.io/open-webui/open-webui:main
 	}
 
-	local app_text="自托管的AI对话界面, 支持Ollama/OpenAI等多种后端"
-	local app_url="官网介绍: https://github.com/open-webui/open-webui"
+	local docker_describe="自托管的AI对话界面, 支持Ollama/OpenAI等多种后端"
+	local docker_url="官网介绍: https://github.com/open-webui/open-webui"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -2908,7 +2872,6 @@ dify_app(){
 	local app_url="官网介绍: https://dify.ai/"
 	local docker_name="dify-app"
 	local docker_port="8109"
-	add_app_port "访问地址" 8109
 	local app_size="3"
 
 	docker_app_install() {
@@ -2944,11 +2907,9 @@ dify_app(){
 # gitea私有代码仓库
 gitea_app(){
 	local app_id="54"
-	local app_name="gitea私有代码仓库"
 	local docker_name="gitea"
 	local docker_img="gitea/gitea:latest"
 	local docker_port=8110
-	add_app_port "访问地址" 8110
 
 	docker_run() {
 		mkdir -p /home/docker/gitea/data /home/docker/gitea/mysql
@@ -2963,8 +2924,10 @@ gitea_app(){
 			gitea/gitea:latest
 	}
 
-	local app_text="轻量级的自托管Git服务, 类似GitHub/GitLab"
-	local app_url="官网介绍: https://gitea.io/"
+	local docker_describe="轻量级的自托管Git服务, 类似GitHub/GitLab"
+	local docker_url="官网介绍: https://gitea.io/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -2972,11 +2935,9 @@ gitea_app(){
 # FileBrowser文件管理器
 filebrowser_app(){
 	local app_id="55"
-	local app_name="FileBrowser文件管理"
 	local docker_name="filebrowser"
 	local docker_img="filebrowser/filebrowser:latest"
 	local docker_port=8111
-	add_app_port "访问地址" 8111
 
 	docker_run() {
 		mkdir -p /home/docker/filebrowser/database /home/docker/filebrowser/srv
@@ -2989,8 +2950,10 @@ filebrowser_app(){
 			filebrowser/filebrowser:latest
 	}
 
-	local app_text="轻量级的网页文件管理器, 支持文件上传/下载/编辑/分享"
-	local app_url="官网介绍: https://github.com/filebrowser/filebrowser"
+	local docker_describe="轻量级的网页文件管理器, 支持文件上传/下载/编辑/分享"
+	local docker_url="官网介绍: https://github.com/filebrowser/filebrowser"
+	local docker_use="echo \"默认用户名: admin  密码: admin\""
+	local docker_passwd="echo \"请在首次登录后修改密码\""
 	local app_size="1"
 	docker_app
 }
@@ -3003,7 +2966,6 @@ frp_server_app(){
 	local docker_name="frps"
 	local docker_img="snowdreamtech/frps:latest"
 	local docker_port=7500
-	add_app_port "访问地址" 7500
 	local app_text="FRP内网穿透服务端, 让内网服务暴露到公网"
 	local app_url="官网介绍: https://github.com/fatedier/frp"
 	local app_size="1"
@@ -3051,7 +3013,6 @@ wireguard_server_app(){
 	local docker_name="wg-easy"
 	local docker_img="ghcr.io/wg-easy/wg-easy:latest"
 	local docker_port=8113
-	add_app_port "访问地址" 8113
 	local app_text="WireGuard VPN服务端, 简单易用的虚拟组网工具"
 	local app_url="官网介绍: https://github.com/wg-easy/wg-easy"
 	local app_size="1"
@@ -3096,8 +3057,6 @@ jumpserver_app(){
 	local app_url="官网介绍: https://www.jumpserver.org/"
 	local docker_name="jms-all"
 	local docker_port="8114"
-	add_app_port "Web管理界面" 8114
-	add_app_port "SSH连接端口" 2222
 	local app_size="4"
 
 	docker_app_install() {
@@ -3195,7 +3154,6 @@ immich_app(){
 	local app_url="官网介绍: https://immich.app/"
 	local docker_name="immich-server"
 	local docker_port="8115"
-	add_app_port "访问地址" 8115
 	local app_size="3"
 
 	docker_app_install() {
@@ -3230,12 +3188,9 @@ immich_app(){
 # Syncthing点对点文件同步工具
 syncthing_app(){
 	local app_id="60"
-	local app_name="Syncthing文件同步"
 	local docker_name="syncthing"
 	local docker_img="syncthing/syncthing:latest"
 	local docker_port=8116
-	add_app_port "Web管理界面" 8116
-	add_app_port "设备同步端口 (TCP+UDP)" 22000
 
 	docker_run() {
 		mkdir -p /home/docker/syncthing/config
@@ -3249,8 +3204,10 @@ syncthing_app(){
 			syncthing/syncthing:latest
 	}
 
-	local app_text="开源的连续文件同步工具, 支持P2P多设备间文件同步"
-	local app_url="官网介绍: https://syncthing.net/"
+	local docker_describe="开源的连续文件同步工具, 支持P2P多设备间文件同步"
+	local docker_url="官网介绍: https://syncthing.net/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3258,11 +3215,9 @@ syncthing_app(){
 # Umami网站统计工具
 umami_app(){
 	local app_id="61"
-	local app_name="Umami网站统计"
 	local docker_name="umami"
 	local docker_img="ghcr.io/umami-software/umami:postgresql-latest"
 	local docker_port=8117
-	add_app_port "访问地址" 8117
 
 	docker_run() {
 		mkdir -p /home/docker/umami/data
@@ -3275,8 +3230,10 @@ umami_app(){
 			umami/umami:postgresql-latest
 	}
 
-	local app_text="开源的网站分析统计工具, Google Analytics的隐私友好替代"
-	local app_url="官网介绍: https://umami.is/"
+	local docker_describe="开源的网站分析统计工具, Google Analytics的隐私友好替代"
+	local docker_url="官网介绍: https://umami.is/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3284,11 +3241,9 @@ umami_app(){
 # 思源笔记
 siyuan_app(){
 	local app_id="62"
-	local app_name="思源笔记"
 	local docker_name="siyuan"
 	local docker_img="b3log/siyuan:latest"
 	local docker_port=8118
-	add_app_port "访问地址" 8118
 
 	docker_run() {
 		mkdir -p /home/docker/siyuan/workspace
@@ -3300,8 +3255,10 @@ siyuan_app(){
 			b3log/siyuan:latest
 	}
 
-	local app_text="本地优先的个人知识管理系统, 支持块级引用和双向链接"
-	local app_url="官网介绍: https://b3log.org/siyuan/"
+	local docker_describe="本地优先的个人知识管理系统, 支持块级引用和双向链接"
+	local docker_url="官网介绍: https://b3log.org/siyuan/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -3309,11 +3266,9 @@ siyuan_app(){
 # SFTPGo文件传输工具
 sftpgp_app(){
 	local app_id="63"
-	local app_name="SFTPGo文件传输"
 	local docker_name="sftpgo"
 	local docker_img="drakkan/sftpgo:latest"
 	local docker_port=8119
-	add_app_port "访问地址" 8119
 
 	docker_run() {
 		mkdir -p /home/docker/sftpgo/data /home/docker/sftpgo/config
@@ -3327,8 +3282,10 @@ sftpgp_app(){
 			drakkan/sftpgo:latest
 	}
 
-	local app_text="功能齐全的SFTP/FTP/WebDAV服务器, 支持多种协议"
-	local app_url="官网介绍: https://github.com/drakkan/sftpgo"
+	local docker_describe="功能齐全的SFTP/FTP/WebDAV服务器, 支持多种协议"
+	local docker_url="官网介绍: https://github.com/drakkan/sftpgo"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3336,11 +3293,9 @@ sftpgp_app(){
 # Owncast自托管直播平台
 owncast_app(){
 	local app_id="64"
-	local app_name="Owncast自托管直播"
 	local docker_name="owncast"
 	local docker_img="owncast/owncast:latest"
 	local docker_port=8120
-	add_app_port "访问地址" 8120
 
 	docker_run() {
 		mkdir -p /home/docker/owncast/data
@@ -3353,8 +3308,10 @@ owncast_app(){
 			owncast/owncast:latest
 	}
 
-	local app_text="自托管的视频直播平台, 支持RTMP推流和Web观看"
-	local app_url="官网介绍: https://owncast.online/"
+	local docker_describe="自托管的视频直播平台, 支持RTMP推流和Web观看"
+	local docker_url="官网介绍: https://owncast.online/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -3362,11 +3319,9 @@ owncast_app(){
 # Deepseek聊天AI大模型
 deepseek_app(){
 	local app_id="65"
-	local app_name="Deepseek AI大模型"
 	local docker_name="deepseek"
 	local docker_img="deepseek-ai/deepseek-coder:6.7b-instruct-q4_0"
 	local docker_port=8121
-	add_app_port "访问地址" 8121
 
 	docker_run() {
 		docker run -d \
@@ -3377,8 +3332,10 @@ deepseek_app(){
 			deepseek-ai/deepseek-coder:6.7b-instruct-q4_0
 	}
 
-	local app_text="DeepSeek AI大模型本地部署, 支持代码生成和对话"
-	local app_url="官网介绍: https://github.com/deepseek-ai/DeepSeek-Coder"
+	local docker_describe="DeepSeek AI大模型本地部署, 支持代码生成和对话"
+	local docker_url="官网介绍: https://github.com/deepseek-ai/DeepSeek-Coder"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="4"
 	docker_app
 }
@@ -3392,7 +3349,6 @@ rocketchat_app(){
 	local app_url="官网介绍: https://rocket.chat/"
 	local docker_name="rocketchat-app"
 	local docker_port="8122"
-	add_app_port "访问地址" 8122
 	local app_size="3"
 
 	docker_app_install() {
@@ -3469,11 +3425,9 @@ EOF
 # Gopeed高速下载工具
 gopeed_app(){
 	local app_id="67"
-	local app_name="Gopeed高速下载"
 	local docker_name="gopeed"
 	local docker_img="liwei2633/gopeed:latest"
 	local docker_port=8123
-	add_app_port "访问地址" 8123
 
 	docker_run() {
 		mkdir -p /home/docker/gopeed
@@ -3485,8 +3439,10 @@ gopeed_app(){
 			liwei2633/gopeed:latest
 	}
 
-	local app_text="高速下载工具, 支持HTTP/BitTorrent等协议"
-	local app_url="官网介绍: https://github.com/GoproxyFoss/gopeed"
+	local docker_describe="高速下载工具, 支持HTTP/BitTorrent等协议"
+	local docker_url="官网介绍: https://github.com/GoproxyFoss/gopeed"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3494,11 +3450,9 @@ gopeed_app(){
 # 2FAuth自托管二步验证器
 twofauth_app(){
 	local app_id="68"
-	local app_name="2FAuth二步验证器"
 	local docker_name="2fauth"
 	local docker_img="2fauth/2fauth:latest"
 	local docker_port=8124
-	add_app_port "访问地址" 8124
 
 	docker_run() {
 		mkdir -p /home/docker/2fauth
@@ -3512,8 +3466,10 @@ twofauth_app(){
 			2fauth/2fauth:latest
 	}
 
-	local app_text="自托管的二步验证(2FA)管理器, 管理所有TOTP/HOTP令牌"
-	local app_url="官网介绍: https://docs.2fauth.app/"
+	local docker_describe="自托管的二步验证(2FA)管理器, 管理所有TOTP/HOTP令牌"
+	local docker_url="官网介绍: https://docs.2fauth.app/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3521,11 +3477,9 @@ twofauth_app(){
 # ZFile在线网盘
 zfile_app(){
 	local app_id="69"
-	local app_name="ZFile在线网盘"
 	local docker_name="zfile"
 	local docker_img="zhaojun1998/zfile:latest"
 	local docker_port=8125
-	add_app_port "访问地址" 8125
 
 	docker_run() {
 		mkdir -p /home/docker/zfile/data
@@ -3537,8 +3491,10 @@ zfile_app(){
 			zhaojun1998/zfile:latest
 	}
 
-	local app_text="开源的在线网盘系统, 支持多种存储策略"
-	local app_url="官网介绍: https://github.com/zhaojun1998/zfile"
+	local docker_describe="开源的在线网盘系统, 支持多种存储策略"
+	local docker_url="官网介绍: https://github.com/zhaojun1998/zfile"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3546,11 +3502,9 @@ zfile_app(){
 # Nexterm远程连接
 nexterm_app(){
 	local app_id="70"
-	local app_name="Nexterm远程连接"
 	local docker_name="nexterm"
 	local docker_img="germannewsmaker/nexterm:latest"
 	local docker_port=8126
-	add_app_port "访问地址" 8126
 
 	docker_run() {
 		mkdir -p /home/docker/nexterm
@@ -3562,8 +3516,10 @@ nexterm_app(){
 			germannewsmaker/nexterm:latest
 	}
 
-	local app_text="开源的远程连接管理工具, 支持SSH/VNC/RDP"
-	local app_url="官网介绍: https://github.com/gnmyt/Nexterm"
+	local docker_describe="开源的远程连接管理工具, 支持SSH/VNC/RDP"
+	local docker_url="官网介绍: https://github.com/gnmyt/Nexterm"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3571,11 +3527,9 @@ nexterm_app(){
 # JitsiMeet视频会议
 jitsimeet_app(){
 	local app_id="71"
-	local app_name="JitsiMeet视频会议"
 	local docker_name="jitsi-meet"
 	local docker_img="jitsi/web:latest"
 	local docker_port=8127
-	add_app_port "访问地址" 8127
 
 	docker_run() {
 		mkdir -p /home/docker/jitsi/{web,prosody,jicofo,jvb}
@@ -3588,8 +3542,10 @@ jitsimeet_app(){
 			jitsi/web:latest
 	}
 
-	local app_text="开源的视频会议系统, 支持多人视频会议"
-	local app_url="官网介绍: https://jitsi.org/"
+	local docker_describe="开源的视频会议系统, 支持多人视频会议"
+	local docker_url="官网介绍: https://jitsi.org/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -3597,11 +3553,9 @@ jitsimeet_app(){
 # Stream四层代理转发
 stream_app(){
 	local app_id="72"
-	local app_name="Stream四层代理转发"
 	local docker_name="stream"
 	local docker_img="nginx:alpine"
 	local docker_port=8128
-	add_app_port "访问地址" 8128
 
 	docker_run() {
 		mkdir -p /home/docker/stream
@@ -3621,8 +3575,10 @@ EOF
 			nginx:alpine
 	}
 
-	local app_text="四层代理转发服务, 基于Nginx Stream模块"
-	local app_url="官网介绍: https://nginx.org/"
+	local docker_describe="四层代理转发服务, 基于Nginx Stream模块"
+	local docker_url="官网介绍: https://nginx.org/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3630,11 +3586,9 @@ EOF
 # FileCodeBox文件快递
 filecodebox_app(){
 	local app_id="73"
-	local app_name="FileCodeBox文件快递"
 	local docker_name="filecodebox"
 	local docker_img="lanol/filecodebox:latest"
 	local docker_port=8129
-	add_app_port "访问地址" 8129
 
 	docker_run() {
 		mkdir -p /home/docker/filecodebox
@@ -3646,8 +3600,10 @@ filecodebox_app(){
 			lanol/filecodebox:latest
 	}
 
-	local app_text="文件快递柜, 匿名口令分享文件"
-	local app_url="官网介绍: https://github.com/vastsa/FileCodeBox"
+	local docker_describe="文件快递柜, 匿名口令分享文件"
+	local docker_url="官网介绍: https://github.com/vastsa/FileCodeBox"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3655,11 +3611,9 @@ filecodebox_app(){
 # Matrix去中心化聊天
 matrix_app(){
 	local app_id="74"
-	local app_name="Matrix去中心化聊天"
 	local docker_name="matrix"
 	local docker_img="matrixdotorg/synapse:latest"
 	local docker_port=8130
-	add_app_port "访问地址" 8130
 
 	docker_run() {
 		mkdir -p /home/docker/matrix/data
@@ -3673,8 +3627,10 @@ matrix_app(){
 			matrixdotorg/synapse:latest
 	}
 
-	local app_text="去中心化的即时通讯协议, 支持端到端加密"
-	local app_url="官网介绍: https://matrix.org/"
+	local docker_describe="去中心化的即时通讯协议, 支持端到端加密"
+	local docker_url="官网介绍: https://matrix.org/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -3682,11 +3638,9 @@ matrix_app(){
 # yt-dlp视频下载
 ytdlp_app(){
 	local app_id="75"
-	local app_name="yt-dlp视频下载"
 	local docker_name="yt-dlp"
 	local docker_img="mikenye/yt-dlp:latest"
 	local docker_port=8131
-	add_app_port "访问地址" 8131
 
 	docker_run() {
 		mkdir -p /home/docker/ytdlp/downloads
@@ -3698,8 +3652,10 @@ ytdlp_app(){
 			mikenye/yt-dlp:latest
 	}
 
-	local app_text="强大的视频下载工具, 支持YouTube等数百个网站"
-	local app_url="官网介绍: https://github.com/yt-dlp/yt-dlp"
+	local docker_describe="强大的视频下载工具, 支持YouTube等数百个网站"
+	local docker_url="官网介绍: https://github.com/yt-dlp/yt-dlp"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3707,11 +3663,9 @@ ytdlp_app(){
 # paperless文档管理
 paperless_app(){
 	local app_id="76"
-	local app_name="paperless文档管理"
 	local docker_name="paperless"
 	local docker_img="ghcr.io/paperless-ngx/paperless-ngx:latest"
 	local docker_port=8132
-	add_app_port "访问地址" 8132
 
 	docker_run() {
 		mkdir -p /home/docker/paperless/{data,media}
@@ -3725,8 +3679,10 @@ paperless_app(){
 			ghcr.io/paperless-ngx/paperless-ngx:latest
 	}
 
-	local app_text="开源的文档管理系统, 支持OCR和全文搜索"
-	local app_url="官网介绍: https://docs.paperless-ngx.com/"
+	local docker_describe="开源的文档管理系统, 支持OCR和全文搜索"
+	local docker_url="官网介绍: https://docs.paperless-ngx.com/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -3734,11 +3690,9 @@ paperless_app(){
 # Wallos财务管理
 wallos_app(){
 	local app_id="77"
-	local app_name="Wallos财务管理"
 	local docker_name="wallos"
 	local docker_img="bellamy/wallos:latest"
 	local docker_port=8133
-	add_app_port "访问地址" 8133
 
 	docker_run() {
 		mkdir -p /home/docker/wallos
@@ -3750,8 +3704,10 @@ wallos_app(){
 			bellamy/wallos:latest
 	}
 
-	local app_text="开源的个人财务管理工具, 追踪订阅和支出"
-	local app_url="官网介绍: https://github.com/ellite/Wallos"
+	local docker_describe="开源的个人财务管理工具, 追踪订阅和支出"
+	local docker_url="官网介绍: https://github.com/ellite/Wallos"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3759,11 +3715,9 @@ wallos_app(){
 # komari服务器监控
 komari_app(){
 	local app_id="78"
-	local app_name="komari服务器监控"
 	local docker_name="komari"
 	local docker_img="komari-server:latest"
 	local docker_port=8134
-	add_app_port "访问地址" 8134
 
 	docker_run() {
 		mkdir -p /home/docker/komari
@@ -3775,8 +3729,10 @@ komari_app(){
 			komari-server:latest
 	}
 
-	local app_text="轻量级服务器监控面板"
-	local app_url="官网介绍: https://github.com/komari-server"
+	local docker_describe="轻量级服务器监控面板"
+	local docker_url="官网介绍: https://github.com/komari-server"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3784,11 +3740,9 @@ komari_app(){
 # Dufs静态文件服务器
 dufs_app(){
 	local app_id="79"
-	local app_name="Dufs静态文件服务器"
 	local docker_name="dufs"
 	local docker_img="sigoden/dufs:latest"
 	local docker_port=8135
-	add_app_port "访问地址" 8135
 
 	docker_run() {
 		mkdir -p /home/docker/dufs/data
@@ -3800,8 +3754,10 @@ dufs_app(){
 			sigoden/dufs:latest /data
 	}
 
-	local app_text="简单的静态文件服务器, 支持上传下载"
-	local app_url="官网介绍: https://github.com/sigoden/dufs"
+	local docker_describe="简单的静态文件服务器, 支持上传下载"
+	local docker_url="官网介绍: https://github.com/sigoden/dufs"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3809,11 +3765,9 @@ dufs_app(){
 # PandaWiki文档管理
 pandawiki_app(){
 	local app_id="80"
-	local app_name="PandaWiki文档管理"
 	local docker_name="pandawiki"
 	local docker_img="pandawiki/pandawiki:latest"
 	local docker_port=8136
-	add_app_port "访问地址" 8136
 
 	docker_run() {
 		mkdir -p /home/docker/pandawiki
@@ -3825,8 +3779,10 @@ pandawiki_app(){
 			pandawiki/pandawiki:latest
 	}
 
-	local app_text="开源的Wiki文档管理系统"
-	local app_url="官网介绍: https://github.com/pandawiki"
+	local docker_describe="开源的Wiki文档管理系统"
+	local docker_url="官网介绍: https://github.com/pandawiki"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3834,11 +3790,9 @@ pandawiki_app(){
 # linkwarden书签管理
 linkwarden_app(){
 	local app_id="81"
-	local app_name="linkwarden书签管理"
 	local docker_name="linkwarden"
 	local docker_img="ghcr.io/linkwarden/linkwarden:latest"
 	local docker_port=8137
-	add_app_port "访问地址" 8137
 
 	docker_run() {
 		mkdir -p /home/docker/linkwarden
@@ -3851,8 +3805,10 @@ linkwarden_app(){
 			ghcr.io/linkwarden/linkwarden:latest
 	}
 
-	local app_text="开源的书签管理工具, 支持网页归档"
-	local app_url="官网介绍: https://github.com/linkwarden/linkwarden"
+	local docker_describe="开源的书签管理工具, 支持网页归档"
+	local docker_url="官网介绍: https://github.com/linkwarden/linkwarden"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3860,11 +3816,9 @@ linkwarden_app(){
 # VoceChat聊天系统
 vocechat_app(){
 	local app_id="82"
-	local app_name="VoceChat聊天系统"
 	local docker_name="vocechat"
 	local docker_img="privoce/vocechat-server:latest"
 	local docker_port=8138
-	add_app_port "访问地址" 8138
 
 	docker_run() {
 		mkdir -p /home/docker/vocechat
@@ -3876,8 +3830,10 @@ vocechat_app(){
 			privoce/vocechat-server:latest
 	}
 
-	local app_text="开源的轻量级聊天系统, 支持自托管"
-	local app_url="官网介绍: https://voce.chat/"
+	local docker_describe="开源的轻量级聊天系统, 支持自托管"
+	local docker_url="官网介绍: https://voce.chat/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3885,11 +3841,9 @@ vocechat_app(){
 # Karakeep书签管理
 karakeep_app(){
 	local app_id="83"
-	local app_name="Karakeep书签管理"
 	local docker_name="karakeep"
 	local docker_img="ghcr.io/karakeep-app/karakeep:latest"
 	local docker_port=8139
-	add_app_port "访问地址" 8139
 
 	docker_run() {
 		mkdir -p /home/docker/karakeep
@@ -3901,8 +3855,10 @@ karakeep_app(){
 			ghcr.io/karakeep-app/karakeep:latest
 	}
 
-	local app_text="智能书签管理工具, 支持AI自动标签"
-	local app_url="官网介绍: https://github.com/karakeep-app/karakeep"
+	local docker_describe="智能书签管理工具, 支持AI自动标签"
+	local docker_url="官网介绍: https://github.com/karakeep-app/karakeep"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3910,11 +3866,9 @@ karakeep_app(){
 # NewAPI大模型资产管理
 newapi_app(){
 	local app_id="84"
-	local app_name="NewAPI大模型资产管理"
 	local docker_name="newapi"
 	local docker_img="calciumion/new-api:latest"
 	local docker_port=8140
-	add_app_port "访问地址" 8140
 
 	docker_run() {
 		mkdir -p /home/docker/newapi
@@ -3926,8 +3880,10 @@ newapi_app(){
 			calciumion/new-api:latest
 	}
 
-	local app_text="大模型API管理和分发系统"
-	local app_url="官网介绍: https://github.com/Calcium-Ion/new-api"
+	local docker_describe="大模型API管理和分发系统"
+	local docker_url="官网介绍: https://github.com/Calcium-Ion/new-api"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3935,11 +3891,9 @@ newapi_app(){
 # RAGFlow知识库
 ragflow_app(){
 	local app_id="85"
-	local app_name="RAGFlow知识库"
 	local docker_name="ragflow"
 	local docker_img="infiniflow/ragflow:latest"
 	local docker_port=8141
-	add_app_port "访问地址" 8141
 
 	docker_run() {
 		mkdir -p /home/docker/ragflow
@@ -3951,8 +3905,10 @@ ragflow_app(){
 			infiniflow/ragflow:latest
 	}
 
-	local app_text="开源的RAG引擎, 构建企业知识库"
-	local app_url="官网介绍: https://github.com/infiniflow/ragflow"
+	local docker_describe="开源的RAG引擎, 构建企业知识库"
+	local docker_url="官网介绍: https://github.com/infiniflow/ragflow"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="3"
 	docker_app
 }
@@ -3960,11 +3916,9 @@ ragflow_app(){
 # AstrBot聊天机器人
 astrbot_app(){
 	local app_id="86"
-	local app_name="AstrBot聊天机器人"
 	local docker_name="astrbot"
 	local docker_img="soulter/astrbot:latest"
 	local docker_port=8142
-	add_app_port "访问地址" 8142
 
 	docker_run() {
 		mkdir -p /home/docker/astrbot
@@ -3976,8 +3930,10 @@ astrbot_app(){
 			soulter/astrbot:latest
 	}
 
-	local app_text="多平台聊天机器人框架, 支持QQ/微信/飞书"
-	local app_url="官网介绍: https://github.com/Soulter/AstrBot"
+	local docker_describe="多平台聊天机器人框架, 支持QQ/微信/飞书"
+	local docker_url="官网介绍: https://github.com/Soulter/AstrBot"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -3985,11 +3941,9 @@ astrbot_app(){
 # LangBot聊天机器人
 langbot_app(){
 	local app_id="87"
-	local app_name="LangBot聊天机器人"
 	local docker_name="langbot"
 	local docker_img="rockchin/langbot:latest"
 	local docker_port=8143
-	add_app_port "访问地址" 8143
 
 	docker_run() {
 		mkdir -p /home/docker/langbot
@@ -4001,8 +3955,10 @@ langbot_app(){
 			rockchin/langbot:latest
 	}
 
-	local app_text="大模型原生即时通信机器人平台"
-	local app_url="官网介绍: https://github.com/RockChinQ/LangBot"
+	local docker_describe="大模型原生即时通信机器人平台"
+	local docker_url="官网介绍: https://github.com/RockChinQ/LangBot"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4010,11 +3966,9 @@ langbot_app(){
 # 多格式文件转换
 gotenberg_app(){
 	local app_id="88"
-	local app_name="多格式文件转换"
 	local docker_name="gotenberg"
 	local docker_img="gotenberg/gotenberg:latest"
 	local docker_port=8144
-	add_app_port "访问地址" 8144
 
 	docker_run() {
 		docker run -d \
@@ -4024,8 +3978,10 @@ gotenberg_app(){
 			gotenberg/gotenberg:latest
 	}
 
-	local app_text="开源的文档转换服务, 支持多种格式互转"
-	local app_url="官网介绍: https://github.com/gotenberg/gotenberg"
+	local docker_describe="开源的文档转换服务, 支持多种格式互转"
+	local docker_url="官网介绍: https://github.com/gotenberg/gotenberg"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4033,11 +3989,9 @@ gotenberg_app(){
 # LibreSpeed测速
 librespeed_app(){
 	local app_id="89"
-	local app_name="LibreSpeed测速"
 	local docker_name="librespeed"
 	local docker_img="adolfintel/speedtest:latest"
 	local docker_port=8145
-	add_app_port "访问地址" 8145
 
 	docker_run() {
 		docker run -d \
@@ -4047,8 +4001,10 @@ librespeed_app(){
 			adolfintel/speedtest:latest
 	}
 
-	local app_text="开源的网络测速工具, 类似Speedtest"
-	local app_url="官网介绍: https://github.com/librespeed/speedtest"
+	local docker_describe="开源的网络测速工具, 类似Speedtest"
+	local docker_url="官网介绍: https://github.com/librespeed/speedtest"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4056,11 +4012,9 @@ librespeed_app(){
 # gpt-load AI透明代理
 gptload_app(){
 	local app_id="90"
-	local app_name="gpt-load AI透明代理"
 	local docker_name="gpt-load"
 	local docker_img="ghcr.io/gpt-load/gpt-load:latest"
 	local docker_port=8146
-	add_app_port "访问地址" 8146
 
 	docker_run() {
 		mkdir -p /home/docker/gptload
@@ -4072,8 +4026,10 @@ gptload_app(){
 			ghcr.io/gpt-load/gpt-load:latest
 	}
 
-	local app_text="AI服务透明代理工具"
-	local app_url="官网介绍: https://github.com/gpt-load"
+	local docker_describe="AI服务透明代理工具"
+	local docker_url="官网介绍: https://github.com/gpt-load"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4081,11 +4037,9 @@ gptload_app(){
 # 补货监控工具
 stockmonitor_app(){
 	local app_id="91"
-	local app_name="补货监控工具"
 	local docker_name="stockmonitor"
 	local docker_img="stock-monitor:latest"
 	local docker_port=8147
-	add_app_port "访问地址" 8147
 
 	docker_run() {
 		mkdir -p /home/docker/stockmonitor
@@ -4097,8 +4051,10 @@ stockmonitor_app(){
 			stock-monitor:latest
 	}
 
-	local app_text="商品库存监控和补货提醒工具"
-	local app_url="官网介绍: https://github.com/stock-monitor"
+	local docker_describe="商品库存监控和补货提醒工具"
+	local docker_url="官网介绍: https://github.com/stock-monitor"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4106,11 +4062,9 @@ stockmonitor_app(){
 # PVE虚拟化管理
 pve_app(){
 	local app_id="92"
-	local app_name="PVE虚拟化管理"
 	local docker_name="pve"
 	local docker_img="pve-manager:latest"
 	local docker_port=8148
-	add_app_port "访问地址" 8148
 
 	docker_run() {
 		mkdir -p /home/docker/pve
@@ -4123,8 +4077,10 @@ pve_app(){
 			pve-manager:latest
 	}
 
-	local app_text="Proxmox VE虚拟化管理平台"
-	local app_url="官网介绍: https://www.proxmox.com/"
+	local docker_describe="Proxmox VE虚拟化管理平台"
+	local docker_url="官网介绍: https://www.proxmox.com/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="3"
 	docker_app
 }
@@ -4132,11 +4088,9 @@ pve_app(){
 # DSM群晖虚拟机
 dsm_app(){
 	local app_id="93"
-	local app_name="DSM群晖虚拟机"
 	local docker_name="dsm"
 	local docker_img="kroese/virtual-dsm:latest"
 	local docker_port=8149
-	add_app_port "访问地址" 8149
 
 	docker_run() {
 		mkdir -p /home/docker/dsm
@@ -4149,8 +4103,10 @@ dsm_app(){
 			kroese/virtual-dsm:latest
 	}
 
-	local app_text="在Docker中运行群晖DSM系统"
-	local app_url="官网介绍: https://github.com/kroese/virtual-dsm"
+	local docker_describe="在Docker中运行群晖DSM系统"
+	local docker_url="官网介绍: https://github.com/kroese/virtual-dsm"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="3"
 	docker_app
 }
@@ -4158,11 +4114,9 @@ dsm_app(){
 # 在线DOS老游戏
 dosgame_app(){
 	local app_id="94"
-	local app_name="在线DOS老游戏"
 	local docker_name="dosgame"
 	local docker_img="oldiy/dosgame-web-docker:latest"
 	local docker_port=8150
-	add_app_port "访问地址" 8150
 
 	docker_run() {
 		docker run -d \
@@ -4172,8 +4126,10 @@ dosgame_app(){
 			oldiy/dosgame-web-docker:latest
 	}
 
-	local app_text="在线DOS游戏合集, 怀旧经典游戏"
-	local app_url="官网介绍: https://github.com/rwv/dosgame"
+	local docker_describe="在线DOS游戏合集, 怀旧经典游戏"
+	local docker_url="官网介绍: https://github.com/rwv/dosgame"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4181,11 +4137,9 @@ dosgame_app(){
 # 迅雷离线下载
 xunlei_app(){
 	local app_id="95"
-	local app_name="迅雷离线下载"
 	local docker_name="xunlei"
 	local docker_img="cnk3x/xunlei:latest"
 	local docker_port=8151
-	add_app_port "访问地址" 8151
 
 	docker_run() {
 		mkdir -p /home/docker/xunlei/downloads
@@ -4198,8 +4152,10 @@ xunlei_app(){
 			cnk3x/xunlei:latest
 	}
 
-	local app_text="迅雷离线下载服务, 支持远程下载"
-	local app_url="官网介绍: https://github.com/cnk3x/xunlei"
+	local docker_describe="迅雷离线下载服务, 支持远程下载"
+	local docker_url="官网介绍: https://github.com/cnk3x/xunlei"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4207,11 +4163,9 @@ xunlei_app(){
 # 小雅Alist全家桶
 xiaoya_app(){
 	local app_id="96"
-	local app_name="小雅Alist全家桶"
 	local docker_name="xiaoya"
 	local docker_img="xiaoyaliu/alist:latest"
 	local docker_port=8152
-	add_app_port "访问地址" 8152
 
 	docker_run() {
 		mkdir -p /home/docker/xiaoya
@@ -4223,8 +4177,10 @@ xiaoya_app(){
 			xiaoyaliu/alist:latest
 	}
 
-	local app_text="小雅Alist, 整合多网盘资源"
-	local app_url="官网介绍: https://github.com/xiaoyaliu/alist"
+	local docker_describe="小雅Alist, 整合多网盘资源"
+	local docker_url="官网介绍: https://github.com/xiaoyaliu/alist"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4232,11 +4188,9 @@ xiaoya_app(){
 # Bililive直播录制
 bililive_app(){
 	local app_id="97"
-	local app_name="Bililive直播录制"
 	local docker_name="bililive"
 	local docker_img="bililive/recorder:latest"
 	local docker_port=8153
-	add_app_port "访问地址" 8153
 
 	docker_run() {
 		mkdir -p /home/docker/bililive
@@ -4248,8 +4202,10 @@ bililive_app(){
 			bililive/recorder:latest
 	}
 
-	local app_text="B站直播录制工具, 自动录制直播间"
-	local app_url="官网介绍: https://github.com/BililiveRecorder/BililiveRecorder"
+	local docker_describe="B站直播录制工具, 自动录制直播间"
+	local docker_url="官网介绍: https://github.com/BililiveRecorder/BililiveRecorder"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4257,11 +4213,9 @@ bililive_app(){
 # 极简朋友圈
 moments_app(){
 	local app_id="98"
-	local app_name="极简朋友圈"
 	local docker_name="moments"
 	local docker_img="moments-app:latest"
 	local docker_port=8154
-	add_app_port "访问地址" 8154
 
 	docker_run() {
 		mkdir -p /home/docker/moments
@@ -4273,8 +4227,10 @@ moments_app(){
 			moments-app:latest
 	}
 
-	local app_text="极简风格的朋友圈/微博系统"
-	local app_url="官网介绍: https://github.com/moments-app"
+	local docker_describe="极简风格的朋友圈/微博系统"
+	local docker_url="官网介绍: https://github.com/moments-app"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4282,11 +4238,9 @@ moments_app(){
 # PanSou网盘搜索
 pansou_app(){
 	local app_id="99"
-	local app_name="PanSou网盘搜索"
 	local docker_name="pansou"
 	local docker_img="pansou-search:latest"
 	local docker_port=8155
-	add_app_port "访问地址" 8155
 
 	docker_run() {
 		mkdir -p /home/docker/pansou
@@ -4298,8 +4252,10 @@ pansou_app(){
 			pansou-search:latest
 	}
 
-	local app_text="网盘资源搜索引擎"
-	local app_url="官网介绍: https://github.com/pansou"
+	local docker_describe="网盘资源搜索引擎"
+	local docker_url="官网介绍: https://github.com/pansou"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4307,11 +4263,9 @@ pansou_app(){
 # 简单图床lskypro
 lskypro_app(){
 	local app_id="100"
-	local app_name="简单图床lskypro"
 	local docker_name="lskypro"
 	local docker_img="halcyonazure/lsky-pro-docker:latest"
 	local docker_port=8156
-	add_app_port "访问地址" 8156
 
 	docker_run() {
 		mkdir -p /home/docker/lskypro
@@ -4323,8 +4277,10 @@ lskypro_app(){
 			halcyonazure/lsky-pro-docker:latest
 	}
 
-	local app_text="简单图床系统, 支持多存储策略"
-	local app_url="官网介绍: https://github.com/lsky-org/lsky-pro"
+	local docker_describe="简单图床系统, 支持多存储策略"
+	local docker_url="官网介绍: https://github.com/lsky-org/lsky-pro"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4332,11 +4288,9 @@ lskypro_app(){
 # 禅道项目管理
 zentao_app(){
 	local app_id="101"
-	local app_name="禅道项目管理"
 	local docker_name="zentao"
 	local docker_img="idoop/zentao:latest"
 	local docker_port=8157
-	add_app_port "访问地址" 8157
 
 	docker_run() {
 		mkdir -p /home/docker/zentao
@@ -4348,8 +4302,10 @@ zentao_app(){
 			idoop/zentao:latest
 	}
 
-	local app_text="开源的项目管理软件, 支持敏捷开发"
-	local app_url="官网介绍: https://www.zentao.net/"
+	local docker_describe="开源的项目管理软件, 支持敏捷开发"
+	local docker_url="官网介绍: https://www.zentao.net/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -4357,11 +4313,9 @@ zentao_app(){
 # QD-Today定时任务
 qdtoday_app(){
 	local app_id="102"
-	local app_name="QD-Today定时任务"
 	local docker_name="qdtoday"
 	local docker_img="qdtoday/qd:latest"
 	local docker_port=8158
-	add_app_port "访问地址" 8158
 
 	docker_run() {
 		mkdir -p /home/docker/qdtoday
@@ -4373,8 +4327,10 @@ qdtoday_app(){
 			qdtoday/qd:latest
 	}
 
-	local app_text="HTTP请求定时任务框架, 自动签到"
-	local app_url="官网介绍: https://github.com/qd-today/qd"
+	local docker_describe="HTTP请求定时任务框架, 自动签到"
+	local docker_url="官网介绍: https://github.com/qd-today/qd"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4382,11 +4338,9 @@ qdtoday_app(){
 # 耗子管理面板
 haizi_app(){
 	local app_id="103"
-	local app_name="耗子管理面板"
 	local docker_name="haizi"
 	local docker_img="haizi-panel:latest"
 	local docker_port=8159
-	add_app_port "访问地址" 8159
 
 	docker_run() {
 		mkdir -p /home/docker/haizi
@@ -4398,8 +4352,10 @@ haizi_app(){
 			haizi-panel:latest
 	}
 
-	local app_text="耗子管理面板, 轻量级服务器管理"
-	local app_url="官网介绍: https://github.com/haizi-panel"
+	local docker_describe="耗子管理面板, 轻量级服务器管理"
+	local docker_url="官网介绍: https://github.com/haizi-panel"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4407,11 +4363,9 @@ haizi_app(){
 # AMH建站面板
 amh_app(){
 	local app_id="104"
-	local app_name="AMH建站面板"
 	local docker_name="amh"
 	local docker_img="amh-panel:latest"
 	local docker_port=8160
-	add_app_port "访问地址" 8160
 
 	docker_run() {
 		mkdir -p /home/docker/amh
@@ -4423,8 +4377,10 @@ amh_app(){
 			amh-panel:latest
 	}
 
-	local app_text="AMH云主机面板, 建站管理工具"
-	local app_url="官网介绍: https://amh.sh/"
+	local docker_describe="AMH云主机面板, 建站管理工具"
+	local docker_url="官网介绍: https://amh.sh/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -4432,11 +4388,9 @@ amh_app(){
 # 在线翻译服务器
 libretranslate_app(){
 	local app_id="105"
-	local app_name="在线翻译服务器"
 	local docker_name="libretranslate"
 	local docker_img="libretranslate/libretranslate:latest"
 	local docker_port=8161
-	add_app_port "访问地址" 8161
 
 	docker_run() {
 		docker run -d \
@@ -4446,8 +4400,10 @@ libretranslate_app(){
 			libretranslate/libretranslate:latest
 	}
 
-	local app_text="开源的神经网络翻译API服务"
-	local app_url="官网介绍: https://github.com/LibreTranslate/LibreTranslate"
+	local docker_describe="开源的神经网络翻译API服务"
+	local docker_url="官网介绍: https://github.com/LibreTranslate/LibreTranslate"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -4455,11 +4411,9 @@ libretranslate_app(){
 # AI视频生成工具
 videogen_app(){
 	local app_id="106"
-	local app_name="AI视频生成工具"
 	local docker_name="videogen"
 	local docker_img="videogen-ai:latest"
 	local docker_port=8162
-	add_app_port "访问地址" 8162
 
 	docker_run() {
 		mkdir -p /home/docker/videogen
@@ -4472,8 +4426,10 @@ videogen_app(){
 			videogen-ai:latest
 	}
 
-	local app_text="AI视频生成工具, 文本生成视频"
-	local app_url="官网介绍: https://github.com/videogen-ai"
+	local docker_describe="AI视频生成工具, 文本生成视频"
+	local docker_url="官网介绍: https://github.com/videogen-ai"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="3"
 	docker_app
 }
@@ -4481,15 +4437,9 @@ videogen_app(){
 # RustDesk远程桌面
 rustdesk_server_app(){
 	local app_id="107"
-	local app_name="RustDesk远程桌面"
 	local docker_name="rustdesk-server"
 	local docker_img="rustdesk/rustdesk-server:latest"
 	local docker_port=8163
-	add_app_port "Web客户端/API" 8163
-	add_app_port "中继服务 (TCP)" 21115
-	add_app_port "中继服务 (TCP+UDP)" 21116
-	add_app_port "心跳服务" 21117
-	add_app_port "服务端口" 21118
 
 	docker_run() {
 		mkdir -p /home/docker/rustdesk-server
@@ -4505,8 +4455,10 @@ rustdesk_server_app(){
 			rustdesk/rustdesk-server:latest
 	}
 
-	local app_text="开源的远程桌面软件服务端"
-	local app_url="官网介绍: https://github.com/rustdesk/rustdesk"
+	local docker_describe="开源的远程桌面软件服务端"
+	local docker_url="官网介绍: https://github.com/rustdesk/rustdesk"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4514,11 +4466,9 @@ rustdesk_server_app(){
 # Firefox浏览器
 firefox_app(){
 	local app_id="108"
-	local app_name="Firefox浏览器"
 	local docker_name="firefox"
 	local docker_img="jlesage/firefox:latest"
 	local docker_port=8164
-	add_app_port "访问地址" 8164
 
 	docker_run() {
 		mkdir -p /home/docker/firefox
@@ -4530,8 +4480,10 @@ firefox_app(){
 			jlesage/firefox:latest
 	}
 
-	local app_text="在浏览器中运行的Firefox浏览器"
-	local app_url="官网介绍: https://github.com/jlesage/docker-firefox"
+	local docker_describe="在浏览器中运行的Firefox浏览器"
+	local docker_url="官网介绍: https://github.com/jlesage/docker-firefox"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
@@ -4539,11 +4491,9 @@ firefox_app(){
 # DPanel容器管理
 dpanel_app(){
 	local app_id="109"
-	local app_name="DPanel容器管理"
 	local docker_name="dpanel"
 	local docker_img="dpanel/dpanel:latest"
 	local docker_port=8165
-	add_app_port "访问地址" 8165
 
 	docker_run() {
 		mkdir -p /home/docker/dpanel
@@ -4556,8 +4506,10 @@ dpanel_app(){
 			dpanel/dpanel:latest
 	}
 
-	local app_text="Docker容器可视化管理面板"
-	local app_url="官网介绍: https://github.com/dpanel-io/dpanel"
+	local docker_describe="Docker容器可视化管理面板"
+	local docker_url="官网介绍: https://github.com/dpanel-io/dpanel"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="1"
 	docker_app
 }
@@ -4565,11 +4517,9 @@ dpanel_app(){
 # 普罗米修斯监控
 prometheus_app(){
 	local app_id="110"
-	local app_name="普罗米修斯监控"
 	local docker_name="prometheus"
 	local docker_img="prom/prometheus:latest"
 	local docker_port=8166
-	add_app_port "访问地址" 8166
 
 	docker_run() {
 		mkdir -p /home/docker/prometheus
@@ -4590,8 +4540,10 @@ EOF
 			prom/prometheus:latest
 	}
 
-	local app_text="开源的系统监控和报警工具"
-	local app_url="官网介绍: https://prometheus.io/"
+	local docker_describe="开源的系统监控和报警工具"
+	local docker_url="官网介绍: https://prometheus.io/"
+	local docker_use=""
+	local docker_passwd=""
 	local app_size="2"
 	docker_app
 }
