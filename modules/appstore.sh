@@ -2759,14 +2759,14 @@ frp_server_app(){
 	local app_id="56"
 	local docker_name="frps"
 	local docker_img="snowdreamtech/frps:latest"
-	local docker_port=8112
+	local docker_port=7500
+	local port_mode="custom"
+	local access_label="Dashboard访问地址"
 
 	docker_run() {
 		mkdir -p /home/docker/frps
-		read -e -p "设置FRP服务端端口 (默认7000): " frp_port
-		frp_port=${frp_port:-7000}
-		read -e -p "设置Dashboard端口: " dash_port
-		dash_port=${dash_port:-7500}
+		local frp_port=7000
+		local dash_port=$docker_port
 		read -e -p "设置Dashboard密码: " dash_pwd
 
 		cat > /home/docker/frps/frps.toml << EOF
