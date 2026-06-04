@@ -1222,25 +1222,30 @@ qb_app(){
 	local app_name="qbittorrent离线下载"
 	local docker_name="qbittorrent"
 	local docker_img="lscr.io/linuxserver/qbittorrent:latest"
-	local docker_port=8081
-	add_app_port "Web管理界面" 8081
-	add_app_port "BT下载端口 (TCP+UDP)" 56881
-
 	docker_run() {
+		# 让用户输入 Web管理界面 端口 (默认 8081)
+		read -e -p "设置Web管理界面端口 (默认8081): " web_port
+		web_port=${web_port:-8081}
+
 		docker run -d \
 			--name=qbittorrent \
 			-e PUID=1000 \
 			-e PGID=1000 \
 			-e TZ=Etc/UTC \
-			-e WEBUI_PORT=${docker_port} \
+			-e WEBUI_PORT=${web_port} \
 			-e TORRENTING_PORT=56881 \
-			-p ${docker_port}:${docker_port} \
+			-p ${web_port}:${web_port} \
 			-p 56881:56881 \
 			-p 56881:56881/udp \
 			-v /home/docker/qbittorrent/config:/config \
 			-v /home/docker/qbittorrent/downloads:/downloads \
 			--restart unless-stopped \
 			lscr.io/linuxserver/qbittorrent:latest
+
+		# Web面板端口
+		add_app_port "Web管理界面" "$web_port"
+		# BT 端口保持硬编码 (暂不改)
+		add_app_port "BT下载端口 (TCP+UDP)" 56881
 	}
 
 	local app_text="qbittorrent离线BT磁力下载服务"
@@ -2718,20 +2723,16 @@ adguardhome_app(){
 	local app_name="AdGuardHome去广告"
 	local docker_name="adguardhome"
 	local docker_img="adguard/adguardhome:latest"
-	local docker_port=3000
-	add_app_port "Web管理界面" 3000
-	add_app_port "DNS端口 (TCP+UDP)" 53
-	add_app_port "DHCP客户端" 67
-	add_app_port "DHCP服务端" 68
-	add_app_port "DNS-over-HTTPS" 443
-	add_app_port "DNS-over-TLS" 853
-
 	docker_run() {
 		mkdir -p /home/docker/adguardhome/work /home/docker/adguardhome/conf
+		# 让用户输入 Web管理界面 端口 (默认 3000)
+		read -e -p "设置Web管理界面端口 (默认3000): " web_port
+		web_port=${web_port:-3000}
+
 		docker run -d \
 			--name adguardhome \
 			--restart=always \
-			-p ${docker_port}:3000 \
+			-p ${web_port}:3000 \
 			-p 53:53/tcp \
 			-p 53:53/udp \
 			-p 67:67/udp \
@@ -2741,6 +2742,15 @@ adguardhome_app(){
 			-v /home/docker/adguardhome/work:/opt/adguardhome/work \
 			-v /home/docker/adguardhome/conf:/opt/adguardhome/conf \
 			adguard/adguardhome:latest
+
+		# Web面板端口
+		add_app_port "Web管理界面" "$web_port"
+		# 其他 DNS/DHCP 端口保持硬编码 (暂不改)
+		add_app_port "DNS端口 (TCP+UDP)" 53
+		add_app_port "DHCP客户端" 67
+		add_app_port "DHCP服务端" 68
+		add_app_port "DNS-over-HTTPS" 443
+		add_app_port "DNS-over-TLS" 853
 	}
 
 	local app_text="全网广告拦截与隐私保护DNS服务, 支持DNS-over-HTTPS/TLS"
@@ -3241,27 +3251,25 @@ filebrowser_app(){
 }
 
 # FRP内网穿透(服务端)
-# 多端口样本: Dashboard 端口 (静态) + Server 端口 (用户安装时输入)
+# 多端口样本: Dashboard + Server 端口
 frp_server_app(){
 	local app_id="56"
 	local app_name="FRP内网穿透(服务端)"
 	local docker_name="frps"
 	local docker_img="snowdreamtech/frps:latest"
-	local docker_port=7500
 	local app_text="FRP内网穿透服务端, 让内网服务暴露到公网"
 	local app_url="官网介绍: https://github.com/fatedier/frp"
 	local app_size="1"
 
-	# 静态端口: Dashboard
-	add_app_port "Dashboard访问地址" 7500
-
 	docker_run() {
 		mkdir -p /home/docker/frps
+		# 让用户输入 Dashboard bindPort (默认 7500)
+		read -e -p "设置FRP面板端口 (默认7500): " dash_port
+		dash_port=${dash_port:-7500}
 		# 让用户输入 Server bindPort (默认 7000)
 		read -e -p "设置FRP服务端口 (默认7000): " frp_port
 		frp_port=${frp_port:-7000}
 
-		local dash_port=$docker_port
 		read -e -p "设置Dashboard密码: " dash_pwd
 
 		cat > /home/docker/frps/frps.toml << EOF
@@ -3279,8 +3287,10 @@ EOF
 			-p ${dash_port}:${dash_port} \
 			-v /home/docker/frps/frps.toml:/etc/frp/frps.toml \
 			snowdreamtech/frps:latest
-
-		# 动态端口: Server (装完后才注册到展示表)
+		
+		# Dashboard端口
+		add_app_port "Dashboard访问地址" "$dash_port"
+		# Server端口
 		add_app_port "Server访问地址" "$frp_port"
 	}
 
@@ -3288,23 +3298,20 @@ EOF
 }
 
 # WireGuard组网(服务端)
-# 多端口样本: Web 管理面板 (静态) + WireGuard UDP 端口 (用户安装时输入)
+# 多端口样本: Web 管理面板 + WireGuard UDP 端口
 wireguard_server_app(){
 	local app_id="57"
 	local app_name="WireGuard组网(服务端)"
 	local docker_name="wg-easy"
 	local docker_img="ghcr.io/wg-easy/wg-easy:latest"
-	local docker_port=8113
 	local app_text="WireGuard VPN服务端, 简单易用的虚拟组网工具"
 	local app_url="官网介绍: https://github.com/wg-easy/wg-easy"
 	local app_size="1"
 
-	# 静态端口: Web 管理面板
-	add_app_port "Web管理面板" 8113
-
 	docker_run() {
 		mkdir -p /home/docker/wireguard
-		local wg_port=${docker_port}
+		read -e -p "设置面板端口 (默认8113): " dash_port
+		dash_port=${dash_port:-8113}
 		read -e -p "设置WireGuard端口 (默认51820): " wg_udp_port
 		wg_udp_port=${wg_udp_port:-51820}
 		read -e -p "设置管理面板密码: " wg_pwd
@@ -3315,7 +3322,7 @@ wireguard_server_app(){
 			--cap-add=NET_ADMIN \
 			--cap-add=SYS_MODULE \
 			-v /lib/modules:/lib/modules:ro \
-			-p ${wg_port}:51821 \
+			-p ${dash_port}:51821 \
 			-p ${wg_udp_port}:51820/udp \
 			-e WG_HOST=$(get_public_ip) \
 			-e PASSWORD_HASH="$(openssl passwd -6 "$wg_pwd")" \
@@ -3323,7 +3330,10 @@ wireguard_server_app(){
 			-v /home/docker/wireguard:/etc/wireguard \
 			ghcr.io/wg-easy/wg-easy:latest
 
-		# 动态端口: WireGuard UDP (装完后注册)
+
+		# Web 管理面板端口
+		add_app_port "Web管理面板" "$dash_port"
+		# WireGuard UDP端口
 		add_app_port "WireGuard端口 (UDP)" "$wg_udp_port"
 	}
 
@@ -3475,20 +3485,25 @@ syncthing_app(){
 	local app_name="Syncthing文件同步"
 	local docker_name="syncthing"
 	local docker_img="syncthing/syncthing:latest"
-	local docker_port=8116
-	add_app_port "Web管理界面" 8116
-	add_app_port "设备同步端口 (TCP+UDP)" 22000
-
 	docker_run() {
 		mkdir -p /home/docker/syncthing/config
+		# 让用户输入 Web管理界面 端口 (默认 8116)
+		read -e -p "设置Web管理界面端口 (默认8116): " web_port
+		web_port=${web_port:-8116}
+
 		docker run -d \
 			--name syncthing \
 			--restart=always \
-			-p ${docker_port}:8384 \
+			-p ${web_port}:8384 \
 			-p 22000:22000/tcp \
 			-p 22000:22000/udp \
 			-v /home/docker/syncthing/config:/var/syncthing/config \
 			syncthing/syncthing:latest
+
+		# Web面板端口
+		add_app_port "Web管理界面" "$web_port"
+		# TCP/UDP 同步端口保持硬编码 (暂不改)
+		add_app_port "设备同步端口 (TCP+UDP)" 22000
 	}
 
 	local app_text="开源的连续文件同步工具, 支持P2P多设备间文件同步"
@@ -5040,15 +5055,16 @@ rustdesk_server_app(){
 	local app_name="RustDesk远程桌面"
 	local docker_name="rustdesk-server"
 	local docker_img="rustdesk/rustdesk-server:latest"
-	local docker_port=8163
-	add_app_port "Web客户端/API" 8163
-	add_app_port "中继服务 (TCP)" 21115
-	add_app_port "中继服务 (TCP+UDP)" 21116
-	add_app_port "心跳服务" 21117
-	add_app_port "服务端口" 21118
+	local app_text="开源的远程桌面软件服务端"
+	local app_url="官网介绍: https://github.com/rustdesk/rustdesk"
+	local app_size="1"
 
 	docker_run() {
 		mkdir -p /home/docker/rustdesk-server
+		# 让用户输入 Web 客户端/API 端口 (默认 8163)
+		read -e -p "设置Web客户端/API端口 (默认8163): " web_port
+		web_port=${web_port:-8163}
+
 		docker run -d \
 			--name rustdesk-server \
 			--restart=always \
@@ -5056,14 +5072,19 @@ rustdesk_server_app(){
 			-p 21116:21116 \
 			-p 21116:21116/udp \
 			-p 21117:21117 \
-			-p ${docker_port}:21118 \
+			-p ${web_port}:21118 \
 			-v /home/docker/rustdesk-server:/data \
 			rustdesk/rustdesk-server:latest
+
+		# Web面板端口
+		add_app_port "Web客户端/API" "$web_port"
+		# TCP/UDP 服务端口保持硬编码 (暂不改)
+		add_app_port "中继服务 (TCP)" 21115
+		add_app_port "中继服务 (TCP+UDP)" 21116
+		add_app_port "心跳服务" 21117
+		add_app_port "服务端口" 21118
 	}
 
-	local app_text="开源的远程桌面软件服务端"
-	local app_url="官网介绍: https://github.com/rustdesk/rustdesk"
-	local app_size="1"
 	docker_app
 }
 
