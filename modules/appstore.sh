@@ -2252,17 +2252,6 @@ drawnix_app(){
 ##############################
 linux_app() {
 
-	# 已安装 app_id 集合 (O(1) 查表, 用于菜单状态点 + 666 列表)
-	declare -A INSTALLED_MAP=()
-	INSTALLED_IDS=()
-	if [ -f /home/docker/appno.txt ]; then
-		while read -r id; do
-			[ -n "$id" ] || continue
-			INSTALLED_MAP["$id"]=1
-			INSTALLED_IDS+=("$id")
-		done < /home/docker/appno.txt
-	fi
-
 	# 状态点 (单字符, 颜色根据安装状态)
 	_dot() {
 		if [ "${INSTALLED_MAP[$1]:-0}" = "1" ]; then
@@ -2430,6 +2419,17 @@ linux_app() {
 	}
 
 	while true; do
+		# 每次渲染菜单前刷新已安装状态（解决安装后主界面不刷新为绿色的问题）
+		declare -A INSTALLED_MAP=()
+		INSTALLED_IDS=()
+		if [ -f /home/docker/appno.txt ]; then
+			while read -r id; do
+				[ -n "$id" ] || continue
+				INSTALLED_MAP["$id"]=1
+				INSTALLED_IDS+=("$id")
+			done < /home/docker/appno.txt
+		fi
+
 		clear
 		echo -e "${green}===== 应用市场 =====${white}"
 		echo -e "[图例] ${green}●${white} 已安装  ${red}●${white} 未安装"
