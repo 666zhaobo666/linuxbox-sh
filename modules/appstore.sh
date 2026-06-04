@@ -670,11 +670,20 @@ _secs_between() {
 render_app_ports_table() {
 	_auto_register_fallback_port
 	if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
-		# 第二次进入详情页时数组为空的 fallback：从 port.conf 恢复单端口
-		if [ -n "${docker_name:-}" ] && [ -f "/home/docker/${docker_name}_port.conf" ]; then
-			local _p
-			_p=$(cat "/home/docker/${docker_name}_port.conf" 2>/dev/null)
-			[ -n "$_p" ] && add_app_port "Web 端口" "$_p"
+		# 第二次进入详情页时数组为空的 fallback
+		if [ -n "${docker_name:-}" ]; then
+			# 优先从 port.conf 恢复
+			if [ -f "/home/docker/${docker_name}_port.conf" ]; then
+				local _p
+				_p=$(cat "/home/docker/${docker_name}_port.conf" 2>/dev/null)
+				[ -n "$_p" ] && add_app_port "Web 端口" "$_p"
+			fi
+			# 如果还是空，则用 docker port 命令动态获取当前实际映射的端口
+			if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
+				local _mapped
+				_mapped=$(docker port "$docker_name" 2>/dev/null | awk -F'[:]' '/->/ {print $NF}' | sort -u | head -1)
+				[ -n "$_mapped" ] && add_app_port "访问端口" "$_mapped"
+			fi
 		fi
 	fi
 	if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
