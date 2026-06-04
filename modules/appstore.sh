@@ -189,7 +189,7 @@ check_docker_app() {
 # 检查Docker应用的访问地址
 check_docker_app_ip() {
 echo -e "${pink}------------------------${white}"
-echo "访问地址:"
+echo "${access_label:-访问地址}:"
 ip_address
 
 if [ -n "$ipv4_address" ]; then
@@ -2765,7 +2765,11 @@ frp_server_app(){
 
 	docker_run() {
 		mkdir -p /home/docker/frps
-		local frp_port=7000
+		# 先让用户输入服务端口（bindPort）
+		read -e -p "设置FRP服务端口 (默认7000): " frp_port
+		frp_port=${frp_port:-7000}
+
+		# Dashboard 端口使用主端口 docker_port
 		local dash_port=$docker_port
 		read -e -p "设置Dashboard密码: " dash_pwd
 
