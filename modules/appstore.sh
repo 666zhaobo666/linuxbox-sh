@@ -39,7 +39,10 @@ panel_manage() {
 				iptables_open
 				panel_app_install
 
-				add_app_id
+				check_panel_app
+				if [ "$check_panel" = "${green}已安装${white}" ]; then
+					add_app_id
+				fi
 				;;
 			2)
 				# 修复检测 bug: 未装就管理会误标为已装
@@ -912,7 +915,9 @@ docker_app() {
 			case $choice in
 				1)  # 更新
 					"$_update_cmd"
-					add_app_id
+					if check_docker_app; then
+						add_app_id
+					fi
 
 					clear
 					echo "$docker_name 已经更新完成"
@@ -957,7 +962,9 @@ docker_app() {
 					check_disk_space "$app_size"
 
 					"$_install_cmd"
-					add_app_id
+					if check_docker_app; then
+						add_app_id
+					fi
 
 					clear
 					echo "$docker_name 已经安装完成"
