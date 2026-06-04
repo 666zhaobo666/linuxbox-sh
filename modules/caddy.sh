@@ -125,7 +125,7 @@ caddy_draw_dashboard() {
     echo -e "${green}===== Caddy 反向代理管理 =====${white}"
     echo ""
     echo -e "${pink}--------------------------------------------------------------------------------------------${white}"
-    printf "  ${cyan}%-${W_DOMAIN}s${white} | ${cyan}%-${W_TARGET}s${white} | ${cyan}%-${W_TYPE}s${white} | ${cyan}%-${W_SSL}s${white} | ${cyan}%-${W_REMARK}s${white} | ${cyan}%s${white}\n" \
+    printf "  ${cyan}%-${W_DOMAIN}s${white}    | ${cyan}%-${W_TARGET}s${white}    | ${cyan}%-${W_TYPE}s${white}    | ${cyan}%-${W_SSL}s${white}    | ${cyan}%-${W_REMARK}s${white}    | ${cyan}%s${white}\n" \
         "域名" "反代目标" "类型" "SSL 证书" "备注" "网站目录"
     echo -e "${pink}--------------------------------------------------------------------------------------------${white}"
 

@@ -815,7 +815,7 @@ _docker_app_post_install() {
 	fi
 }
 
-# 统一入口: 合并自 docker_app() + docker_app_plus()
+# 统一入口
 # 调用方需在调用前定义好变量, 可选定义 docker_app_install/update/uninstall (compose)
 # 或 docker_run (单容器). 由 declare -F 自动检测.
 # 显示标题用变量: 优先 app_* 新名, 兼容老 docker_* 命名.
@@ -1958,7 +1958,7 @@ moontv_app(){
 		echo "应用已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Melody音乐精灵
@@ -2222,7 +2222,7 @@ EOF
 		echo "应用已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Drawnix在线白板
@@ -2652,7 +2652,7 @@ EOF
 		echo "Nextcloud 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # emby多媒体管理系统
@@ -2957,7 +2957,7 @@ EOF
 		echo "PhotoPrism 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # searxng聚合搜索站
@@ -3186,7 +3186,7 @@ dify_app(){
 		echo "Dify 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # gitea私有代码仓库
@@ -3443,7 +3443,7 @@ EOF
 		echo "JumpServer 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # immich图片视频管理器
@@ -3483,7 +3483,7 @@ immich_app(){
 		echo "Immich 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Syncthing点对点文件同步工具
@@ -3761,7 +3761,7 @@ EOF
 		echo "RocketChat 已卸载"
 	}
 
-	docker_app_plus
+	docker_app
 }
 
 # Gopeed高速下载工具
