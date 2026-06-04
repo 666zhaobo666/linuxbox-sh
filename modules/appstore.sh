@@ -670,6 +670,14 @@ _secs_between() {
 render_app_ports_table() {
 	_auto_register_fallback_port
 	if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
+		# 第二次进入详情页时数组为空的 fallback：从 port.conf 恢复单端口
+		if [ -n "${docker_name:-}" ] && [ -f "/home/docker/${docker_name}_port.conf" ]; then
+			local _p
+			_p=$(cat "/home/docker/${docker_name}_port.conf" 2>/dev/null)
+			[ -n "$_p" ] && add_app_port "Web 端口" "$_p"
+		fi
+	fi
+	if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
 		return
 	fi
 
