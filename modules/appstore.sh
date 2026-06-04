@@ -510,25 +510,6 @@ docker_app() {
         echo -e "${cyan}------------------------------------------------------${white}"
 
         show_docker_app_menu()
-        # 旧菜单逻辑已迁移至公共函数 show_docker_app_menu()
-        if check_docker_app; then  # 容器存在（返回0）
-            echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
-        else  # 容器不存在（返回非0）
-            echo -e "${green}1. 安装${white}"
-        fi
-        
-        echo -e "${pink}------------------------------------------------------${white}"
-        
-        # 仅当容器存在时显示域名和端口相关操作
-        if check_docker_app; then
-            echo -e "5. 添加域名访问      6. 删除域名访问"
-            echo -e "7. 允许IP+端口访问   8. 阻止IP+端口访问"
-            echo -e "${pink}------------------------------------------------------${white}"
-        fi
-
-        echo -e "${yellow}0. 返回上一级菜单${white}"
-        echo -e "${pink}------------------------------------------------------${white}"
-        
         read -e -p "请输入你的选择: " choice
         
         # 根据容器状态限制可执行的选项
@@ -4257,23 +4238,3 @@ read_docker_port() {
 
 # Phase 6.2: Docker 应用菜单显示
 show_docker_app_menu() {
-    echo ""
-    echo -e "${cyan}------------------------------------------------------${white}"
-
-    if check_docker_app; then
-        echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
-    else
-        echo -e "${green}1. 安装${white}"
-    fi
-
-    echo -e "${pink}------------------------------------------------------${white}"
-
-    if check_docker_app; then
-        echo -e "5. 添加域名访问      6. 删除域名访问"
-        echo -e "7. 允许IP+端口访问   8. 阻止IP+端口访问"
-        echo -e "${pink}------------------------------------------------------${white}"
-    fi
-
-    echo -e "${yellow}0. 返回上一级菜单${white}"
-    echo -e "${pink}------------------------------------------------------${white}"
-}
