@@ -518,6 +518,32 @@ clear_app_ports() {
 	APP_PORTS_NUMBERS=()
 }
 
+# 保存当前已注册的端口到文件（支持多端口，第二次进入详情页恢复用）
+save_app_ports() {
+	[ -z "${docker_name:-}" ] && return
+	mkdir -p /home/docker
+	> "/home/docker/${docker_name}_ports.txt"
+	for i in "${!APP_PORTS_LABELS[@]}"; do
+		echo "${APP_PORTS_LABELS[$i]}|${APP_PORTS_NUMBERS[$i]}" >> "/home/docker/${docker_name}_ports.txt"
+	done
+}
+
+# 从文件加载端口（第二次进入详情页时使用）
+load_app_ports() {
+	[ -z "${docker_name:-}" ] && return
+	local port_file="/home/docker/${docker_name}_ports.txt"
+	[ ! -f "$port_file" ] && return
+
+	APP_PORTS_LABELS=()
+	APP_PORTS_NUMBERS=()
+	while IFS='|' read -r label port; do
+		[ -n "$label" ] && [ -n "$port" ] && {
+			APP_PORTS_LABELS+=("$label")
+			APP_PORTS_NUMBERS+=("$port")
+		}
+	done < "$port_file"
+}
+
 # 获取主端口 (第一个注册的); 若空则回退到 $docker_port 兼容老 app
 get_primary_port() {
 	if [ ${#APP_PORTS_NUMBERS[@]} -gt 0 ]; then
@@ -670,21 +696,7 @@ _secs_between() {
 render_app_ports_table() {
 	_auto_register_fallback_port
 	if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
-		# 第二次进入详情页时数组为空的 fallback
-		if [ -n "${docker_name:-}" ]; then
-			# 优先从 port.conf 恢复
-			if [ -f "/home/docker/${docker_name}_port.conf" ]; then
-				local _p
-				_p=$(cat "/home/docker/${docker_name}_port.conf" 2>/dev/null)
-				[ -n "$_p" ] && add_app_port "Web 端口" "$_p"
-			fi
-			# 如果还是空，则用 docker port 命令动态获取当前实际映射的端口
-			if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
-				local _mapped
-				_mapped=$(docker port "$docker_name" 2>/dev/null | awk -F'[:]' '/->/ {print $NF}' | sort -u | head -1)
-				[ -n "$_mapped" ] && add_app_port "访问端口" "$_mapped"
-			fi
-		fi
+		load_app_ports
 	fi
 	if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
 		return
@@ -934,6 +946,7 @@ docker_app() {
 					"$_update_cmd"
 					if check_docker_app; then
 						add_app_id
+						save_app_ports
 					fi
 
 					clear
@@ -945,6 +958,7 @@ docker_app() {
 				2)  # 卸载
 					"$_uninstall_cmd"
 					rm -f /home/docker/${docker_name}_port.conf
+					rm -f /home/docker/${docker_name}_ports.txt
 					sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
 					echo "应用已卸载"
 					;;
@@ -981,6 +995,7 @@ docker_app() {
 					"$_install_cmd"
 					if check_docker_app; then
 						add_app_id
+						save_app_ports
 					fi
 
 					clear
