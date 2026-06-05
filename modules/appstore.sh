@@ -565,7 +565,7 @@ APP_REGISTRY_NAMES=()
 declare -A APP_DISPLAY_NAMES=(
 	[1]="1Panel面板"           [2]="宝塔面板"             [3]="aaPanel面板"
 	[4]="NginxProxyManager面板" [5]="OpenList面板"         [6]="WebTop远程桌面网页版"
-	[7]="哪吒探针"              [8]="qbittorrent离线下载"  [9]="Poste.io邮件服务器程序"
+	[7]="Komari监控"            [8]="qbittorrent离线下载"  [9]="Poste.io邮件服务器程序"
 	[10]="青龙面板"             [11]="Code-Server(网页vscode)" [12]="Looking Glass(测速面板)"
 	[13]="雷池WAF防火墙面板"   [14]="onlyoffice在线办公OFFICE" [15]="UptimeKuma监控工具"
 	[16]="Memos网页备忘录"      [17]="drawio免费的在线图表软件" [18]="Sun-Panel导航面板"
@@ -589,7 +589,7 @@ declare -A APP_DISPLAY_NAMES=(
 	[69]="ZFile在线网盘"        [70]="Nexterm远程连接"      [71]="JitsiMeet视频会议"
 	[72]="Stream四层代理转发"   [73]="FileCodeBox文件快递"  [74]="Matrix去中心化聊天"
 	[75]="yt-dlp视频下载"       [76]="paperless文档管理"    [77]="Wallos财务管理"
-	[78]="komari服务器监控"     [79]="Dufs静态文件服务器"   [80]="PandaWiki文档管理"
+	[79]="Dufs静态文件服务器"   [80]="PandaWiki文档管理"
 	[81]="linkwarden书签管理"   [82]="VoceChat聊天系统"     [83]="Karakeep书签管理"
 	[84]="NewAPI大模型资产管理" [85]="RAGFlow知识库"        [86]="AstrBot聊天机器人"
 	[87]="LangBot聊天机器人"    [88]="多格式文件转换"       [89]="LibreSpeed测速"
@@ -1209,123 +1209,36 @@ webtop_app(){
 		docker_app
 }
 
-# 哪吒探针
-nezha_app(){
-	clear
+# Komari监控
+komari_app(){
 	local app_id="7"
-	local app_name="哪吒探针"
-	local app_text="开源、轻量、易用的服务器监控与运维工具"
-	local app_url="官网搭建文档: https://nezha.wiki/guide/dashboard.html"
+	local app_name="Komari监控"
+	local docker_name="komari"
+	local docker_img="ghcr.io/komari-monitor/komari:latest"
+	local docker_port=25774
 
-	# 下载 V1 官方脚本到 /tmp/nezha.sh (复用, 避免每次重下)
-	prepare_nezha_script() {
-		install curl wget
-		curl -L ${url_proxy}raw.githubusercontent.com/nezhahq/scripts/refs/heads/main/install.sh -o /tmp/nezha.sh
-		chmod +x /tmp/nezha.sh
+	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 25774): " _user_port
+		_user_port=${_user_port:-25774}
+		docker_port=$_user_port
+
+		mkdir -p /home/docker/komari && \
+		docker run -d \
+			--name komari \
+			--restart=unless-stopped \
+			-v /home/docker/komari:/app/data \
+			-p ${docker_port}:25774 \
+			ghcr.io/komari-monitor/komari:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
 	}
 
-	# 探活: 返回 "not_installed" / "dashboard" / "agent"
-	get_nezha_state() {
-		if [ -f /etc/systemd/system/nezha-dashboard.service ] || [ -f /etc/init.d/nezha-dashboard ] || [ -d /opt/nezha/dashboard ]; then
-			echo "dashboard"
-		elif [ -f /etc/systemd/system/nezha-agent.service ] || [ -d /opt/nezha/agent ]; then
-			echo "agent"
-		else
-			echo "not_installed"
-		fi
-	}
-
-	# 退出官方菜单后重新探活, 同步 666 列表
-	sync_app_registry() {
-		local _new_state
-		_new_state=$(get_nezha_state)
-		if [ "$_new_state" != "not_installed" ]; then
-			add_app_id
-		else
-			sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-		fi
-	}
-
-	while true; do
-		local _state _svc _yn
-		_state=$(get_nezha_state)
-		clear
-
-		# 顶部状态
-		case "$_state" in
-			not_installed)
-				echo -e "哪吒探针 V1  状态: ${grey}未安装${white}"
-				;;
-			dashboard)
-				_svc=$(systemctl is-active nezha-dashboard 2>/dev/null || echo "inactive")
-				if [ "$_svc" = "active" ]; then
-					echo -e "哪吒探针 V1  状态: ${green}已安装 (面板端, 运行中)${white}"
-				else
-					echo -e "哪吒探针 V1  状态: ${yellow}已安装 (面板端, ${_svc})${white}"
-				fi
-				;;
-			agent)
-				_svc=$(systemctl is-active nezha-agent 2>/dev/null || echo "inactive")
-				if [ "$_svc" = "active" ]; then
-					echo -e "哪吒探针 V1  状态: ${green}已安装 (被控端, 运行中)${white}"
-				else
-					echo -e "哪吒探针 V1  状态: ${yellow}已安装 (被控端, ${_svc})${white}"
-				fi
-				;;
-		esac
-		echo "${app_text}"
-		echo "${app_url}"
-		echo ""
-
-		# 菜单: 按状态显示不同入口
-		echo -e "${pink}------------------------${white}"
-		if [ "$_state" = "not_installed" ]; then
-			echo "1. 安装 (调起官方安装菜单)"
-		else
-			echo "1. 安装            2. 管理            3. 卸载"
-		fi
-		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0. ${white}返回上一级菜单"
-		echo -e "${pink}------------------------${white}"
-		read -e -p "输入你的选择: " choice
-
-		case $choice in
-			1)
-				prepare_nezha_script
-				cd /tmp && sudo bash nezha.sh
-				sync_app_registry
-				;;
-			2)
-				if [ "$_state" = "not_installed" ]; then
-					echo -e "${yellow}尚未安装, 请先选 1 安装${white}"
-				else
-					prepare_nezha_script
-					cd /tmp && sudo bash nezha.sh
-					sync_app_registry
-				fi
-				;;
-			3)
-				if [ "$_state" = "not_installed" ]; then
-					echo -e "${yellow}尚未安装, 无需卸载${white}"
-				else
-					echo -e "${cyan}卸载请到官方管理菜单里操作:${white}"
-					echo "  - 面板端: 进入菜单后选 ${green}5. 卸载管理面板${white}"
-					echo "  - 被控端: 进入菜单后选 ${green}11. 卸载Agent${white} (V0) / ${green}5. 卸载管理面板${white} (V1)"
-					echo ""
-					read -e -p "是否现在调起官方管理菜单? [Y/n]: " _yn
-					if [[ "$_yn" =~ ^[Yy]$ ]] || [ -z "$_yn" ]; then
-						prepare_nezha_script
-						cd /tmp && sudo bash nezha.sh
-						sync_app_registry
-					fi
-				fi
-				;;
-			*)
-				break
-				;;
-		esac
-		break_end
-	done
+	local app_text="Komari - 轻量自托管的服务器监控与告警平台"
+	local app_url="官网介绍: https://github.com/komari-monitor/komari"
+	local app_size="1"
+	docker_app
 }
 
 
@@ -2418,7 +2331,7 @@ linux_app() {
 		4) npm_app ;;
 		5) openlist_app ;;
 		6) webtop_app ;;
-		7) nezha_app ;;
+		7) komari_app ;;
 		8) qb_app ;;
 		9) poste_mail_app ;;
 		10) qinglong_app ;;
@@ -2489,7 +2402,6 @@ linux_app() {
 		75) ytdlp_app ;;
 		76) paperless_app ;;
 		77) wallos_app ;;
-		78) komari_app ;;
 		79) dufs_app ;;
 		80) pandawiki_app ;;
 		81) linkwarden_app ;;
@@ -2545,7 +2457,7 @@ linux_app() {
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${cyan}1.  ${white}1Panel面板 $(_dot 1)            ${cyan}2.  ${white}宝塔面板 $(_dot 2)                  ${cyan}3.  ${white}aaPanel面板 $(_dot 3)"
 		echo -e "${cyan}4.  ${white}NginxProxyManager面板 $(_dot 4)  ${cyan}5.  ${white}OpenList面板 $(_dot 5)              ${cyan}6.  ${white}WebTop远程桌面网页版 $(_dot 6)"
-		echo -e "${cyan}7.  ${white}哪吒探针 $(_dot 7)               ${cyan}8.  ${white}qbittorrent离线下载 $(_dot 8)        ${cyan}9.  ${white}Poste.io邮件服务器程序 $(_dot 9)"
+		echo -e "${cyan}7.  ${white}Komari监控 $(_dot 7)             ${cyan}8.  ${white}qbittorrent离线下载 $(_dot 8)        ${cyan}9.  ${white}Poste.io邮件服务器程序 $(_dot 9)"
 		echo -e "${cyan}10. ${white}青龙面板 $(_dot 10)               ${cyan}11. ${white}Code-Server(网页vscode) $(_dot 11)  ${cyan}12. ${white}Looking Glass(测速面板) $(_dot 12)"
 		echo -e "${cyan}13. ${white}雷池WAF防火墙面板 $(_dot 13)      ${cyan}14. ${white}onlyoffice在线办公OFFICE $(_dot 14) ${cyan}15. ${white}UptimeKuma监控工具 $(_dot 15)"
 		echo -e "${cyan}16. ${white}Memos网页备忘录 $(_dot 16)        ${cyan}17. ${white}drawio免费的在线图表软件 $(_dot 17) ${cyan}18. ${white}Sun-Panel导航面板 $(_dot 18)"
@@ -2570,7 +2482,6 @@ linux_app() {
 		echo -e "${cyan}69. ${white}ZFile在线网盘 $(_dot 69)          ${cyan}70. ${white}Nexterm远程连接 $(_dot 70)          ${cyan}71. ${white}JitsiMeet视频会议 $(_dot 71)"
 		echo -e "${cyan}72. ${white}Stream四层代理转发 $(_dot 72)     ${cyan}73. ${white}FileCodeBox文件快递 $(_dot 73)      ${cyan}74. ${white}Matrix去中心化聊天 $(_dot 74)"
 		echo -e "${cyan}75. ${white}yt-dlp视频下载 $(_dot 75)         ${cyan}76. ${white}paperless文档管理 $(_dot 76)        ${cyan}77. ${white}Wallos财务管理 $(_dot 77)"
-		echo -e "${cyan}78. ${white}komari服务器监控 $(_dot 78)       ${cyan}79. ${white}Dufs静态文件服务器 $(_dot 79)      ${cyan}80. ${white}PandaWiki文档管理 $(_dot 80)"
 		echo -e "${cyan}81. ${white}linkwarden书签管理 $(_dot 81)     ${cyan}82. ${white}VoceChat聊天系统 $(_dot 82)         ${cyan}83. ${white}Karakeep书签管理 $(_dot 83)"
 		echo -e "${cyan}84. ${white}NewAPI大模型资产管理 $(_dot 84)   ${cyan}85. ${white}RAGFlow知识库 $(_dot 85)            ${cyan}86. ${white}AstrBot聊天机器人 $(_dot 86)"
 		echo -e "${cyan}87. ${white}LangBot聊天机器人 $(_dot 87)      ${cyan}88. ${white}多格式文件转换 $(_dot 88)           ${cyan}89. ${white}LibreSpeed测速 $(_dot 89)"
@@ -4249,37 +4160,6 @@ wallos_app(){
 	docker_app
 }
 
-# komari服务器监控
-komari_app(){
-	local app_id="78"
-	local app_name="komari服务器监控"
-	local docker_name="komari"
-	local docker_img="komari-server:latest"
-	local docker_port=8134
-
-	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8134): " _user_port
-		_user_port=${_user_port:-8134}
-		docker_port=$_user_port
-
-		mkdir -p /home/docker/komari
-		docker run -d \
-			--name komari \
-			--restart=always \
-			-p ${docker_port}:8080 \
-			-v /home/docker/komari:/data \
-			komari-server:latest
-
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
-	}
-
-	local app_text="轻量级服务器监控面板"
-	local app_url="官网介绍: https://github.com/komari-server"
-	local app_size="1"
-	docker_app
-}
 
 # Dufs静态文件服务器
 dufs_app(){
