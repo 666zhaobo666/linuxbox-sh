@@ -1211,34 +1211,121 @@ webtop_app(){
 
 # Komari监控
 komari_app(){
+	clear
 	local app_id="7"
 	local app_name="Komari监控"
 	local docker_name="komari"
 	local docker_img="ghcr.io/komari-monitor/komari:latest"
 	local docker_port=25774
-
-	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 25774): " _user_port
-		_user_port=${_user_port:-25774}
-		docker_port=$_user_port
-
-		mkdir -p /home/docker/komari && \
-		docker run -d \
-			--name komari \
-			--restart=unless-stopped \
-			-v /home/docker/komari:/app/data \
-			-p ${docker_port}:25774 \
-			ghcr.io/komari-monitor/komari:latest
-
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
-	}
-
 	local app_text="Komari - 轻量自托管的服务器监控与告警平台"
 	local app_url="官网介绍: https://github.com/komari-monitor/komari"
-	local app_size="1"
-	docker_app
+
+	# 探活: 容器是否存在
+	check_komari_installed() {
+		if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${docker_name}$"; then
+			return 0
+		else
+			return 1
+		fi
+	}
+
+	# 解析容器对外端口 (宿主机侧)
+	get_komari_port() {
+		docker port $docker_name 2>/dev/null | awk -F'[:]' '/->/ {print $NF}' | uniq
+	}
+
+	while true; do
+		local _state _hp _user_port choice
+		clear
+		# 顶部状态
+		if check_komari_installed; then
+			_state=$(docker inspect -f '{{.State.Status}}' $docker_name 2>/dev/null || echo "unknown")
+			if [ "$_state" = "running" ]; then
+				echo -e "Komari监控  状态: ${green}已安装 (运行中)${white}"
+			else
+				echo -e "Komari监控  状态: ${yellow}已安装 (${_state})${white}"
+			fi
+			# 显示访问地址
+			_hp=$(get_komari_port)
+			if [ -n "$_hp" ]; then
+				ip_address
+				echo -e "${cyan}面板访问${white}: ${green}http://${ipv4_address}:${_hp}${white}"
+			fi
+		else
+			echo -e "Komari监控  状态: ${grey}未安装${white}"
+		fi
+		echo "${app_text}"
+		echo "${app_url}"
+		echo ""
+
+		# 菜单
+		echo -e "${pink}------------------------${white}"
+		echo "1. 安装           2. 卸载           3. 帮助"
+		echo -e "${pink}------------------------${white}"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${pink}------------------------${white}"
+		read -e -p "输入你的选择: " choice
+
+		case $choice in
+			1)  # 安装
+				if check_komari_installed; then
+					echo -e "${yellow}已经安装过, 无需重复安装${white}"
+					break_end
+					continue
+				fi
+				read -e -p "服务端口 (默认 25774): " _user_port
+				_user_port=${_user_port:-25774}
+				docker_port=$_user_port
+
+				mkdir -p /home/docker/komari
+				docker run -d \
+					--name komari \
+					--restart=unless-stopped \
+					-v /home/docker/komari:/app/data \
+					-p ${docker_port}:25774 \
+					ghcr.io/komari-monitor/komari:latest
+				add_app_id
+				clear
+				echo "Komari 已安装完成"
+				echo "可在状态栏查看访问地址"
+				break_end
+				;;
+			2)  # 卸载
+				docker rm -f $docker_name 2>/dev/null
+				docker rmi -f $docker_img 2>/dev/null
+				rm -rf /home/docker/komari
+				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+				clear
+				echo "Komari 已卸载"
+				break_end
+				;;
+			3)  # 帮助
+				clear
+				echo -e "${cyan}============ Komari 帮助 ============${white}"
+				echo ""
+				echo -e "${green}[1] 查看初始登录信息${white}"
+				echo "    容器启动后, 用以下命令查看初始账号/密码:"
+				echo ""
+				echo "      docker logs komari"
+				echo ""
+				echo -e "${green}[2] 卸载 Agent (在被控端机器上执行)${white}"
+				echo "    当你在面板端添加好一台被控服务器, 它会以 systemd 服务方式运行"
+				echo "    Agent (komari-agent), 如需在客户端上彻底卸载, 执行以下命令:"
+				echo ""
+				echo "      sudo systemctl stop komari-agent && \\"
+				echo "      sudo systemctl disable komari-agent && \\"
+				echo "      sudo rm -f /etc/systemd/system/komari-agent.service && \\"
+				echo "      sudo systemctl daemon-reload && \\"
+				echo "      sudo rm -rf /opt/komari/agent /var/log/komari"
+				echo ""
+				echo -e "${pink}------------------------${white}"
+				read -n 1 -s -r -p "按任意键返回..."
+				;;
+			*)
+				break
+				;;
+		esac
+	done
 }
 
 # 78号空应用占位
