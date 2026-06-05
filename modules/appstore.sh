@@ -1209,7 +1209,7 @@ webtop_app(){
 		docker_app
 }
 
-# 哪吒探针 (V1 - 调起官方安装脚本, 本菜单只做状态检测)
+# 哪吒探针
 nezha_app(){
 	clear
 	local app_id="7"
@@ -1282,12 +1282,10 @@ nezha_app(){
 		if [ "$_state" = "not_installed" ]; then
 			echo "1. 安装 (调起官方安装菜单)"
 		else
-			echo "1. 安装 (调起官方安装菜单)"
-			echo "2. 管理 (调起官方管理菜单, 修改配置/重启/看日志都在里面)"
-			echo "3. 卸载 (请到官方管理菜单里选择卸载)"
+			echo "1. 安装            2. 管理            3. 卸载"
 		fi
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0. ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
