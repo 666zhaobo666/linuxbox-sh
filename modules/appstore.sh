@@ -589,7 +589,7 @@ declare -A APP_DISPLAY_NAMES=(
 	[69]="ZFile在线网盘"        [70]="Nexterm远程连接"      [71]="JitsiMeet视频会议"
 	[72]="Stream四层代理转发"   [73]="FileCodeBox文件快递"  [74]="Matrix去中心化聊天"
 	[75]="yt-dlp视频下载"       [76]="paperless文档管理"    [77]="Wallos财务管理"
-	[79]="Dufs静态文件服务器"   [80]="PandaWiki文档管理"
+	[78]="空应用占位用"         [79]="Dufs静态文件服务器"   [80]="PandaWiki文档管理"
 	[81]="linkwarden书签管理"   [82]="VoceChat聊天系统"     [83]="Karakeep书签管理"
 	[84]="NewAPI大模型资产管理" [85]="RAGFlow知识库"        [86]="AstrBot聊天机器人"
 	[87]="LangBot聊天机器人"    [88]="多格式文件转换"       [89]="LibreSpeed测速"
