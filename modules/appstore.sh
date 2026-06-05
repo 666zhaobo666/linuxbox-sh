@@ -1247,7 +1247,7 @@ nezha_app(){
 	}
 
 	while true; do
-		local _state
+		local _state _svc _yn
 		_state=$(get_nezha_state)
 		clear
 
@@ -1257,7 +1257,6 @@ nezha_app(){
 				echo -e "哪吒探针 V1  状态: ${grey}未安装${white}"
 				;;
 			dashboard)
-				local _svc
 				_svc=$(systemctl is-active nezha-dashboard 2>/dev/null || echo "inactive")
 				if [ "$_svc" = "active" ]; then
 					echo -e "哪吒探针 V1  状态: ${green}已安装 (面板端, 运行中)${white}"
@@ -1266,7 +1265,6 @@ nezha_app(){
 				fi
 				;;
 			agent)
-				local _svc
 				_svc=$(systemctl is-active nezha-agent 2>/dev/null || echo "inactive")
 				if [ "$_svc" = "active" ]; then
 					echo -e "哪吒探针 V1  状态: ${green}已安装 (被控端, 运行中)${white}"
@@ -1332,80 +1330,7 @@ nezha_app(){
 	done
 }
 
-	# 探活: 返回 "not_installed" / "dashboard" / "agent"
-	get_nezha_state() {
-		# 优先看 systemd 单元, 兼容 alpine (openrc) 的 /etc/init.d
-		if [ -f /etc/systemd/system/nezha-dashboard.service ] || [ -f /etc/init.d/nezha-dashboard ] || [ -d /opt/nezha/dashboard ]; then
-			echo "dashboard"
-		elif [ -f /etc/systemd/system/nezha-agent.service ] || [ -d /opt/nezha/agent ]; then
-			echo "agent"
-		else
-			echo "not_installed"
-		fi
-	}
 
-	while true; do
-		local _state
-		_state=$(get_nezha_state)
-		clear
-
-		# 顶部状态
-		case "$_state" in
-			not_installed)
-				echo -e "哪吒探针 V1  状态: ${grey}未安装${white}"
-				;;
-			dashboard)
-				local _svc
-				_svc=$(systemctl is-active nezha-dashboard 2>/dev/null || echo "inactive")
-				if [ "$_svc" = "active" ]; then
-					echo -e "哪吒探针 V1  状态: ${green}已安装 (面板端, 运行中)${white}"
-				else
-					echo -e "哪吒探针 V1  状态: ${yellow}已安装 (面板端, ${_svc})${white}"
-				fi
-				;;
-			agent)
-				local _svc
-				_svc=$(systemctl is-active nezha-agent 2>/dev/null || echo "inactive")
-				if [ "$_svc" = "active" ]; then
-					echo -e "哪吒探针 V1  状态: ${green}已安装 (被控端, 运行中)${white}"
-				else
-					echo -e "哪吒探针 V1  状态: ${yellow}已安装 (被控端, ${_svc})${white}"
-				fi
-				;;
-		esac
-		echo "${app_text}"
-		echo "${app_url}"
-		echo ""
-
-		echo -e "${pink}------------------------${white}"
-		echo "1. 安装                       2. 卸载"
-		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
-		echo -e "${pink}------------------------${white}"
-		read -e -p "输入你的选择: " choice
-
-		case $choice in
-			1)
-				prepare_nezha_script
-				# 安装（官方脚本）
-				cd /tmp && sudo bash nezha.sh
-
-				# 退出官方菜单后重新探活, 更新 666 列表
-				local _new_state
-				_new_state=$(get_nezha_state)
-				if [ "$_new_state" != "not_installed" ]; then
-					add_app_id
-				else
-					sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-				fi
-				;;
-			*)
-				break
-				;;
-		esac
-		break_end
-	done
-}
 
 # qbittorrent
 qb_app(){
