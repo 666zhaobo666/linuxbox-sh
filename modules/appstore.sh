@@ -1270,7 +1270,7 @@ nezha_app(){
 		echo ""
 
 		echo -e "${pink}------------------------${white}"
-		echo "1. 安装                            3. 卸载"
+		echo "1. 安装                       2. 卸载"
 		echo -e "${pink}------------------------${white}"
 		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
