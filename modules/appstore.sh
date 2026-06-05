@@ -1270,7 +1270,7 @@ nezha_app(){
 		echo ""
 
 		echo -e "${pink}------------------------${white}"
-		echo "1. 调起官方安装菜单 (安装/修改/卸载/看日志, 都在里面)"
+		echo "1. 安装                            3. 卸载"
 		echo -e "${pink}------------------------${white}"
 		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
@@ -1279,7 +1279,7 @@ nezha_app(){
 		case $choice in
 			1)
 				prepare_nezha_script
-				# 进官方主菜单, 全部功能 (install/modify_config/uninstall/show_log/...) 自己挑
+				# 安装（官方脚本）
 				cd /tmp && sudo bash nezha.sh
 
 				# 退出官方菜单后重新探活, 更新 666 列表
