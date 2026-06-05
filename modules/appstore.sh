@@ -1209,31 +1209,13 @@ webtop_app(){
 		docker_app
 }
 
-# 哪吒探针 (V1 - 二进制 + systemd, 已弃用 Docker 镜像)
+# 哪吒探针 (V1 - 调起官方安装脚本, 本菜单只做状态检测)
 nezha_app(){
 	clear
 	local app_id="7"
 	local app_name="哪吒探针"
 	local app_text="开源、轻量、易用的服务器监控与运维工具"
 	local app_url="官网搭建文档: https://nezha.wiki/guide/dashboard.html"
-
-	# V1 安装产物路径
-	local nezha_dashboard_svc="nezha-dashboard.service"
-	local nezha_agent_svc="nezha-agent.service"
-	local nezha_port_file="/home/docker/nezha_port.conf"
-	local nezha_role_file="/home/docker/nezha_role.conf"   # dashboard / agent
-
-	# 探活 (按角色): 替代 check_docker_app
-	check_nezha_dashboard() {
-		[ -f "/etc/systemd/system/${nezha_dashboard_svc}" ] && return 0
-		systemctl list-unit-files "${nezha_dashboard_svc}" 2>/dev/null | grep -q "${nezha_dashboard_svc}" && return 0
-		return 1
-	}
-	check_nezha_agent() {
-		[ -f "/etc/systemd/system/${nezha_agent_svc}" ] && return 0
-		systemctl list-unit-files "${nezha_agent_svc}" 2>/dev/null | grep -q "${nezha_agent_svc}" && return 0
-		return 1
-	}
 
 	# 下载 V1 官方脚本到 /tmp/nezha.sh (复用, 避免每次重下)
 	prepare_nezha_script() {
@@ -1242,186 +1224,71 @@ nezha_app(){
 		chmod +x /tmp/nezha.sh
 	}
 
-	while true; do
-		# 读本机已装的角色 (空 = 未装)
-		local _role
-		_role=$(cat "$nezha_role_file" 2>/dev/null || echo "")
-
-		clear
-		if [ -n "$_role" ]; then
-			echo -e "哪吒探针 V1  ${cyan}角色${white}: ${green}${_role}${white}"
+	# 探活: 返回 "not_installed" / "dashboard" / "agent"
+	get_nezha_state() {
+		# 优先看 systemd 单元, 兼容 alpine (openrc) 的 /etc/init.d
+		if [ -f /etc/systemd/system/nezha-dashboard.service ] || [ -f /etc/init.d/nezha-dashboard ] || [ -d /opt/nezha/dashboard ]; then
+			echo "dashboard"
+		elif [ -f /etc/systemd/system/nezha-agent.service ] || [ -d /opt/nezha/agent ]; then
+			echo "agent"
 		else
-			echo -e "哪吒探针 V1  ${grey}未安装${white}"
+			echo "not_installed"
 		fi
+	}
 
-		# 状态行
-		case "$_role" in
+	while true; do
+		local _state
+		_state=$(get_nezha_state)
+		clear
+
+		# 顶部状态
+		case "$_state" in
+			not_installed)
+				echo -e "哪吒探针 V1  状态: ${grey}未安装${white}"
+				;;
 			dashboard)
 				local _svc
-				_svc=$(systemctl is-active ${nezha_dashboard_svc} 2>/dev/null || echo "inactive")
+				_svc=$(systemctl is-active nezha-dashboard 2>/dev/null || echo "inactive")
 				if [ "$_svc" = "active" ]; then
-					echo -e "面板服务: ${green}运行中${white}"
+					echo -e "哪吒探针 V1  状态: ${green}已安装 (面板端, 运行中)${white}"
 				else
-					echo -e "面板服务: ${yellow}${_svc}${white}"
-				fi
-				if [ -f "$nezha_port_file" ]; then
-					ip_address
-					echo -e "${cyan}面板访问${white}: ${green}http://${ipv4_address}:$(cat $nezha_port_file)${white}"
+					echo -e "哪吒探针 V1  状态: ${yellow}已安装 (面板端, ${_svc})${white}"
 				fi
 				;;
 			agent)
 				local _svc
-				_svc=$(systemctl is-active ${nezha_agent_svc} 2>/dev/null || echo "inactive")
+				_svc=$(systemctl is-active nezha-agent 2>/dev/null || echo "inactive")
 				if [ "$_svc" = "active" ]; then
-					echo -e "Agent 服务: ${green}运行中${white}"
+					echo -e "哪吒探针 V1  状态: ${green}已安装 (被控端, 运行中)${white}"
 				else
-					echo -e "Agent 服务: ${yellow}${_svc}${white}"
+					echo -e "哪吒探针 V1  状态: ${yellow}已安装 (被控端, ${_svc})${white}"
 				fi
 				;;
 		esac
-		echo ""
 		echo "${app_text}"
 		echo "${app_url}"
 		echo ""
 
 		echo -e "${pink}------------------------${white}"
-		if [ -z "$_role" ]; then
-			# 未安装: 入口直接进角色选择
-			echo "1. 安装"
-		else
-			echo "1. 更新           2. 卸载"
-			if [ "$_role" = "dashboard" ]; then
-				echo "3. 启动面板       4. 停止面板       5. 重启面板       6. 查看面板日志"
-			elif [ "$_role" = "agent" ]; then
-				echo "3. 重启 Agent     4. 查看 Agent 日志"
-			fi
-		fi
+		echo "1. 调起官方安装菜单 (安装/修改/卸载/看日志, 都在里面)"
 		echo -e "${pink}------------------------${white}"
 		echo -e "${yellow}0.     ${white}返回上一级菜单"
 		echo -e "${pink}------------------------${white}"
 		read -e -p "输入你的选择: " choice
 
 		case $choice in
-			1)  # 安装 / 更新
-				if [ -z "$_role" ]; then
-					# === 未安装: 选角色 ===
-					echo ""
-					echo -e "${cyan}请选择要安装的角色:${white}"
-					echo "1. 面板端 (Dashboard) - 本机作为监控服务器, 提供 Web 界面"
-					echo "2. 被控端 (Agent)     - 本机作为被监控客户端, 上报数据到面板"
-					read -e -p "请输入选择 [1-2]: " _which
-					check_disk_space 1
-					prepare_nezha_script
+			1)
+				prepare_nezha_script
+				# 进官方主菜单, 全部功能 (install/modify_config/uninstall/show_log/...) 自己挑
+				cd /tmp && sudo bash nezha.sh
 
-					case "$_which" in
-						1)
-							# === 面板端: 走 V1 官方 install, 交互式 ===
-							clear
-							echo "即将调起 V1 官方安装脚本 (交互式)"
-							echo "脚本会依次询问:"
-							echo "  - 安装方式 (Docker / 独立安装)"
-							echo "  - 站点标题 / 暴露端口 (默认 8008)"
-							echo "  - Agent 连接地址 / 是否 TLS"
-							echo "  - 后台语言"
-							echo "请按提示操作, 安装完成后会自动回到本菜单"
-							echo ""
-							read -n 1 -s -r -p "按任意键开始..."
-							cd /tmp && sudo bash nezha.sh install
-
-							# 装完补登端口和角色
-							if check_nezha_dashboard; then
-								read -e -p "请输入面板实际监听端口 (默认 8008): " _port
-								_port=${_port:-8008}
-								mkdir -p /home/docker
-								echo "$_port" > "$nezha_port_file"
-								echo "dashboard" > "$nezha_role_file"
-								add_app_id
-								clear
-								echo "面板端安装完成, 可通过上方访问地址登录"
-							else
-								echo -e "${red}未检测到面板服务, 请检查安装日志${white}"
-							fi
-							;;
-						2)
-							# === 被控端: 走 V1 install_agent, V0 非交互模式 ===
-							echo ""
-							echo -e "${cyan}请先到面板端 [服务器] -> [添加服务器] 获取以下信息:${white}"
-							read -e -p "面板地址 (解析到面板 IP 的域名, 不可套CDN, 例: nezha.example.com): " _host
-							read -e -p "面板 RPC 端口 (默认 5555): " _grpc_port
-							_grpc_port=${_grpc_port:-5555}
-							read -e -p "Agent 密钥: " _secret
-							read -e -p "是否启用 gRPC TLS 加密? [y/N]: " _tls
-							local _tls_arg=""
-							echo "${_tls}" | grep -qiw 'Y' && _tls_arg="--tls"
-
-							if [ -z "$_host" ] || [ -z "$_secret" ]; then
-								echo -e "${red}面板地址和密钥不能为空${white}"
-								break
-							fi
-
-							# V1 install_agent 会跳 V0, V0 的 install_agent 收到 ≥3 参数走非交互
-							cd /tmp && sudo bash nezha.sh install_agent "$_host" "$_grpc_port" "$_secret" $_tls_arg
-
-							if check_nezha_agent; then
-								echo "agent" > "$nezha_role_file"
-								add_app_id
-								clear
-								echo "被控端安装完成, 稍等几秒后到面板端查看"
-							else
-								echo -e "${red}未检测到 Agent 服务, 请检查安装日志${white}"
-							fi
-							;;
-						*)
-							echo "无效选择"
-							;;
-					esac
+				# 退出官方菜单后重新探活, 更新 666 列表
+				local _new_state
+				_new_state=$(get_nezha_state)
+				if [ "$_new_state" != "not_installed" ]; then
+					add_app_id
 				else
-					# === 已安装: 更新 ===
-					prepare_nezha_script
-					cd /tmp && sudo bash nezha.sh restart_and_update
-				fi
-				;;
-			2)  # 卸载
-				case "$_role" in
-					dashboard)
-						systemctl disable --now ${nezha_dashboard_svc} 2>/dev/null
-						rm -f /etc/systemd/system/${nezha_dashboard_svc}
-						systemctl daemon-reload
-						rm -rf /opt/nezha/dashboard
-						rm -f "$nezha_port_file"
-						;;
-					agent)
-						sudo /opt/nezha/agent/nezha-agent service uninstall 2>/dev/null
-						sudo rm -f /etc/systemd/system/${nezha_agent_svc}
-						systemctl daemon-reload
-						sudo rm -rf /opt/nezha/agent
-						;;
-				esac
-				rm -f "$nezha_role_file"
-				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-				clear
-				echo "哪吒探针已卸载"
-				;;
-			3)
-				case "$_role" in
-					dashboard) systemctl start ${nezha_dashboard_svc} 2>/dev/null && echo "面板已启动" ;;
-					agent) sudo /opt/nezha/agent/nezha-agent service restart 2>/dev/null && echo "Agent 已重启" ;;
-				esac
-				;;
-			4)
-				case "$_role" in
-					dashboard) systemctl stop ${nezha_dashboard_svc} 2>/dev/null && echo "面板已停止" ;;
-					agent) sudo journalctl -xf -u ${nezha_agent_svc} ;;
-				esac
-				;;
-			5)
-				if [ "$_role" = "dashboard" ]; then
-					systemctl restart ${nezha_dashboard_svc} 2>/dev/null && echo "面板已重启"
-				fi
-				;;
-			6)
-				if [ "$_role" = "dashboard" ]; then
-					sudo journalctl -xf -u ${nezha_dashboard_svc}
+					sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
 				fi
 				;;
 			*)
