@@ -1226,6 +1226,114 @@ nezha_app(){
 
 	# 探活: 返回 "not_installed" / "dashboard" / "agent"
 	get_nezha_state() {
+		if [ -f /etc/systemd/system/nezha-dashboard.service ] || [ -f /etc/init.d/nezha-dashboard ] || [ -d /opt/nezha/dashboard ]; then
+			echo "dashboard"
+		elif [ -f /etc/systemd/system/nezha-agent.service ] || [ -d /opt/nezha/agent ]; then
+			echo "agent"
+		else
+			echo "not_installed"
+		fi
+	}
+
+	# 退出官方菜单后重新探活, 同步 666 列表
+	sync_app_registry() {
+		local _new_state
+		_new_state=$(get_nezha_state)
+		if [ "$_new_state" != "not_installed" ]; then
+			add_app_id
+		else
+			sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+		fi
+	}
+
+	while true; do
+		local _state
+		_state=$(get_nezha_state)
+		clear
+
+		# 顶部状态
+		case "$_state" in
+			not_installed)
+				echo -e "哪吒探针 V1  状态: ${grey}未安装${white}"
+				;;
+			dashboard)
+				local _svc
+				_svc=$(systemctl is-active nezha-dashboard 2>/dev/null || echo "inactive")
+				if [ "$_svc" = "active" ]; then
+					echo -e "哪吒探针 V1  状态: ${green}已安装 (面板端, 运行中)${white}"
+				else
+					echo -e "哪吒探针 V1  状态: ${yellow}已安装 (面板端, ${_svc})${white}"
+				fi
+				;;
+			agent)
+				local _svc
+				_svc=$(systemctl is-active nezha-agent 2>/dev/null || echo "inactive")
+				if [ "$_svc" = "active" ]; then
+					echo -e "哪吒探针 V1  状态: ${green}已安装 (被控端, 运行中)${white}"
+				else
+					echo -e "哪吒探针 V1  状态: ${yellow}已安装 (被控端, ${_svc})${white}"
+				fi
+				;;
+		esac
+		echo "${app_text}"
+		echo "${app_url}"
+		echo ""
+
+		# 菜单: 按状态显示不同入口
+		echo -e "${pink}------------------------${white}"
+		if [ "$_state" = "not_installed" ]; then
+			echo "1. 安装 (调起官方安装菜单)"
+		else
+			echo "1. 安装 (调起官方安装菜单)"
+			echo "2. 管理 (调起官方管理菜单, 修改配置/重启/看日志都在里面)"
+			echo "3. 卸载 (请到官方管理菜单里选择卸载)"
+		fi
+		echo -e "${pink}------------------------${white}"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${pink}------------------------${white}"
+		read -e -p "输入你的选择: " choice
+
+		case $choice in
+			1)
+				prepare_nezha_script
+				cd /tmp && sudo bash nezha.sh
+				sync_app_registry
+				;;
+			2)
+				if [ "$_state" = "not_installed" ]; then
+					echo -e "${yellow}尚未安装, 请先选 1 安装${white}"
+				else
+					prepare_nezha_script
+					cd /tmp && sudo bash nezha.sh
+					sync_app_registry
+				fi
+				;;
+			3)
+				if [ "$_state" = "not_installed" ]; then
+					echo -e "${yellow}尚未安装, 无需卸载${white}"
+				else
+					echo -e "${cyan}卸载请到官方管理菜单里操作:${white}"
+					echo "  - 面板端: 进入菜单后选 ${green}5. 卸载管理面板${white}"
+					echo "  - 被控端: 进入菜单后选 ${green}11. 卸载Agent${white} (V0) / ${green}5. 卸载管理面板${white} (V1)"
+					echo ""
+					read -e -p "是否现在调起官方管理菜单? [Y/n]: " _yn
+					if [[ "$_yn" =~ ^[Yy]$ ]] || [ -z "$_yn" ]; then
+						prepare_nezha_script
+						cd /tmp && sudo bash nezha.sh
+						sync_app_registry
+					fi
+				fi
+				;;
+			*)
+				break
+				;;
+		esac
+		break_end
+	done
+}
+
+	# 探活: 返回 "not_installed" / "dashboard" / "agent"
+	get_nezha_state() {
 		# 优先看 systemd 单元, 兼容 alpine (openrc) 的 /etc/init.d
 		if [ -f /etc/systemd/system/nezha-dashboard.service ] || [ -f /etc/init.d/nezha-dashboard ] || [ -d /opt/nezha/dashboard ]; then
 			echo "dashboard"
