@@ -1241,6 +1241,21 @@ komari_app(){
 	docker_app
 }
 
+# 78号空应用占位
+placehold_app(){
+	clear
+	local app_id="78"
+	local app_name="空应用占位用"
+	local app_text="此应用位为占位, 暂未实现具体功能"
+	echo -e "空应用占位  状态: ${grey}占位中${white}"
+	echo "${app_text}"
+	echo ""
+	echo -e "${pink}------------------------${white}"
+	echo -e "${yellow}0.     ${white}返回上一级菜单"
+	echo -e "${pink}------------------------${white}"
+	read -n 1 -s -r -p "按任意键返回..."
+}
+
 
 
 # qbittorrent
@@ -2402,6 +2417,7 @@ linux_app() {
 		75) ytdlp_app ;;
 		76) paperless_app ;;
 		77) wallos_app ;;
+		78) placehold_app ;;
 		79) dufs_app ;;
 		80) pandawiki_app ;;
 		81) linkwarden_app ;;
@@ -2482,6 +2498,7 @@ linux_app() {
 		echo -e "${cyan}69. ${white}ZFile在线网盘 $(_dot 69)          ${cyan}70. ${white}Nexterm远程连接 $(_dot 70)          ${cyan}71. ${white}JitsiMeet视频会议 $(_dot 71)"
 		echo -e "${cyan}72. ${white}Stream四层代理转发 $(_dot 72)     ${cyan}73. ${white}FileCodeBox文件快递 $(_dot 73)      ${cyan}74. ${white}Matrix去中心化聊天 $(_dot 74)"
 		echo -e "${cyan}75. ${white}yt-dlp视频下载 $(_dot 75)         ${cyan}76. ${white}paperless文档管理 $(_dot 76)        ${cyan}77. ${white}Wallos财务管理 $(_dot 77)"
+		echo -e "${cyan}78. ${white}空应用占位用 $(_dot 78)            ${cyan}79. ${white}Dufs静态文件服务器 $(_dot 79)         ${cyan}80. ${white}PandaWiki文档管理 $(_dot 80)"
 		echo -e "${cyan}81. ${white}linkwarden书签管理 $(_dot 81)     ${cyan}82. ${white}VoceChat聊天系统 $(_dot 82)         ${cyan}83. ${white}Karakeep书签管理 $(_dot 83)"
 		echo -e "${cyan}84. ${white}NewAPI大模型资产管理 $(_dot 84)   ${cyan}85. ${white}RAGFlow知识库 $(_dot 85)            ${cyan}86. ${white}AstrBot聊天机器人 $(_dot 86)"
 		echo -e "${cyan}87. ${white}LangBot聊天机器人 $(_dot 87)      ${cyan}88. ${white}多格式文件转换 $(_dot 88)           ${cyan}89. ${white}LibreSpeed测速 $(_dot 89)"
