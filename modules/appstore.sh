@@ -2590,7 +2590,7 @@ linux_app() {
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${cyan}36. ${white}Portainer容器管理 $(_dot 36)        ${cyan}37. ${white}Cloudreve网盘 $(_dot 37)             ${cyan}38. ${white}Nextcloud私有网盘 $(_dot 38)"
 		echo -e "${cyan}39. ${white}emby媒体管理 $(_dot 39)             ${cyan}40. ${white}jellyfin媒体管理 $(_dot 40)          ${cyan}41. ${white}AdGuardHome去广告 $(_dot 41)"
-		echo -e "${cyan}42. ${white}Navidrome音乐服务器 $(_dot 42)      ${cyan}43. ${white}Vaultwarden密码管理 $(_dot 43)      ${cyan}44. ${white}StirlingPDF工具大全 $(_dot 44)"
+		echo -e "${cyan}42. ${white}Navidrome音乐服务器 $(_dot 42)      ${cyan}43. ${white}Vaultwarden密码管理 $(_dot 43)       ${cyan}44. ${white}StirlingPDF工具大全 $(_dot 44)"
 		echo -e "${cyan}45. ${white}Speedtest测速面板 $(_dot 45)        ${cyan}46. ${white}PhotoPrism私有相册 $(_dot 46)        ${cyan}47. ${white}searxng聚合搜索 $(_dot 47)"
 		echo -e "${cyan}48. ${white}Pingvin-Share文件分享 $(_dot 48)    ${cyan}49. ${white}Dockge容器管理 $(_dot 49)            ${cyan}50. ${white}it-tools工具箱 $(_dot 50)"
 		echo -e "${cyan}51. ${white}n8n自动化工作流 $(_dot 51)          ${cyan}52. ${white}OpenWebUI自托管AI $(_dot 52)         ${cyan}53. ${white}Dify大模型知识库 $(_dot 53)"
