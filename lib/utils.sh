@@ -141,8 +141,17 @@ render_grid_row() {
 	for _c in "$@"; do
 		_input+="${_c}${SEP}"
 	done
+	# 优先用 LINUXBOX_LIB_DIR (LinuxBox.sh 主脚本设置, 指向生产环境安装根目录)
+	# 兜底用 BASH_SOURCE[0] 找 utils.sh 所在目录 (本地开发/单文件调用场景)
 	local _script_dir
-	_script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+	if [ -n "${LINUXBOX_LIB_DIR:-}" ] && [ -f "${LINUXBOX_LIB_DIR}/lib/_render_grid.py" ]; then
+		_script_dir="${LINUXBOX_LIB_DIR}/lib"
+	elif [ -n "${BASH_SOURCE[0]:-}" ]; then
+		_script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+	else
+		echo "render_grid_row: 找不到 _render_grid.py 路径" >&2
+		return 1
+	fi
 	printf '%s' "$_input" | python3 "$_script_dir/_render_grid.py" "$col_width"
 }
 

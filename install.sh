@@ -61,7 +61,7 @@ show_progress() {
 }
 
 # 文件列表 (与 lib/constants.sh 保持一致, 单一来源在那边, 这里独立硬编码一份)
-LIB_FILES=(constants.sh config.sh i18n.sh region.sh install.sh update.sh service.sh utils.sh package.sh system.sh dispatch.sh)
+LIB_FILES=(constants.sh config.sh i18n.sh region.sh install.sh update.sh service.sh utils.sh package.sh system.sh dispatch.sh _render_grid.py)
 MOD_FILES=(system_info.sh system_tools.sh system_clean.sh basic_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh caddy.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh)
 
 echo -e "${cyan}正在安装 LinuxBox 脚本工具箱...${white}"

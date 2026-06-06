@@ -36,6 +36,6 @@ key="${LINUXBOX_KEY:-j}"
 
 ## 升级/安装需要下载的文件列表 (install.sh 与 lib/update.sh 共用)
 ## 单一来源, 加新模块/库时改这里即可
-LINUXBOX_LIB_FILES=(constants.sh config.sh i18n.sh region.sh install.sh update.sh service.sh utils.sh package.sh system.sh dispatch.sh)
+LINUXBOX_LIB_FILES=(constants.sh config.sh i18n.sh region.sh install.sh update.sh service.sh utils.sh package.sh system.sh dispatch.sh _render_grid.py)
 LINUXBOX_MOD_FILES=(system_info.sh system_tools.sh system_clean.sh basic_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh caddy.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh)
 
