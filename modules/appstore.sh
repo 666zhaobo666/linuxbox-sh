@@ -27,6 +27,125 @@ panel_manage() {
 
 		echo ""
 		echo -e "${pink}------------------------${white}"
+		# 动态算列宽: 所有 app 名称中最长可见宽 + 5 字符缓冲 (超长 cell 会在单元格内自动换行)
+		local _grid_names=(
+			"1Panel面板"
+			"宝塔面板"
+			"aaPanel面板"
+			"NginxProxyManager面板"
+			"OpenList面板"
+			"WebTop远程桌面网页版"
+			"Komari监控"
+			"qbittorrent离线下载"
+			"Poste.io邮件服务器程序"
+			"青龙面板"
+			"Code-Server(网页vscode)"
+			"Looking Glass(测速面板)"
+			"雷池WAF防火墙面板"
+			"onlyoffice在线办公OFFICE"
+			"UptimeKuma监控工具"
+			"Memos网页备忘录"
+			"drawio免费的在线图表软件"
+			"Sun-Panel导航面板"
+			"webssh网页版SSH连接工具"
+			"LobeChatAI聊天聚合网站"
+			"MyIP工具箱"
+			"ghproxy(GitHub加速站)"
+			"AllinSSL证书管理平台"
+			"DDNS-GO"
+			"Lucky"
+			"LibreTV私有影视"
+			"MoonTV私有影视"
+			"Melody音乐精灵"
+			"Beszel服务器监控"
+			"SyncTV一起看片神器"
+			"X-UI面板"
+			"3X-UI面板"
+			"Microsoft 365 E5 Renew X"
+			"DecoTV私有影视"
+			"Drawnix在线白板"
+			"Portainer容器管理"
+			"Cloudreve网盘"
+			"Nextcloud私有网盘"
+			"emby媒体管理"
+			"jellyfin媒体管理"
+			"AdGuardHome去广告"
+			"Navidrome音乐服务器"
+			"Vaultwarden密码管理"
+			"StirlingPDF工具大全"
+			"Speedtest测速面板"
+			"PhotoPrism私有相册"
+			"searxng聚合搜索"
+			"Pingvin-Share文件分享"
+			"Dockge容器管理"
+			"it-tools工具箱"
+			"n8n自动化工作流"
+			"OpenWebUI自托管AI"
+			"Dify大模型知识库"
+			"gitea私有代码仓库"
+			"FileBrowser文件管理"
+			"FRP内网穿透(服务端)"
+			"WireGuard组网(服务端)"
+			"JumpServer堡垒机"
+			"immich图片视频管理"
+			"Syncthing文件同步"
+			"Umami网站统计"
+			"思源笔记"
+			"SFTPGo文件传输"
+			"Owncast自托管直播"
+			"Deepseek AI大模型"
+			"RocketChat聊天系统"
+			"Gopeed高速下载"
+			"2FAuth二步验证器"
+			"ZFile在线网盘"
+			"Nexterm远程连接"
+			"JitsiMeet视频会议"
+			"Stream四层代理转发"
+			"FileCodeBox文件快递"
+			"Matrix去中心化聊天"
+			"yt-dlp视频下载"
+			"paperless文档管理"
+			"Wallos财务管理"
+			"PairDrop文件传输"
+			"Dufs静态文件服务器"
+			"PandaWiki文档管理"
+			"linkwarden书签管理"
+			"VoceChat聊天系统"
+			"Karakeep书签管理"
+			"NewAPI大模型资产管理"
+			"RAGFlow知识库"
+			"AstrBot聊天机器人"
+			"LangBot聊天机器人"
+			"多格式文件转换"
+			"LibreSpeed测速"
+			"gpt-load AI透明代理"
+			"补货监控工具"
+			"PVE虚拟化管理"
+			"DSM群晖虚拟机"
+			"在线DOS老游戏"
+			"迅雷离线下载"
+			"小雅Alist全家桶"
+			"Bililive直播录制"
+			"极简朋友圈"
+			"PanSou网盘搜索"
+			"简单图床lskypro"
+			"禅道项目管理"
+			"QD-Today定时任务"
+			"耗子管理面板"
+			"AMH建站面板"
+			"在线翻译服务器"
+			"AI视频生成工具"
+			"RustDesk远程桌面"
+			"Firefox浏览器"
+			"DPanel容器管理"
+			"普罗米修斯监控"
+		)
+		local _grid_max=0 _grid_w
+		for _grid_n in "${_grid_names[@]}"; do
+			_grid_w=$(str_width "$_grid_n")
+			[ "$_grid_w" -gt "$_grid_max" ] && _grid_max="$_grid_w"
+		done
+		local col_width=$((_grid_max + 5))
 		echo "1. 安装            2. 管理            3. 卸载"
 		echo -e "${pink}------------------------${white}"
 		echo -e "${yellow}0.     ${white}返回上一级菜单"
@@ -2574,197 +2693,312 @@ linux_app() {
 		echo -e "[图例] ${green}●${white} 已安装  ${red}●${white} 未安装"
 		echo ""
 		docker_tato
+
+		# 动态算列宽: 所有 app 名称中最长可见宽 + 5 字符缓冲 (超长 cell 会在单元格内自动换行)
+		local _grid_names=(
+			"1Panel面板"
+			"宝塔面板"
+			"aaPanel面板"
+			"NginxProxyManager面板"
+			"OpenList面板"
+			"WebTop远程桌面网页版"
+			"Komari监控"
+			"qbittorrent离线下载"
+			"Poste.io邮件服务器程序"
+			"青龙面板"
+			"Code-Server(网页vscode)"
+			"Looking Glass(测速面板)"
+			"雷池WAF防火墙面板"
+			"onlyoffice在线办公OFFICE"
+			"UptimeKuma监控工具"
+			"Memos网页备忘录"
+			"drawio免费的在线图表软件"
+			"Sun-Panel导航面板"
+			"webssh网页版SSH连接工具"
+			"LobeChatAI聊天聚合网站"
+			"MyIP工具箱"
+			"ghproxy(GitHub加速站)"
+			"AllinSSL证书管理平台"
+			"DDNS-GO"
+			"Lucky"
+			"LibreTV私有影视"
+			"MoonTV私有影视"
+			"Melody音乐精灵"
+			"Beszel服务器监控"
+			"SyncTV一起看片神器"
+			"X-UI面板"
+			"3X-UI面板"
+			"Microsoft 365 E5 Renew X"
+			"DecoTV私有影视"
+			"Drawnix在线白板"
+			"Portainer容器管理"
+			"Cloudreve网盘"
+			"Nextcloud私有网盘"
+			"emby媒体管理"
+			"jellyfin媒体管理"
+			"AdGuardHome去广告"
+			"Navidrome音乐服务器"
+			"Vaultwarden密码管理"
+			"StirlingPDF工具大全"
+			"Speedtest测速面板"
+			"PhotoPrism私有相册"
+			"searxng聚合搜索"
+			"Pingvin-Share文件分享"
+			"Dockge容器管理"
+			"it-tools工具箱"
+			"n8n自动化工作流"
+			"OpenWebUI自托管AI"
+			"Dify大模型知识库"
+			"gitea私有代码仓库"
+			"FileBrowser文件管理"
+			"FRP内网穿透(服务端)"
+			"WireGuard组网(服务端)"
+			"JumpServer堡垒机"
+			"immich图片视频管理"
+			"Syncthing文件同步"
+			"Umami网站统计"
+			"思源笔记"
+			"SFTPGo文件传输"
+			"Owncast自托管直播"
+			"Deepseek AI大模型"
+			"RocketChat聊天系统"
+			"Gopeed高速下载"
+			"2FAuth二步验证器"
+			"ZFile在线网盘"
+			"Nexterm远程连接"
+			"JitsiMeet视频会议"
+			"Stream四层代理转发"
+			"FileCodeBox文件快递"
+			"Matrix去中心化聊天"
+			"yt-dlp视频下载"
+			"paperless文档管理"
+			"Wallos财务管理"
+			"PairDrop文件传输"
+			"Dufs静态文件服务器"
+			"PandaWiki文档管理"
+			"linkwarden书签管理"
+			"VoceChat聊天系统"
+			"Karakeep书签管理"
+			"NewAPI大模型资产管理"
+			"RAGFlow知识库"
+			"AstrBot聊天机器人"
+			"LangBot聊天机器人"
+			"多格式文件转换"
+			"LibreSpeed测速"
+			"gpt-load AI透明代理"
+			"补货监控工具"
+			"PVE虚拟化管理"
+			"DSM群晖虚拟机"
+			"在线DOS老游戏"
+			"迅雷离线下载"
+			"小雅Alist全家桶"
+			"Bililive直播录制"
+			"极简朋友圈"
+			"PanSou网盘搜索"
+			"简单图床lskypro"
+			"禅道项目管理"
+			"QD-Today定时任务"
+			"耗子管理面板"
+			"AMH建站面板"
+			"在线翻译服务器"
+			"AI视频生成工具"
+			"RustDesk远程桌面"
+			"Firefox浏览器"
+			"DPanel容器管理"
+			"普罗米修斯监控"
+		)
+		local _grid_max=0 _grid_w
+		for _grid_n in "${_grid_names[@]}"; do
+			_grid_w=$(str_width "$_grid_n")
+			[ "$_grid_w" -gt "$_grid_max" ] && _grid_max="$_grid_w"
+		done
+		local col_width=$((_grid_max + 5))
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		
-		# 虚拟表格布局 - 列宽设置为最长应用名称宽度 + 5
-		local col_width=30
 		
 		# 使用虚拟表格输出应用列表
-		print_table_row "$col_width" \
-			"1|1Panel面板|$(_dot 1)" \
-			"2|宝塔面板|$(_dot 2)" \
-			"3|aaPanel面板|$(_dot 3)"
+		render_grid_row "$col_width" \
+			"${cyan}1.   ${white}1Panel面板 $(_dot 1)" \
+			"${cyan}2.   ${white}宝塔面板 $(_dot 2)" \
+			"${cyan}3.   ${white}aaPanel面板 $(_dot 3)"
 		
-		print_table_row "$col_width" \
-			"4|NginxProxyManager面板|$(_dot 4)" \
-			"5|OpenList面板|$(_dot 5)" \
-			"6|WebTop远程桌面网页版|$(_dot 6)"
+		render_grid_row "$col_width" \
+			"${cyan}4.   ${white}NginxProxyManager面板 $(_dot 4)" \
+			"${cyan}5.   ${white}OpenList面板 $(_dot 5)" \
+			"${cyan}6.   ${white}WebTop远程桌面网页版 $(_dot 6)"
 		
-		print_table_row "$col_width" \
-			"7|Komari监控|$(_dot 7)" \
-			"8|qbittorrent离线下载|$(_dot 8)" \
-			"9|Poste.io邮件服务器程序|$(_dot 9)"
+		render_grid_row "$col_width" \
+			"${cyan}7.   ${white}Komari监控 $(_dot 7)" \
+			"${cyan}8.   ${white}qbittorrent离线下载 $(_dot 8)" \
+			"${cyan}9.   ${white}Poste.io邮件服务器程序 $(_dot 9)"
 		
-		print_table_row "$col_width" \
-			"10|青龙面板|$(_dot 10)" \
-			"11|Code-Server(网页vscode)|$(_dot 11)" \
-			"12|Looking Glass(测速面板)|$(_dot 12)"
+		render_grid_row "$col_width" \
+			"${cyan}10.  ${white}青龙面板 $(_dot 10)" \
+			"${cyan}11.  ${white}Code-Server(网页vscode) $(_dot 11)" \
+			"${cyan}12.  ${white}Looking Glass(测速面板) $(_dot 12)"
 		
-		print_table_row "$col_width" \
-			"13|雷池WAF防火墙面板|$(_dot 13)" \
-			"14|onlyoffice在线办公OFFICE|$(_dot 14)" \
-			"15|UptimeKuma监控工具|$(_dot 15)"
+		render_grid_row "$col_width" \
+			"${cyan}13.  ${white}雷池WAF防火墙面板 $(_dot 13)" \
+			"${cyan}14.  ${white}onlyoffice在线办公OFFICE $(_dot 14)" \
+			"${cyan}15.  ${white}UptimeKuma监控工具 $(_dot 15)"
 		
-		print_table_row "$col_width" \
-			"16|Memos网页备忘录|$(_dot 16)" \
-			"17|drawio免费的在线图表软件|$(_dot 17)" \
-			"18|Sun-Panel导航面板|$(_dot 18)"
+		render_grid_row "$col_width" \
+			"${cyan}16.  ${white}Memos网页备忘录 $(_dot 16)" \
+			"${cyan}17.  ${white}drawio免费的在线图表软件 $(_dot 17)" \
+			"${cyan}18.  ${white}Sun-Panel导航面板 $(_dot 18)"
 		
-		print_table_row "$col_width" \
-			"19|webssh网页版SSH连接工具|$(_dot 19)" \
-			"20|LobeChatAI聊天聚合网站|$(_dot 20)" \
-			"21|MyIP工具箱|$(_dot 21)"
+		render_grid_row "$col_width" \
+			"${cyan}19.  ${white}webssh网页版SSH连接工具 $(_dot 19)" \
+			"${cyan}20.  ${white}LobeChatAI聊天聚合网站 $(_dot 20)" \
+			"${cyan}21.  ${white}MyIP工具箱 $(_dot 21)"
 		
-		print_table_row "$col_width" \
-			"22|ghproxy(GitHub加速站)|$(_dot 22)" \
-			"23|AllinSSL证书管理平台|$(_dot 23)" \
-			"24|DDNS-GO|$(_dot 24)"
+		render_grid_row "$col_width" \
+			"${cyan}22.  ${white}ghproxy(GitHub加速站) $(_dot 22)" \
+			"${cyan}23.  ${white}AllinSSL证书管理平台 $(_dot 23)" \
+			"${cyan}24.  ${white}DDNS-GO $(_dot 24)"
 		
-		print_table_row "$col_width" \
-			"25|Lucky|$(_dot 25)" \
-			"26|LibreTV私有影视|$(_dot 26)" \
-			"27|MoonTV私有影视|$(_dot 27)"
+		render_grid_row "$col_width" \
+			"${cyan}25.  ${white}Lucky $(_dot 25)" \
+			"${cyan}26.  ${white}LibreTV私有影视 $(_dot 26)" \
+			"${cyan}27.  ${white}MoonTV私有影视 $(_dot 27)"
 		
-		print_table_row "$col_width" \
-			"28|Melody音乐精灵|$(_dot 28)" \
-			"29|Beszel服务器监控|$(_dot 29)" \
-			"30|SyncTV一起看片神器|$(_dot 30)"
+		render_grid_row "$col_width" \
+			"${cyan}28.  ${white}Melody音乐精灵 $(_dot 28)" \
+			"${cyan}29.  ${white}Beszel服务器监控 $(_dot 29)" \
+			"${cyan}30.  ${white}SyncTV一起看片神器 $(_dot 30)"
 		
-		print_table_row "$col_width" \
-			"31|X-UI面板|$(_dot 31)" \
-			"32|3X-UI面板|$(_dot 32)" \
-			"33|Microsoft 365 E5 Renew X|$(_dot 33)"
+		render_grid_row "$col_width" \
+			"${cyan}31.  ${white}X-UI面板 $(_dot 31)" \
+			"${cyan}32.  ${white}3X-UI面板 $(_dot 32)" \
+			"${cyan}33.  ${white}Microsoft 365 E5 Renew X $(_dot 33)"
 		
-		print_table_row "$col_width" \
-			"34|DecoTV私有影视|$(_dot 34)" \
-			"35|Drawnix在线白板|$(_dot 35)"
+		render_grid_row "$col_width" \
+			"${cyan}34.  ${white}DecoTV私有影视 $(_dot 34)" \
+			"${cyan}35.  ${white}Drawnix在线白板 $(_dot 35)"
 		
-		echo -e "${pink}------------------------------------------------------------------------------------${white}"
+		render_grid_row "$col_width" \
+			"${cyan}36.  ${white}Portainer容器管理 $(_dot 36)" \
+			"${cyan}37.  ${white}Cloudreve网盘 $(_dot 37)" \
+			"${cyan}38.  ${white}Nextcloud私有网盘 $(_dot 38)"
 		
-		print_table_row "$col_width" \
-			"36|Portainer容器管理|$(_dot 36)" \
-			"37|Cloudreve网盘|$(_dot 37)" \
-			"38|Nextcloud私有网盘|$(_dot 38)"
+		render_grid_row "$col_width" \
+			"${cyan}39.  ${white}emby媒体管理 $(_dot 39)" \
+			"${cyan}40.  ${white}jellyfin媒体管理 $(_dot 40)" \
+			"${cyan}41.  ${white}AdGuardHome去广告 $(_dot 41)"
 		
-		print_table_row "$col_width" \
-			"39|emby媒体管理|$(_dot 39)" \
-			"40|jellyfin媒体管理|$(_dot 40)" \
-			"41|AdGuardHome去广告|$(_dot 41)"
+		render_grid_row "$col_width" \
+			"${cyan}42.  ${white}Navidrome音乐服务器 $(_dot 42)" \
+			"${cyan}43.  ${white}Vaultwarden密码管理 $(_dot 43)" \
+			"${cyan}44.  ${white}StirlingPDF工具大全 $(_dot 44)"
 		
-		print_table_row "$col_width" \
-			"42|Navidrome音乐服务器|$(_dot 42)" \
-			"43|Vaultwarden密码管理|$(_dot 43)" \
-			"44|StirlingPDF工具大全|$(_dot 44)"
+		render_grid_row "$col_width" \
+			"${cyan}45.  ${white}Speedtest测速面板 $(_dot 45)" \
+			"${cyan}46.  ${white}PhotoPrism私有相册 $(_dot 46)" \
+			"${cyan}47.  ${white}searxng聚合搜索 $(_dot 47)"
 		
-		print_table_row "$col_width" \
-			"45|Speedtest测速面板|$(_dot 45)" \
-			"46|PhotoPrism私有相册|$(_dot 46)" \
-			"47|searxng聚合搜索|$(_dot 47)"
+		render_grid_row "$col_width" \
+			"${cyan}48.  ${white}Pingvin-Share文件分享 $(_dot 48)" \
+			"${cyan}49.  ${white}Dockge容器管理 $(_dot 49)" \
+			"${cyan}50.  ${white}it-tools工具箱 $(_dot 50)"
 		
-		print_table_row "$col_width" \
-			"48|Pingvin-Share文件分享|$(_dot 48)" \
-			"49|Dockge容器管理|$(_dot 49)" \
-			"50|it-tools工具箱|$(_dot 50)"
+		render_grid_row "$col_width" \
+			"${cyan}51.  ${white}n8n自动化工作流 $(_dot 51)" \
+			"${cyan}52.  ${white}OpenWebUI自托管AI $(_dot 52)" \
+			"${cyan}53.  ${white}Dify大模型知识库 $(_dot 53)"
 		
-		print_table_row "$col_width" \
-			"51|n8n自动化工作流|$(_dot 51)" \
-			"52|OpenWebUI自托管AI|$(_dot 52)" \
-			"53|Dify大模型知识库|$(_dot 53)"
+		render_grid_row "$col_width" \
+			"${cyan}54.  ${white}gitea私有代码仓库 $(_dot 54)" \
+			"${cyan}55.  ${white}FileBrowser文件管理 $(_dot 55)" \
+			"${cyan}56.  ${white}FRP内网穿透(服务端) $(_dot 56)"
 		
-		print_table_row "$col_width" \
-			"54|gitea私有代码仓库|$(_dot 54)" \
-			"55|FileBrowser文件管理|$(_dot 55)" \
-			"56|FRP内网穿透(服务端)|$(_dot 56)"
+		render_grid_row "$col_width" \
+			"${cyan}57.  ${white}WireGuard组网(服务端) $(_dot 57)" \
+			"${cyan}58.  ${white}JumpServer堡垒机 $(_dot 58)" \
+			"${cyan}59.  ${white}immich图片视频管理 $(_dot 59)"
 		
-		print_table_row "$col_width" \
-			"57|WireGuard组网(服务端)|$(_dot 57)" \
-			"58|JumpServer堡垒机|$(_dot 58)" \
-			"59|immich图片视频管理|$(_dot 59)"
+		render_grid_row "$col_width" \
+			"${cyan}60.  ${white}Syncthing文件同步 $(_dot 60)" \
+			"${cyan}61.  ${white}Umami网站统计 $(_dot 61)" \
+			"${cyan}62.  ${white}思源笔记 $(_dot 62)"
 		
-		print_table_row "$col_width" \
-			"60|Syncthing文件同步|$(_dot 60)" \
-			"61|Umami网站统计|$(_dot 61)" \
-			"62|思源笔记|$(_dot 62)"
+		render_grid_row "$col_width" \
+			"${cyan}63.  ${white}SFTPGo文件传输 $(_dot 63)" \
+			"${cyan}64.  ${white}Owncast自托管直播 $(_dot 64)" \
+			"${cyan}65.  ${white}Deepseek AI大模型 $(_dot 65)"
 		
-		print_table_row "$col_width" \
-			"63|SFTPGo文件传输|$(_dot 63)" \
-			"64|Owncast自托管直播|$(_dot 64)" \
-			"65|Deepseek AI大模型|$(_dot 65)"
+		render_grid_row "$col_width" \
+			"${cyan}66.  ${white}RocketChat聊天系统 $(_dot 66)" \
+			"${cyan}67.  ${white}Gopeed高速下载 $(_dot 67)" \
+			"${cyan}68.  ${white}2FAuth二步验证器 $(_dot 68)"
 		
-		print_table_row "$col_width" \
-			"66|RocketChat聊天系统|$(_dot 66)" \
-			"67|Gopeed高速下载|$(_dot 67)" \
-			"68|2FAuth二步验证器|$(_dot 68)"
+		render_grid_row "$col_width" \
+			"${cyan}69.  ${white}ZFile在线网盘 $(_dot 69)" \
+			"${cyan}70.  ${white}Nexterm远程连接 $(_dot 70)" \
+			"${cyan}71.  ${white}JitsiMeet视频会议 $(_dot 71)"
 		
-		print_table_row "$col_width" \
-			"69|ZFile在线网盘|$(_dot 69)" \
-			"70|Nexterm远程连接|$(_dot 70)" \
-			"71|JitsiMeet视频会议|$(_dot 71)"
+		render_grid_row "$col_width" \
+			"${cyan}72.  ${white}Stream四层代理转发 $(_dot 72)" \
+			"${cyan}73.  ${white}FileCodeBox文件快递 $(_dot 73)" \
+			"${cyan}74.  ${white}Matrix去中心化聊天 $(_dot 74)"
 		
-		print_table_row "$col_width" \
-			"72|Stream四层代理转发|$(_dot 72)" \
-			"73|FileCodeBox文件快递|$(_dot 73)" \
-			"74|Matrix去中心化聊天|$(_dot 74)"
+		render_grid_row "$col_width" \
+			"${cyan}75.  ${white}yt-dlp视频下载 $(_dot 75)" \
+			"${cyan}76.  ${white}paperless文档管理 $(_dot 76)" \
+			"${cyan}77.  ${white}Wallos财务管理 $(_dot 77)"
 		
-		print_table_row "$col_width" \
-			"75|yt-dlp视频下载|$(_dot 75)" \
-			"76|paperless文档管理|$(_dot 76)" \
-			"77|Wallos财务管理|$(_dot 77)"
+		render_grid_row "$col_width" \
+			"${cyan}78.  ${white}PairDrop文件传输 $(_dot 78)" \
+			"${cyan}79.  ${white}Dufs静态文件服务器 $(_dot 79)" \
+			"${cyan}80.  ${white}PandaWiki文档管理 $(_dot 80)"
 		
-		print_table_row "$col_width" \
-			"78|PairDrop文件传输|$(_dot 78)" \
-			"79|Dufs静态文件服务器|$(_dot 79)" \
-			"80|PandaWiki文档管理|$(_dot 80)"
+		render_grid_row "$col_width" \
+			"${cyan}81.  ${white}linkwarden书签管理 $(_dot 81)" \
+			"${cyan}82.  ${white}VoceChat聊天系统 $(_dot 82)" \
+			"${cyan}83.  ${white}Karakeep书签管理 $(_dot 83)"
 		
-		print_table_row "$col_width" \
-			"81|linkwarden书签管理|$(_dot 81)" \
-			"82|VoceChat聊天系统|$(_dot 82)" \
-			"83|Karakeep书签管理|$(_dot 83)"
+		render_grid_row "$col_width" \
+			"${cyan}84.  ${white}NewAPI大模型资产管理 $(_dot 84)" \
+			"${cyan}85.  ${white}RAGFlow知识库 $(_dot 85)" \
+			"${cyan}86.  ${white}AstrBot聊天机器人 $(_dot 86)"
 		
-		print_table_row "$col_width" \
-			"84|NewAPI大模型资产管理|$(_dot 84)" \
-			"85|RAGFlow知识库|$(_dot 85)" \
-			"86|AstrBot聊天机器人|$(_dot 86)"
+		render_grid_row "$col_width" \
+			"${cyan}87.  ${white}LangBot聊天机器人 $(_dot 87)" \
+			"${cyan}88.  ${white}多格式文件转换 $(_dot 88)" \
+			"${cyan}89.  ${white}LibreSpeed测速 $(_dot 89)"
 		
-		print_table_row "$col_width" \
-			"87|LangBot聊天机器人|$(_dot 87)" \
-			"88|多格式文件转换|$(_dot 88)" \
-			"89|LibreSpeed测速|$(_dot 89)"
+		render_grid_row "$col_width" \
+			"${cyan}90.  ${white}gpt-load AI透明代理 $(_dot 90)" \
+			"${cyan}91.  ${white}补货监控工具 $(_dot 91)" \
+			"${cyan}92.  ${white}PVE虚拟化管理 $(_dot 92)"
 		
-		print_table_row "$col_width" \
-			"90|gpt-load AI透明代理|$(_dot 90)" \
-			"91|补货监控工具|$(_dot 91)" \
-			"92|PVE虚拟化管理|$(_dot 92)"
+		render_grid_row "$col_width" \
+			"${cyan}93.  ${white}DSM群晖虚拟机 $(_dot 93)" \
+			"${cyan}94.  ${white}在线DOS老游戏 $(_dot 94)" \
+			"${cyan}95.  ${white}迅雷离线下载 $(_dot 95)"
 		
-		print_table_row "$col_width" \
-			"93|DSM群晖虚拟机|$(_dot 93)" \
-			"94|在线DOS老游戏|$(_dot 94)" \
-			"95|迅雷离线下载|$(_dot 95)"
+		render_grid_row "$col_width" \
+			"${cyan}96.  ${white}小雅Alist全家桶 $(_dot 96)" \
+			"${cyan}97.  ${white}Bililive直播录制 $(_dot 97)" \
+			"${cyan}98.  ${white}极简朋友圈 $(_dot 98)"
 		
-		print_table_row "$col_width" \
-			"96|小雅Alist全家桶|$(_dot 96)" \
-			"97|Bililive直播录制|$(_dot 97)" \
-			"98|极简朋友圈|$(_dot 98)"
+		render_grid_row "$col_width" \
+			"${cyan}99.  ${white}PanSou网盘搜索 $(_dot 99)" \
+			"${cyan}100. ${white}简单图床lskypro $(_dot 100)" \
+			"${cyan}101. ${white}禅道项目管理 $(_dot 101)"
 		
-		print_table_row "$col_width" \
-			"99|PanSou网盘搜索|$(_dot 99)" \
-			"100|简单图床lskypro|$(_dot 100)" \
-			"101|禅道项目管理|$(_dot 101)"
+		render_grid_row "$col_width" \
+			"${cyan}102. ${white}QD-Today定时任务 $(_dot 102)" \
+			"${cyan}103. ${white}耗子管理面板 $(_dot 103)" \
+			"${cyan}104. ${white}AMH建站面板 $(_dot 104)"
 		
-		print_table_row "$col_width" \
-			"102|QD-Today定时任务|$(_dot 102)" \
-			"103|耗子管理面板|$(_dot 103)" \
-			"104|AMH建站面板|$(_dot 104)"
+		render_grid_row "$col_width" \
+			"${cyan}105. ${white}在线翻译服务器 $(_dot 105)" \
+			"${cyan}106. ${white}AI视频生成工具 $(_dot 106)" \
+			"${cyan}107. ${white}RustDesk远程桌面 $(_dot 107)"
 		
-		print_table_row "$col_width" \
-			"105|在线翻译服务器|$(_dot 105)" \
-			"106|AI视频生成工具|$(_dot 106)" \
-			"107|RustDesk远程桌面|$(_dot 107)"
-		
-		print_table_row "$col_width" \
-			"108|Firefox浏览器|$(_dot 108)" \
-			"109|DPanel容器管理|$(_dot 109)" \
-			"110|普罗米修斯监控|$(_dot 110)"
+		render_grid_row "$col_width" \
+			"${cyan}108. ${white}Firefox浏览器 $(_dot 108)" \
+			"${cyan}109. ${white}DPanel容器管理 $(_dot 109)" \
+			"${cyan}110. ${white}普罗米修斯监控 $(_dot 110)"
 		
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${yellow}0.   ${white}返回主菜单"

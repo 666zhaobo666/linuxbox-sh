@@ -113,102 +113,6 @@ pad_left() {
 	fi
 }
 
-# 按指定宽度切割字符串（考虑中文双字节）
-# 返回切割后的字符串（不超过指定宽度）
-cut_string() {
-	local s=$1 max_width=$2
-	local w=0 i=0 len=${#s} byte result=""
-	
-	while [ "$i" -lt "$len" ]; do
-		printf -v byte "%d" "'${s:$i:1}"
-		if [ "$byte" -ge 192 ] 2>/dev/null; then
-			# 多字节字符
-			local char_width=1
-			if [ "$byte" -ge 228 ] && [ "$byte" -le 233 ]; then
-				char_width=2
-			fi
-			if [ $((w + char_width)) -gt "$max_width" ] && [ "$w" -gt 0 ]; then
-				break
-			fi
-			# 获取完整的多字节字符
-			local char="${s:$i:1}"
-			i=$((i + 1))
-			while [ "$i" -lt "$len" ]; do
-				printf -v byte "%d" "'${s:$i:1}"
-				if [ "$byte" -lt 128 ] || [ "$byte" -ge 192 ]; then
-					break
-				fi
-				char="${char}${s:$i:1}"
-				i=$((i + 1))
-			done
-			result="${result}${char}"
-			w=$((w + char_width))
-		else
-			# ASCII字符
-			if [ $((w + 1)) -gt "$max_width" ] && [ "$w" -gt 0 ]; then
-				break
-			fi
-			result="${result}${s:$i:1}"
-			w=$((w + 1))
-			i=$((i + 1))
-		fi
-	done
-	echo "$result"
-}
-
-# 输出虚拟表格行（支持自动换行）
-# 参数: col_width列宽, items...（格式: "编号|名称|状态"）
-print_table_row() {
-	local col_width=$1
-	shift
-	local items=("$@")
-	local max_lines=1
-	
-	# 计算每列需要多少行
-	for item in "${items[@]}"; do
-		local idx="${item%%|*}"
-		local name="${item#*|}"
-		local status="${name#*|}"
-		name="${name%%|*}"
-		local full_content="${idx}. ${name} ${status}"
-		local full_width=$(str_width "$full_content")
-		local lines=$((full_width / col_width))
-		if [ $((full_width % col_width)) -ne 0 ]; then
-			lines=$((lines + 1))
-		fi
-		if [ "$lines" -gt "$max_lines" ]; then
-			max_lines="$lines"
-		fi
-	done
-	
-	# 逐行输出
-	for ((line_idx=0; line_idx<max_lines; line_idx++)); do
-		local line=""
-		for item in "${items[@]}"; do
-			local idx="${item%%|*}"
-			local name="${item#*|}"
-			local status="${name#*|}"
-			name="${name%%|*}"
-			local full_content="${idx}. ${name} ${status}"
-			
-			# 获取当前行应该显示的内容
-			local remaining="$full_content"
-			for ((i=0; i<line_idx; i++)); do
-				remaining=$(cut_string "$remaining" "$col_width")
-				remaining="${remaining:$(str_width "$remaining")}"
-			done
-			
-			if [ -n "$remaining" ]; then
-				local part=$(cut_string "$remaining" "$col_width")
-				line="${line}$(pad_right "$part" "$col_width") "
-			else
-				line="${line}$(printf '%*s' "$col_width" "") "
-			fi
-		done
-		echo "$line"
-	done
-}
-
 # 输出一段对齐的"编号 + 名称"菜单项
 # 用法: menu_line 1 "1Panel面板" 15
 #       配合 printf:  printf "%s  %s  %s\n" "$(menu_line 1 "1Panel面板")" "$(menu_line 2 "宝塔面板")" "$(menu_line 3 "aaPanel面板")"
@@ -222,6 +126,76 @@ menu_line() {
 	if [ "$pad" -lt 0 ]; then pad=0; fi
 	printf "%s%${pad}s" "$prefix" ""
 	pad_right "$name" "$target"
+}
+
+# 把 text 按 col_width 切成多行, 存到 nameref 数组
+# 内部剥 ANSI 颜色码再算宽, 所以切点不会切到颜色码中间
+# CJK 字符 (E4-ED 首字节) 算 2 列, 其它 UTF-8 多字节字符 (如 ● 等符号) 算 1 列
+# 用法: _wrap_to_array arr_name "text" col_width
+_wrap_to_array() {
+	local -n arr=$1
+	local text=$2 col_width=$3
+	# 剥 ANSI 码, 避免切到 ESC 序列中间
+	text=$(printf '%s' "$text" | sed $'s/\033\\[[0-9;]*m//g')
+	arr=()
+	local line="" line_w=0 i=0 len=${#text} byte fb cw ch start
+	while [ "$i" -lt "$len" ]; do
+		printf -v byte "%d" "'${text:$i:1}"
+		if [ "$byte" -ge 192 ] 2>/dev/null; then
+			# UTF-8 多字节首字节, 取完整字符
+			start=$i
+			i=$((i + 1))
+			while [ "$i" -lt "$len" ]; do
+				printf -v byte "%d" "'${text:$i:1}"
+				[ "$byte" -ge 128 ] && [ "$byte" -lt 192 ] || break
+				i=$((i + 1))
+			done
+			ch="${text:$start:$((i - start))}"
+			# 首字节 E4-ED (228-237) 是 CJK, 算 2 列; 其它多字节算 1 列
+			printf -v fb "%d" "'${ch:0:1}"
+			if [ "$fb" -ge 228 ] && [ "$fb" -le 237 ]; then
+				cw=2
+			else
+				cw=1
+			fi
+		else
+			ch="${text:$i:1}"
+			cw=1
+			i=$((i + 1))
+		fi
+		if [ $((line_w + cw)) -gt "$col_width" ] && [ "$line_w" -gt 0 ]; then
+			arr+=("$line")
+			line="$ch"
+			line_w=$cw
+		else
+			line="${line}${ch}"
+			line_w=$((line_w + cw))
+		fi
+	done
+	[ -n "$line" ] && arr+=("$line")
+}
+
+# 渲染一行 3 个单元格 (虚拟表格, 不显示边框)
+# 每个 cell 独立按 col_width 切多行; 短 cell 用空字符串 + pad_right 补齐
+# 用法: render_grid_row col_width cell1 cell2 cell3
+# cell 内容可含 ANSI 颜色码 (echo -e 解释), 切宽时自动剥离
+render_grid_row() {
+	local col_width=$1 c1=$2 c2=$3 c3=$4
+	local -a lines1 lines2 lines3
+	_wrap_to_array lines1 "$c1" "$col_width"
+	_wrap_to_array lines2 "$c2" "$col_width"
+	_wrap_to_array lines3 "$c3" "$col_width"
+	local max=${#lines1[@]}
+	[ ${#lines2[@]} -gt "$max" ] && max=${#lines2[@]}
+	[ ${#lines3[@]} -gt "$max" ] && max=${#lines3[@]}
+	local i l1 l2 l3
+	for ((i=0; i<max; i++)); do
+		l1="${lines1[$i]:-}"
+		l2="${lines2[$i]:-}"
+		l3="${lines3[$i]:-}"
+		# echo -e 解释 ANSI 码; pad_right 用 printf 不会解释, 字符原样输出
+		echo -e "$(pad_right "$l1" "$col_width") $(pad_right "$l2" "$col_width") $(pad_right "$l3" "$col_width")"
+	done
 }
 
 ##  获取IP地址
