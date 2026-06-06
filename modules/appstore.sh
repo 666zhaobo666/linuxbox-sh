@@ -589,7 +589,7 @@ declare -A APP_DISPLAY_NAMES=(
 	[69]="ZFile在线网盘"        [70]="Nexterm远程连接"      [71]="JitsiMeet视频会议"
 	[72]="Stream四层代理转发"   [73]="FileCodeBox文件快递"  [74]="Matrix去中心化聊天"
 	[75]="yt-dlp视频下载"       [76]="paperless文档管理"    [77]="Wallos财务管理"
-	[78]="空应用占位用"         [79]="Dufs静态文件服务器"   [80]="PandaWiki文档管理"
+	[78]="PairDrop文件传输"      [79]="Dufs静态文件服务器"   [80]="PandaWiki文档管理"
 	[81]="linkwarden书签管理"   [82]="VoceChat聊天系统"     [83]="Karakeep书签管理"
 	[84]="NewAPI大模型资产管理" [85]="RAGFlow知识库"        [86]="AstrBot聊天机器人"
 	[87]="LangBot聊天机器人"    [88]="多格式文件转换"       [89]="LibreSpeed测速"
@@ -1328,19 +1328,36 @@ komari_app(){
 	done
 }
 
-# 78号空应用占位
-placehold_app(){
-	clear
+# PairDrop文件传输
+pairdrop_app(){
 	local app_id="78"
-	local app_name="空应用占位用"
-	local app_text="此应用位为占位, 暂未实现具体功能"
-	echo -e "空应用占位  状态: ${grey}占位中${white}"
-	echo "${app_text}"
-	echo ""
-	echo -e "${pink}------------------------${white}"
-	echo -e "${yellow}0.     ${white}返回上一级菜单"
-	echo -e "${pink}------------------------${white}"
-	read -n 1 -s -r -p "按任意键返回..."
+	local app_name="PairDrop文件传输"
+	local docker_name="pairdrop"
+	local docker_img="lscr.io/linuxserver/pairdrop:latest"
+	local docker_port=3000
+
+	docker_run() {
+		# app 自管端口: 让用户输入实际对外服务端口
+		read -e -p "服务端口 (默认 3000): " _user_port
+		_user_port=${_user_port:-3000}
+		docker_port=$_user_port
+
+		mkdir -p /home/docker/pairdrop && \
+		docker run -d \
+			--name pairdrop \
+			--restart=unless-stopped \
+			-v /home/docker/pairdrop:/config \
+			-p ${docker_port}:3000 \
+			lscr.io/linuxserver/pairdrop:latest
+
+		# 注册到展示表 (app 自定 label)
+		add_app_port "Web 端口" "$docker_port"
+	}
+
+	local app_text="PairDrop - 浏览器内的 AirDrop 替代品, 跨设备文件/消息/链接分享 (P2P 传输, 文件不经服务器)"
+	local app_url="官网介绍: https://github.com/schlagmichdoch/PairDrop"
+	local app_size="1"
+	docker_app
 }
 
 
@@ -2504,7 +2521,7 @@ linux_app() {
 		75) ytdlp_app ;;
 		76) paperless_app ;;
 		77) wallos_app ;;
-		78) placehold_app ;;
+		78) pairdrop_app ;;
 		79) dufs_app ;;
 		80) pandawiki_app ;;
 		81) linkwarden_app ;;
@@ -2558,9 +2575,9 @@ linux_app() {
 		echo ""
 		docker_tato
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${cyan}1.  ${white}1Panel面板 $(_dot 1)            ${cyan}2.  ${white}宝塔面板 $(_dot 2)                  ${cyan}3.  ${white}aaPanel面板 $(_dot 3)"
-		echo -e "${cyan}4.  ${white}NginxProxyManager面板 $(_dot 4)  ${cyan}5.  ${white}OpenList面板 $(_dot 5)              ${cyan}6.  ${white}WebTop远程桌面网页版 $(_dot 6)"
-		echo -e "${cyan}7.  ${white}Komari监控 $(_dot 7)             ${cyan}8.  ${white}qbittorrent离线下载 $(_dot 8)        ${cyan}9.  ${white}Poste.io邮件服务器程序 $(_dot 9)"
+		echo -e "${cyan}1.  ${white}$(pad_right "1Panel面板 $(_dot 1)" 32) ${cyan}2.  ${white}$(pad_right "宝塔面板 $(_dot 2)" 32) ${cyan}3.  ${white}$(pad_right "aaPanel面板 $(_dot 3)" 32)"
+		echo -e "${cyan}4.  ${white}NginxProxyManager面板 $(_dot 4)  ${cyan}5.  ${white}OpenList面板 $(_dot 5)             ${cyan}6.  ${white}WebTop远程桌面网页版 $(_dot 6)"
+		echo -e "${cyan}7.  ${white}Komari监控 $(_dot 7)             ${cyan}8.  ${white}qbittorrent离线下载 $(_dot 8)      ${cyan}9.  ${white}Poste.io邮件服务器程序 $(_dot 9)"
 		echo -e "${cyan}10. ${white}青龙面板 $(_dot 10)               ${cyan}11. ${white}Code-Server(网页vscode) $(_dot 11)  ${cyan}12. ${white}Looking Glass(测速面板) $(_dot 12)"
 		echo -e "${cyan}13. ${white}雷池WAF防火墙面板 $(_dot 13)      ${cyan}14. ${white}onlyoffice在线办公OFFICE $(_dot 14) ${cyan}15. ${white}UptimeKuma监控工具 $(_dot 15)"
 		echo -e "${cyan}16. ${white}Memos网页备忘录 $(_dot 16)        ${cyan}17. ${white}drawio免费的在线图表软件 $(_dot 17) ${cyan}18. ${white}Sun-Panel导航面板 $(_dot 18)"
@@ -2585,7 +2602,7 @@ linux_app() {
 		echo -e "${cyan}69. ${white}ZFile在线网盘 $(_dot 69)          ${cyan}70. ${white}Nexterm远程连接 $(_dot 70)          ${cyan}71. ${white}JitsiMeet视频会议 $(_dot 71)"
 		echo -e "${cyan}72. ${white}Stream四层代理转发 $(_dot 72)     ${cyan}73. ${white}FileCodeBox文件快递 $(_dot 73)      ${cyan}74. ${white}Matrix去中心化聊天 $(_dot 74)"
 		echo -e "${cyan}75. ${white}yt-dlp视频下载 $(_dot 75)         ${cyan}76. ${white}paperless文档管理 $(_dot 76)        ${cyan}77. ${white}Wallos财务管理 $(_dot 77)"
-		echo -e "${cyan}78. ${white}空应用占位用 $(_dot 78)            ${cyan}79. ${white}Dufs静态文件服务器 $(_dot 79)         ${cyan}80. ${white}PandaWiki文档管理 $(_dot 80)"
+		echo -e "${cyan}78. ${white}PairDrop文件传输 $(_dot 78)         ${cyan}79. ${white}Dufs静态文件服务器 $(_dot 79)         ${cyan}80. ${white}PandaWiki文档管理 $(_dot 80)"
 		echo -e "${cyan}81. ${white}linkwarden书签管理 $(_dot 81)     ${cyan}82. ${white}VoceChat聊天系统 $(_dot 82)         ${cyan}83. ${white}Karakeep书签管理 $(_dot 83)"
 		echo -e "${cyan}84. ${white}NewAPI大模型资产管理 $(_dot 84)   ${cyan}85. ${white}RAGFlow知识库 $(_dot 85)            ${cyan}86. ${white}AstrBot聊天机器人 $(_dot 86)"
 		echo -e "${cyan}87. ${white}LangBot聊天机器人 $(_dot 87)      ${cyan}88. ${white}多格式文件转换 $(_dot 88)           ${cyan}89. ${white}LibreSpeed测速 $(_dot 89)"
