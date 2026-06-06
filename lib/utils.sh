@@ -128,84 +128,22 @@ menu_line() {
 	pad_right "$name" "$target"
 }
 
-# 把 text 按 col_width 切成多行, 存到 nameref 数组
-# ANSI 颜色码 (\033[...m) 视为"零宽不可见", 切行时跳过宽度计算但**保留**在 line 中
-# CJK 字符 (E4-ED 首字节) 算 2 列, 其它 UTF-8 多字节字符 (如 ● 等符号) 算 1 列
-# 用法: _wrap_to_array arr_name "text" col_width
-_wrap_to_array() {
-	local -n arr=$1
-	local text=$2 col_width=$3
-	arr=()
-	local line="" line_w=0 i=0 len=${#text} byte fb cw ch start
-	while [ "$i" -lt "$len" ]; do
-		# ANSI 颜色码: 整段 ESC[..m 保留在 line, 不计宽度
-		if [ "${text:$i:1}" = $'\x1b' ]; then
-			local ansi_end=$((i + 1))
-			while [ "$ansi_end" -lt "$len" ] && [ "${text:$ansi_end:1}" != "m" ]; do
-				ansi_end=$((ansi_end + 1))
-			done
-			ansi_end=$((ansi_end + 1))   # 含 'm'
-			line="${line}${text:$i:$((ansi_end - i))}"
-			i=$ansi_end
-			continue
-		fi
-		# 普通字符
-		printf -v byte "%d" "'${text:$i:1}"
-		if [ "$byte" -ge 192 ] 2>/dev/null; then
-			# UTF-8 多字节首字节, 取完整字符
-			start=$i
-			i=$((i + 1))
-			while [ "$i" -lt "$len" ]; do
-				printf -v byte "%d" "'${text:$i:1}"
-				[ "$byte" -ge 128 ] && [ "$byte" -lt 192 ] || break
-				i=$((i + 1))
-			done
-			ch="${text:$start:$((i - start))}"
-			# 首字节 E4-ED (228-237) 是 CJK, 算 2 列; 其它多字节算 1 列
-			printf -v fb "%d" "'${ch:0:1}"
-			if [ "$fb" -ge 228 ] && [ "$fb" -le 237 ]; then
-				cw=2
-			else
-				cw=1
-			fi
-		else
-			ch="${text:$i:1}"
-			cw=1
-			i=$((i + 1))
-		fi
-		if [ $((line_w + cw)) -gt "$col_width" ] && [ "$line_w" -gt 0 ]; then
-			arr+=("$line")
-			line="$ch"
-			line_w=$cw
-		else
-			line="${line}${ch}"
-			line_w=$((line_w + cw))
-		fi
-	done
-	[ -n "$line" ] && arr+=("$line")
-}
-
-# 渲染一行 3 个单元格 (虚拟表格, 不显示边框)
-# 每个 cell 独立按 col_width 切多行; 短 cell 用空字符串 + pad_right 补齐
-# 用法: render_grid_row col_width cell1 cell2 cell3
-# cell 内容可含 ANSI 颜色码 (echo -e 解释), 切宽时自动剥离
+# 渲染一行 N 个单元格 (虚拟表格, 不显示边框)
+# 内部委托给 lib/_render_grid.py (Python) 实现, 准确处理 CJK / ANSI 颜色码 / 超长切行
+# 用法: render_grid_row col_width c1 c2 c3 ...
 render_grid_row() {
-	local col_width=$1 c1=$2 c2=$3 c3=$4
-	local -a lines1 lines2 lines3
-	_wrap_to_array lines1 "$c1" "$col_width"
-	_wrap_to_array lines2 "$c2" "$col_width"
-	_wrap_to_array lines3 "$c3" "$col_width"
-	local max=${#lines1[@]}
-	[ ${#lines2[@]} -gt "$max" ] && max=${#lines2[@]}
-	[ ${#lines3[@]} -gt "$max" ] && max=${#lines3[@]}
-	local i l1 l2 l3
-	for ((i=0; i<max; i++)); do
-		l1="${lines1[$i]:-}"
-		l2="${lines2[$i]:-}"
-		l3="${lines3[$i]:-}"
-		# echo -e 解释 ANSI 码; pad_right 用 printf 不会解释, 字符原样输出
-		echo -e "$(pad_right "$l1" "$col_width") $(pad_right "$l2" "$col_width") $(pad_right "$l3" "$col_width")"
+	local col_width=$1
+	shift
+	# 用 0x1F (Unit Separator) 分隔 cell, 不会出现在 app 名称里
+	local SEP=$'\x1f'
+	local _input=""
+	local _c
+	for _c in "$@"; do
+		_input+="${_c}${SEP}"
 	done
+	local _script_dir
+	_script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+	printf '%s' "$_input" | python3 "$_script_dir/_render_grid.py" "$col_width"
 }
 
 ##  获取IP地址
