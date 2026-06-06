@@ -2391,12 +2391,24 @@ drawnix_app(){
 ##############################
 linux_app() {
 
-	# 状态点 (单字符, 颜色根据安装状态)
+	# 状态点: 颜色支持时用 ANSI 颜色码 (绿/红), 否则用 unicode 符号 (●/○) 区分
+	# 这样 dumb terminal (TERM=dumb / NO_COLOR / 各种 Windows ssh 客户端) 也不会输出乱码
 	_dot() {
-		if [ "${INSTALLED_MAP[$1]:-0}" = "1" ]; then
-			echo "${green}●${white}"
+		# 检测: TTY 且非 dumb 且无 NO_COLOR → 支持颜色
+		if [ -t 1 ] && [ "${NO_COLOR:-}" = "" ] && [ "${TERM:-}" != "dumb" ]; then
+			# 有颜色: 已装=绿●, 未装=红●
+			if [ "${INSTALLED_MAP[$1]:-0}" = "1" ]; then
+				echo "${green}●${white}"
+			else
+				echo "${red}●${white}"
+			fi
 		else
-			echo "${red}●${white}"
+			# 无颜色: 已装=●, 未装=○
+			if [ "${INSTALLED_MAP[$1]:-0}" = "1" ]; then
+				echo "●"
+			else
+				echo "○"
+			fi
 		fi
 	}
 
