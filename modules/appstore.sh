@@ -1,37 +1,36 @@
-#############################################################################
-################################# 八、应用市场 ###############################
+﻿#############################################################################
+################################# 鍏€佸簲鐢ㄥ競鍦?###############################
 
 ###########################
-###### 面板类应用管理 ######
+###### 闈㈡澘绫诲簲鐢ㄧ鐞?######
 ###########################
-# 检查panel是否安装
+# 妫€鏌anel鏄惁瀹夎
 check_panel_app() {
 	if $panel_path > /dev/null 2>&1; then
-		check_panel="${green}已安装${white}"
+		check_panel="${green}宸插畨瑁?{white}"
 	else
-		check_panel="${white}未安装${white}"
+		check_panel="${white}鏈畨瑁?{white}"
 	fi
 }
-# 面板管理
+# 闈㈡澘绠＄悊
 panel_manage() {
 	while true; do
 		clear
 		check_panel_app
 		echo -e "$panelname $check_panel"
-		echo "${panelname}是一款时下流行且强大的运维管理面板."
-		echo "官网介绍: $panelurl "
+		echo "${panelname}鏄竴娆炬椂涓嬫祦琛屼笖寮哄ぇ鐨勮繍缁寸鐞嗛潰鏉?"
+		echo "瀹樼綉浠嬬粛: $panelurl "
 
-		# 面板应用: 不走端口表, 只展示官网作为参考入口
-		echo ""
-		echo -e "${cyan}参考入口${white}:  ${green}$panelurl${white}"
+		# 闈㈡澘搴旂敤: 涓嶈蛋绔彛琛? 鍙睍绀哄畼缃戜綔涓哄弬鑰冨叆鍙?		echo ""
+		echo -e "${cyan}鍙傝€冨叆鍙?{white}:  ${green}$panelurl${white}"
 
 		echo ""
 		echo -e "${pink}------------------------${white}"
-		echo "1. 安装            2. 管理            3. 卸载"
+		echo "1. 瀹夎            2. 绠＄悊            3. 鍗歌浇"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.     ${white}杩斿洖涓婁竴绾ц彍鍗?
 		echo -e "${pink}------------------------${white}"
-		read -e -p "请输入你的选择: " choice
+		read -e -p "璇疯緭鍏ヤ綘鐨勯€夋嫨: " choice
 		case $choice in
 			1)
 				check_disk_space 1
@@ -40,18 +39,17 @@ panel_manage() {
 				panel_app_install
 
 				check_panel_app
-				if [ "$check_panel" = "${green}已安装${white}" ]; then
+				if [ "$check_panel" = "${green}宸插畨瑁?{white}" ]; then
 					add_app_id
 				fi
 				;;
 			2)
-				# 修复检测 bug: 未装就管理会误标为已装
-				check_panel_app
-				if [ "$check_panel" = "${green}已安装${white}" ]; then
+				# 淇妫€娴?bug: 鏈灏辩鐞嗕細璇爣涓哄凡瑁?				check_panel_app
+				if [ "$check_panel" = "${green}宸插畨瑁?{white}" ]; then
 					panel_app_manage
 					add_app_id
 				else
-					echo -e "${red}面板未安装, 请先安装${white}"
+					echo -e "${red}闈㈡澘鏈畨瑁? 璇峰厛瀹夎${white}"
 					sleep 1
 				fi
 
@@ -71,10 +69,10 @@ panel_manage() {
 
 
 ##############################
-###### Docker类应用管理 ######
+###### Docker绫诲簲鐢ㄧ鐞?######
 ##############################
 
-# Docker信息统计
+# Docker淇℃伅缁熻
 docker_tato() {
 
 	local container_count=$(docker ps -a -q 2>/dev/null | wc -l)
@@ -83,18 +81,18 @@ docker_tato() {
 	local volume_count=$(docker volume ls -q 2>/dev/null | wc -l)
 
 	if command -v docker &> /dev/null; then
-		echo -e "${green}环境已经安装${white}  容器: ${green}$container_count${white}  镜像: ${green}$image_count${white}  网络: ${green}$network_count${white}  卷: ${green}$volume_count${white}"
+		echo -e "${green}鐜宸茬粡瀹夎${white}  瀹瑰櫒: ${green}$container_count${white}  闀滃儚: ${green}$image_count${white}  缃戠粶: ${green}$network_count${white}  鍗? ${green}$volume_count${white}"
 	fi
 }
 
-# 检查 crontab 是否安装
+# 妫€鏌?crontab 鏄惁瀹夎
 check_crontab_installed() {
 	if ! command -v crontab >/dev/null 2>&1; then
 		install_crontab
 	fi
 }
 
-# 安装 crontab
+# 瀹夎 crontab
 install_crontab() {
 
 	if [ -f /etc/os-release ]; then
@@ -138,19 +136,19 @@ install_crontab() {
 				service cron start
 				;;
 			*)
-				echo "不支持的发行版: $ID"
+				echo "涓嶆敮鎸佺殑鍙戣鐗? $ID"
 				return
 				;;
 		esac
 	else
-		echo "无法确定操作系统."
+		echo "鏃犳硶纭畾鎿嶄綔绯荤粺."
 		return
 	fi
 
-	echo -e "${green}crontab 已安装且 cron 服务正在运行.${white}"
+	echo -e "${green}crontab 宸插畨瑁呬笖 cron 鏈嶅姟姝ｅ湪杩愯.${white}"
 }
 
-# 保存 iptables 规则
+# 淇濆瓨 iptables 瑙勫垯
 save_iptables_rules() {
 	mkdir -p /etc/iptables
 	touch /etc/iptables/rules.v4
@@ -162,15 +160,15 @@ save_iptables_rules() {
 }
 
 
-# 检查Docker
+# 妫€鏌ocker
 check_docker() {
 	if ! command -v docker &>/dev/null; then
-		echo -e "${red}未检测到Docker环境${white}"
+		echo -e "${red}鏈娴嬪埌Docker鐜${white}"
 		echo -e "${cyan}------------------------"
-		echo -e "${cyan}1.   ${white}安装Docker环境"
-		echo -e "${cyan}0.   ${white}返回主菜单"
+		echo -e "${cyan}1.   ${white}瀹夎Docker鐜"
+		echo -e "${cyan}0.   ${white}杩斿洖涓昏彍鍗?
 		echo -e "${cyan}------------------------${white}"
-		read -e -p "请输入你的选择: " docker_choice
+		read -e -p "璇疯緭鍏ヤ綘鐨勯€夋嫨: " docker_choice
 		case $docker_choice in
 			1)
 				install_add_docker
@@ -180,7 +178,7 @@ check_docker() {
 				return_to_menu
 				;;
 			*)
-				echo -e "${red}无效选择, 请重新输入 !${white}"
+				echo -e "${red}鏃犳晥閫夋嫨, 璇烽噸鏂拌緭鍏?!${white}"
 				sleep 1
 				;;
 		esac
@@ -188,21 +186,21 @@ check_docker() {
 	fi
 }
 
-# 检查Docker应用是否安装
+# 妫€鏌ocker搴旂敤鏄惁瀹夎
 check_docker_app() {
 	if docker ps -a --format '{{.Names}}' | grep -q "^${docker_name}$" >/dev/null 2>&1 ; then
-		check_docker="${green}已安装${white}"
+		check_docker="${green}宸插畨瑁?{white}"
 		return 0
 	else
-		check_docker="${grey}未安装${white}"
+		check_docker="${grey}鏈畨瑁?{white}"
 		return 1
 	fi
 }
 
-# 检查Docker应用的访问地址
+# 妫€鏌ocker搴旂敤鐨勮闂湴鍧€
 check_docker_app_ip() {
 echo -e "${pink}------------------------${white}"
-echo "${access_label:-访问地址}:"
+echo "${access_label:-璁块棶鍦板潃}:"
 ip_address
 
 if [ -n "$ipv4_address" ]; then
@@ -225,7 +223,7 @@ for file in /home/web/conf.d/*; do
 done
 }
 
-# 检查Docker镜像更新
+# 妫€鏌ocker闀滃儚鏇存柊
 check_docker_image_update() {
 	local container_name=$1
 	local country=$(curl -s ipinfo.io/country)
@@ -234,33 +232,30 @@ check_docker_image_update() {
 		return
 	fi
 
-	# 获取容器的创建时间和镜像名称
+	# 鑾峰彇瀹瑰櫒鐨勫垱寤烘椂闂村拰闀滃儚鍚嶇О
 	local container_info=$(docker inspect --format='{{.Created}},{{.Config.Image}}' "$container_name" 2>/dev/null)
 	local container_created=$(echo "$container_info" | cut -d',' -f1)
 	local image_name=$(echo "$container_info" | cut -d',' -f2)
 
-	# 提取镜像仓库和标签
-	local image_repo=${image_name%%:*}
+	# 鎻愬彇闀滃儚浠撳簱鍜屾爣绛?	local image_repo=${image_name%%:*}
 	local image_tag=${image_name##*:}
 
-	# 默认标签为 latest
+	# 榛樿鏍囩涓?latest
 	[[ "$image_repo" == "$image_tag" ]] && image_tag="latest"
 
-	# 添加对官方镜像的支持
+	# 娣诲姞瀵瑰畼鏂归暅鍍忕殑鏀寔
 	[[ "$image_repo" != */* ]] && image_repo="library/$image_repo"
 
-	# 从 Docker Hub API 获取镜像发布时间
+	# 浠?Docker Hub API 鑾峰彇闀滃儚鍙戝竷鏃堕棿
 	local hub_info=$(curl -s "https://hub.docker.com/v2/repositories/$image_repo/tags/$image_tag")
 	local last_updated=$(echo "$hub_info" | jq -r '.last_updated' 2>/dev/null)
 
-	# 验证获取的时间
-	if [[ -n "$last_updated" && "$last_updated" != "null" ]]; then
+	# 楠岃瘉鑾峰彇鐨勬椂闂?	if [[ -n "$last_updated" && "$last_updated" != "null" ]]; then
 		local container_created_ts=$(date -d "$container_created" +%s 2>/dev/null)
 		local last_updated_ts=$(date -d "$last_updated" +%s 2>/dev/null)
 
-		# 比较时间戳
-		if [[ $container_created_ts -lt $last_updated_ts ]]; then
-			update_status="${yellow}发现新版本!${white}"
+		# 姣旇緝鏃堕棿鎴?		if [[ $container_created_ts -lt $last_updated_ts ]]; then
+			update_status="${yellow}鍙戠幇鏂扮増鏈?${white}"
 		else
 			update_status=""
 		fi
@@ -269,12 +264,11 @@ check_docker_image_update() {
 	fi
 }
 
-# 检查Docker容器的端口访问
-block_container_port() {
+# 妫€鏌ocker瀹瑰櫒鐨勭鍙ｈ闂?block_container_port() {
 	local container_name_or_id=$1
 	local allowed_ip=$2
 
-	# 获取容器的 IP 地址
+	# 鑾峰彇瀹瑰櫒鐨?IP 鍦板潃
 	local container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$container_name_or_id")
 
 	if [ -z "$container_ip" ]; then
@@ -284,32 +278,32 @@ block_container_port() {
 	install iptables
 
 
-	# 检查并封禁其他所有 IP
+	# 妫€鏌ュ苟灏佺鍏朵粬鎵€鏈?IP
 	if ! iptables -C DOCKER-USER -p tcp -d "$container_ip" -j DROP &>/dev/null; then
 		iptables -I DOCKER-USER -p tcp -d "$container_ip" -j DROP
 	fi
 
-	# 检查并放行指定 IP
+	# 妫€鏌ュ苟鏀捐鎸囧畾 IP
 	if ! iptables -C DOCKER-USER -p tcp -s "$allowed_ip" -d "$container_ip" -j ACCEPT &>/dev/null; then
 		iptables -I DOCKER-USER -p tcp -s "$allowed_ip" -d "$container_ip" -j ACCEPT
 	fi
 
-	# 检查并放行本地网络 127.0.0.0/8
+	# 妫€鏌ュ苟鏀捐鏈湴缃戠粶 127.0.0.0/8
 	if ! iptables -C DOCKER-USER -p tcp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT &>/dev/null; then
 		iptables -I DOCKER-USER -p tcp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT
 	fi
 
-	# 检查并封禁其他所有 IP
+	# 妫€鏌ュ苟灏佺鍏朵粬鎵€鏈?IP
 	if ! iptables -C DOCKER-USER -p udp -d "$container_ip" -j DROP &>/dev/null; then
 		iptables -I DOCKER-USER -p udp -d "$container_ip" -j DROP
 	fi
 
-	# 检查并放行指定 IP
+	# 妫€鏌ュ苟鏀捐鎸囧畾 IP
 	if ! iptables -C DOCKER-USER -p udp -s "$allowed_ip" -d "$container_ip" -j ACCEPT &>/dev/null; then
 		iptables -I DOCKER-USER -p udp -s "$allowed_ip" -d "$container_ip" -j ACCEPT
 	fi
 
-	# 检查并放行本地网络 127.0.0.0/8
+	# 妫€鏌ュ苟鏀捐鏈湴缃戠粶 127.0.0.0/8
 	if ! iptables -C DOCKER-USER -p udp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT &>/dev/null; then
 		iptables -I DOCKER-USER -p udp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT
 	fi
@@ -318,17 +312,17 @@ block_container_port() {
 		iptables -I DOCKER-USER -m state --state ESTABLISHED,RELATED -d "$container_ip" -j ACCEPT
 	fi
 
-	echo "已阻止IP+端口访问该服务"
+	echo "宸查樆姝P+绔彛璁块棶璇ユ湇鍔?
 	save_iptables_rules
 }
 
 
-# 清除容器的防火墙规则
+# 娓呴櫎瀹瑰櫒鐨勯槻鐏瑙勫垯
 clear_container_rules() {
 	local container_name_or_id=$1
 	local allowed_ip=$2
 
-	# 获取容器的 IP 地址
+	# 鑾峰彇瀹瑰櫒鐨?IP 鍦板潃
 	local container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$container_name_or_id")
 
 	if [ -z "$container_ip" ]; then
@@ -338,33 +332,27 @@ clear_container_rules() {
 	install iptables
 
 
-	# 清除封禁其他所有 IP 的规则
-	if iptables -C DOCKER-USER -p tcp -d "$container_ip" -j DROP &>/dev/null; then
+	# 娓呴櫎灏佺鍏朵粬鎵€鏈?IP 鐨勮鍒?	if iptables -C DOCKER-USER -p tcp -d "$container_ip" -j DROP &>/dev/null; then
 		iptables -D DOCKER-USER -p tcp -d "$container_ip" -j DROP
 	fi
 
-	# 清除放行指定 IP 的规则
-	if iptables -C DOCKER-USER -p tcp -s "$allowed_ip" -d "$container_ip" -j ACCEPT &>/dev/null; then
+	# 娓呴櫎鏀捐鎸囧畾 IP 鐨勮鍒?	if iptables -C DOCKER-USER -p tcp -s "$allowed_ip" -d "$container_ip" -j ACCEPT &>/dev/null; then
 		iptables -D DOCKER-USER -p tcp -s "$allowed_ip" -d "$container_ip" -j ACCEPT
 	fi
 
-	# 清除放行本地网络 127.0.0.0/8 的规则
-	if iptables -C DOCKER-USER -p tcp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT &>/dev/null; then
+	# 娓呴櫎鏀捐鏈湴缃戠粶 127.0.0.0/8 鐨勮鍒?	if iptables -C DOCKER-USER -p tcp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT &>/dev/null; then
 		iptables -D DOCKER-USER -p tcp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT
 	fi
 
-	# 清除封禁其他所有 IP 的规则
-	if iptables -C DOCKER-USER -p udp -d "$container_ip" -j DROP &>/dev/null; then
+	# 娓呴櫎灏佺鍏朵粬鎵€鏈?IP 鐨勮鍒?	if iptables -C DOCKER-USER -p udp -d "$container_ip" -j DROP &>/dev/null; then
 		iptables -D DOCKER-USER -p udp -d "$container_ip" -j DROP
 	fi
 
-	# 清除放行指定 IP 的规则
-	if iptables -C DOCKER-USER -p udp -s "$allowed_ip" -d "$container_ip" -j ACCEPT &>/dev/null; then
+	# 娓呴櫎鏀捐鎸囧畾 IP 鐨勮鍒?	if iptables -C DOCKER-USER -p udp -s "$allowed_ip" -d "$container_ip" -j ACCEPT &>/dev/null; then
 		iptables -D DOCKER-USER -p udp -s "$allowed_ip" -d "$container_ip" -j ACCEPT
 	fi
 
-	# 清除放行本地网络 127.0.0.0/8 的规则
-	if iptables -C DOCKER-USER -p udp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT &>/dev/null; then
+	# 娓呴櫎鏀捐鏈湴缃戠粶 127.0.0.0/8 鐨勮鍒?	if iptables -C DOCKER-USER -p udp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT &>/dev/null; then
 		iptables -D DOCKER-USER -p udp -s 127.0.0.0/8 -d "$container_ip" -j ACCEPT
 	fi
 
@@ -373,110 +361,102 @@ clear_container_rules() {
 		iptables -D DOCKER-USER -m state --state ESTABLISHED,RELATED -d "$container_ip" -j ACCEPT
 	fi
 
-	echo "已允许IP+端口访问该服务"
+	echo "宸插厑璁窱P+绔彛璁块棶璇ユ湇鍔?
 	save_iptables_rules
 }
 
-# 检查主机的端口访问
+# 妫€鏌ヤ富鏈虹殑绔彛璁块棶
 block_host_port() {
 	local port=$1
 	local allowed_ip=$2
 
 	if [[ -z "$port" || -z "$allowed_ip" ]]; then
-		echo "错误：请提供端口号和允许访问的 IP."
-		echo "用法: block_host_port <端口号> <允许的IP>"
+		echo "閿欒锛氳鎻愪緵绔彛鍙峰拰鍏佽璁块棶鐨?IP."
+		echo "鐢ㄦ硶: block_host_port <绔彛鍙? <鍏佽鐨処P>"
 		return 1
 	fi
 
 	install iptables
 
-	# 拒绝其他所有 IP 访问
+	# 鎷掔粷鍏朵粬鎵€鏈?IP 璁块棶
 	if ! iptables -C INPUT -p tcp --dport "$port" -j DROP &>/dev/null; then
 		iptables -I INPUT -p tcp --dport "$port" -j DROP
 	fi
 
-	# 允许指定 IP 访问
+	# 鍏佽鎸囧畾 IP 璁块棶
 	if ! iptables -C INPUT -p tcp --dport "$port" -s "$allowed_ip" -j ACCEPT &>/dev/null; then
 		iptables -I INPUT -p tcp --dport "$port" -s "$allowed_ip" -j ACCEPT
 	fi
 
-	# 允许本机访问
+	# 鍏佽鏈満璁块棶
 	if ! iptables -C INPUT -p tcp --dport "$port" -s 127.0.0.0/8 -j ACCEPT &>/dev/null; then
 		iptables -I INPUT -p tcp --dport "$port" -s 127.0.0.0/8 -j ACCEPT
 	fi
 
-	# 拒绝其他所有 IP 访问
+	# 鎷掔粷鍏朵粬鎵€鏈?IP 璁块棶
 	if ! iptables -C INPUT -p udp --dport "$port" -j DROP &>/dev/null; then
 		iptables -I INPUT -p udp --dport "$port" -j DROP
 	fi
 
-	# 允许指定 IP 访问
+	# 鍏佽鎸囧畾 IP 璁块棶
 	if ! iptables -C INPUT -p udp --dport "$port" -s "$allowed_ip" -j ACCEPT &>/dev/null; then
 		iptables -I INPUT -p udp --dport "$port" -s "$allowed_ip" -j ACCEPT
 	fi
 
-	# 允许本机访问
+	# 鍏佽鏈満璁块棶
 	if ! iptables -C INPUT -p udp --dport "$port" -s 127.0.0.0/8 -j ACCEPT &>/dev/null; then
 		iptables -I INPUT -p udp --dport "$port" -s 127.0.0.0/8 -j ACCEPT
 	fi
 
-	# 允许已建立和相关连接的流量
-	if ! iptables -C INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT &>/dev/null; then
+	# 鍏佽宸插缓绔嬪拰鐩稿叧杩炴帴鐨勬祦閲?	if ! iptables -C INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT &>/dev/null; then
 		iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 	fi
 
-	echo "已阻止IP+端口访问该服务"
+	echo "宸查樆姝P+绔彛璁块棶璇ユ湇鍔?
 	save_iptables_rules
 }
 
-# 清除主机的端口访问
-clear_host_port_rules() {
+# 娓呴櫎涓绘満鐨勭鍙ｈ闂?clear_host_port_rules() {
 	local port=$1
 	local allowed_ip=$2
 
 	if [[ -z "$port" || -z "$allowed_ip" ]]; then
-		echo "错误：请提供端口号和允许访问的 IP."
-		echo "用法: clear_host_port_rules <端口号> <允许的IP>"
+		echo "閿欒锛氳鎻愪緵绔彛鍙峰拰鍏佽璁块棶鐨?IP."
+		echo "鐢ㄦ硶: clear_host_port_rules <绔彛鍙? <鍏佽鐨処P>"
 		return 1
 	fi
 
 	install iptables
 
-	# 清除封禁所有其他 IP 访问的规则
-	if iptables -C INPUT -p tcp --dport "$port" -j DROP &>/dev/null; then
+	# 娓呴櫎灏佺鎵€鏈夊叾浠?IP 璁块棶鐨勮鍒?	if iptables -C INPUT -p tcp --dport "$port" -j DROP &>/dev/null; then
 		iptables -D INPUT -p tcp --dport "$port" -j DROP
 	fi
 
-	# 清除允许本机访问的规则
-	if iptables -C INPUT -p tcp --dport "$port" -s 127.0.0.0/8 -j ACCEPT &>/dev/null; then
+	# 娓呴櫎鍏佽鏈満璁块棶鐨勮鍒?	if iptables -C INPUT -p tcp --dport "$port" -s 127.0.0.0/8 -j ACCEPT &>/dev/null; then
 		iptables -D INPUT -p tcp --dport "$port" -s 127.0.0.0/8 -j ACCEPT
 	fi
 
-	# 清除允许指定 IP 访问的规则
-	if iptables -C INPUT -p tcp --dport "$port" -s "$allowed_ip" -j ACCEPT &>/dev/null; then
+	# 娓呴櫎鍏佽鎸囧畾 IP 璁块棶鐨勮鍒?	if iptables -C INPUT -p tcp --dport "$port" -s "$allowed_ip" -j ACCEPT &>/dev/null; then
 		iptables -D INPUT -p tcp --dport "$port" -s "$allowed_ip" -j ACCEPT
 	fi
 
-	# 清除封禁所有其他 IP 访问的规则
-	if iptables -C INPUT -p udp --dport "$port" -j DROP &>/dev/null; then
+	# 娓呴櫎灏佺鎵€鏈夊叾浠?IP 璁块棶鐨勮鍒?	if iptables -C INPUT -p udp --dport "$port" -j DROP &>/dev/null; then
 		iptables -D INPUT -p udp --dport "$port" -j DROP
 	fi
 
-	# 清除允许本机访问的规则
-	if iptables -C INPUT -p udp --dport "$port" -s 127.0.0.0/8 -j ACCEPT &>/dev/null; then
+	# 娓呴櫎鍏佽鏈満璁块棶鐨勮鍒?	if iptables -C INPUT -p udp --dport "$port" -s 127.0.0.0/8 -j ACCEPT &>/dev/null; then
 		iptables -D INPUT -p udp --dport "$port" -s 127.0.0.0/8 -j ACCEPT
 	fi
 
-	# 清除允许指定 IP 访问的规则
-	if iptables -C INPUT -p udp --dport "$port" -s "$allowed_ip" -j ACCEPT &>/dev/null; then
+	# 娓呴櫎鍏佽鎸囧畾 IP 璁块棶鐨勮鍒?	if iptables -C INPUT -p udp --dport "$port" -s "$allowed_ip" -j ACCEPT &>/dev/null; then
 		iptables -D INPUT -p udp --dport "$port" -s "$allowed_ip" -j ACCEPT
 	fi
 
-	echo "已允许IP+端口访问该服务"
+	echo "宸插厑璁窱P+绔彛璁块棶璇ユ湇鍔?
 	save_iptables_rules
 }
 
-# 设置 Docker 目录
+# 璁剧疆 Docker 鐩綍
 setup_docker_dir() {
 
 	mkdir -p /home/docker/ 2>/dev/null
@@ -488,7 +468,7 @@ setup_docker_dir() {
 	fi
 }
 
-# 添加应用 ID
+# 娣诲姞搴旂敤 ID
 add_app_id() {
 	mkdir -p /home/docker
 	touch /home/docker/appno.txt
@@ -497,28 +477,27 @@ add_app_id() {
 
 
 #############################################################################
-####################### 多端口注册 + 状态查询框架 ############################
+####################### 澶氱鍙ｆ敞鍐?+ 鐘舵€佹煡璇㈡鏋?############################
 #############################################################################
-# 全局端口注册表 (每个 app 函数入口前由 clear_app_ports 清空).
-# 应用通过 add_app_port "label" port 注册 1..N 个对外暴露的访问入口.
-# 框架在 UI 统一渲染成表格; 兼容老 app 仅声明 docker_port 的情况, 自动派生
-# 一个 "访问地址" 入口. port_mode / access_label 旧变量已废弃, 不再读取.
+# 鍏ㄥ眬绔彛娉ㄥ唽琛?(姣忎釜 app 鍑芥暟鍏ュ彛鍓嶇敱 clear_app_ports 娓呯┖).
+# 搴旂敤閫氳繃 add_app_port "label" port 娉ㄥ唽 1..N 涓澶栨毚闇茬殑璁块棶鍏ュ彛.
+# 妗嗘灦鍦?UI 缁熶竴娓叉煋鎴愯〃鏍? 鍏煎鑰?app 浠呭０鏄?docker_port 鐨勬儏鍐? 鑷姩娲剧敓
+# 涓€涓?"璁块棶鍦板潃" 鍏ュ彛. port_mode / access_label 鏃у彉閲忓凡搴熷純, 涓嶅啀璇诲彇.
 APP_PORTS_LABELS=()
 APP_PORTS_NUMBERS=()
 
-# 注册一个访问入口
-add_app_port() {
+# 娉ㄥ唽涓€涓闂叆鍙?add_app_port() {
 	APP_PORTS_LABELS+=("$1")
 	APP_PORTS_NUMBERS+=("$2")
 }
 
-# 清空端口注册 (linux_app dispatch 入口调用, 防残留)
+# 娓呯┖绔彛娉ㄥ唽 (linux_app dispatch 鍏ュ彛璋冪敤, 闃叉畫鐣?
 clear_app_ports() {
 	APP_PORTS_LABELS=()
 	APP_PORTS_NUMBERS=()
 }
 
-# 保存当前已注册的端口到文件（支持多端口，第二次进入详情页恢复用）
+# 淇濆瓨褰撳墠宸叉敞鍐岀殑绔彛鍒版枃浠讹紙鏀寔澶氱鍙ｏ紝绗簩娆¤繘鍏ヨ鎯呴〉鎭㈠鐢級
 save_app_ports() {
 	[ -z "${docker_name:-}" ] && return
 	mkdir -p /home/docker
@@ -528,7 +507,7 @@ save_app_ports() {
 	done
 }
 
-# 从文件加载端口（第二次进入详情页时使用）
+# 浠庢枃浠跺姞杞界鍙ｏ紙绗簩娆¤繘鍏ヨ鎯呴〉鏃朵娇鐢級
 load_app_ports() {
 	[ -z "${docker_name:-}" ] && return
 	local port_file="/home/docker/${docker_name}_ports.txt"
@@ -544,7 +523,7 @@ load_app_ports() {
 	done < "$port_file"
 }
 
-# 获取主端口 (第一个注册的); 若空则回退到 $docker_port 兼容老 app
+# 鑾峰彇涓荤鍙?(绗竴涓敞鍐岀殑); 鑻ョ┖鍒欏洖閫€鍒?$docker_port 鍏煎鑰?app
 get_primary_port() {
 	if [ ${#APP_PORTS_NUMBERS[@]} -gt 0 ]; then
 		echo "${APP_PORTS_NUMBERS[0]}"
@@ -553,69 +532,67 @@ get_primary_port() {
 	fi
 }
 
-# (no-op) 框架不再自动注册, app 必须在 docker_run 里显式 add_app_port
+# (no-op) 妗嗘灦涓嶅啀鑷姩娉ㄥ唽, app 蹇呴』鍦?docker_run 閲屾樉寮?add_app_port
 _auto_register_fallback_port() { :; }
 
-# 全局 app 注册表 (供 666 已安装列表展示 app_name)
+# 鍏ㄥ眬 app 娉ㄥ唽琛?(渚?666 宸插畨瑁呭垪琛ㄥ睍绀?app_name)
 APP_REGISTRY_IDS=()
 APP_REGISTRY_NAMES=()
 
-# 全局显示名映射: sub_choice → 中文显示名 (linux_app 菜单 + 666 列表共用)
-# 维护: 与 linux_app() case 语句的顺序一致. 改 case 时同步更新这里.
+# 鍏ㄥ眬鏄剧ず鍚嶆槧灏? sub_choice 鈫?涓枃鏄剧ず鍚?(linux_app 鑿滃崟 + 666 鍒楄〃鍏辩敤)
+# 缁存姢: 涓?linux_app() case 璇彞鐨勯『搴忎竴鑷? 鏀?case 鏃跺悓姝ユ洿鏂拌繖閲?
 declare -A APP_DISPLAY_NAMES=(
-	[1]="1Panel面板"           [2]="宝塔面板"             [3]="aaPanel面板"
-	[4]="NginxProxyManager面板" [5]="OpenList面板"         [6]="WebTop远程桌面网页版"
-	[7]="Komari监控"            [8]="qbittorrent离线下载"  [9]="Poste.io邮件服务器程序"
-	[10]="青龙面板"             [11]="Code-Server(网页vscode)" [12]="Looking Glass(测速面板)"
-	[13]="雷池WAF防火墙面板"   [14]="onlyoffice在线办公OFFICE" [15]="UptimeKuma监控工具"
-	[16]="Memos网页备忘录"      [17]="drawio免费的在线图表软件" [18]="Sun-Panel导航面板"
-	[19]="webssh网页版SSH连接工具" [20]="LobeChatAI聊天聚合网站" [21]="MyIP工具箱"
-	[22]="ghproxy(GitHub加速站)" [23]="AllinSSL证书管理平台" [24]="DDNS-GO"
-	[25]="Lucky"                [26]="LibreTV私有影视"      [27]="MoonTV私有影视"
-	[28]="Melody音乐精灵"       [29]="Beszel服务器监控"     [30]="SyncTV一起看片神器"
-	[31]="X-UI面板"             [32]="3X-UI面板"            [33]="Microsoft 365 E5 Renew X"
-	[34]="DecoTV私有影视"       [35]="Drawnix在线白板"
-	[36]="Portainer容器管理"    [37]="Cloudreve网盘"        [38]="Nextcloud私有网盘"
-	[39]="emby媒体管理"         [40]="jellyfin媒体管理"     [41]="AdGuardHome去广告"
-	[42]="Navidrome音乐服务器"  [43]="Vaultwarden密码管理"  [44]="StirlingPDF工具大全"
-	[45]="Speedtest测速面板"    [46]="PhotoPrism私有相册"   [47]="searxng聚合搜索"
-	[48]="Pingvin-Share文件分享" [49]="Dockge容器管理"       [50]="it-tools工具箱"
-	[51]="n8n自动化工作流"      [52]="OpenWebUI自托管AI"    [53]="Dify大模型知识库"
-	[54]="gitea私有代码仓库"    [55]="FileBrowser文件管理"  [56]="FRP内网穿透(服务端)"
-	[57]="WireGuard组网(服务端)" [58]="JumpServer堡垒机"     [59]="immich图片视频管理"
-	[60]="Syncthing文件同步"    [61]="Umami网站统计"        [62]="思源笔记"
-	[63]="SFTPGo文件传输"       [64]="Owncast自托管直播"     [65]="Deepseek AI大模型"
-	[66]="RocketChat聊天系统"   [67]="Gopeed高速下载"       [68]="2FAuth二步验证器"
-	[69]="ZFile在线网盘"        [70]="Nexterm远程连接"      [71]="JitsiMeet视频会议"
-	[72]="Stream四层代理转发"   [73]="FileCodeBox文件快递"  [74]="Matrix去中心化聊天"
-	[75]="yt-dlp视频下载"       [76]="paperless文档管理"    [77]="Wallos财务管理"
-	[78]="PairDrop文件传输"      [79]="Dufs静态文件服务器"   [80]="PandaWiki文档管理"
-	[81]="linkwarden书签管理"   [82]="VoceChat聊天系统"     [83]="Karakeep书签管理"
-	[84]="NewAPI大模型资产管理" [85]="RAGFlow知识库"        [86]="AstrBot聊天机器人"
-	[87]="LangBot聊天机器人"    [88]="多格式文件转换"       [89]="LibreSpeed测速"
-	[90]="gpt-load AI透明代理"  [91]="补货监控工具"         [92]="PVE虚拟化管理"
-	[93]="DSM群晖虚拟机"        [94]="在线DOS老游戏"        [95]="迅雷离线下载"
-	[96]="小雅Alist全家桶"      [97]="Bililive直播录制"     [98]="极简朋友圈"
-	[99]="PanSou网盘搜索"       [100]="简单图床lskypro"     [101]="禅道项目管理"
-	[102]="QD-Today定时任务"    [103]="耗子管理面板"        [104]="AMH建站面板"
-	[105]="在线翻译服务器"      [106]="AI视频生成工具"      [107]="RustDesk远程桌面"
-	[108]="Firefox浏览器"       [109]="DPanel容器管理"      [110]="普罗米修斯监控"
+	[1]="1Panel闈㈡澘"           [2]="瀹濆闈㈡澘"             [3]="aaPanel闈㈡澘"
+	[4]="NginxProxyManager闈㈡澘" [5]="OpenList闈㈡澘"         [6]="WebTop杩滅▼妗岄潰缃戦〉鐗?
+	[7]="Komari鐩戞帶"            [8]="qbittorrent绂荤嚎涓嬭浇"  [9]="Poste.io閭欢鏈嶅姟鍣ㄧ▼搴?
+	[10]="闈掗緳闈㈡澘"             [11]="Code-Server(缃戦〉vscode)" [12]="Looking Glass(娴嬮€熼潰鏉?"
+	[13]="闆锋睜WAF闃茬伀澧欓潰鏉?   [14]="onlyoffice鍦ㄧ嚎鍔炲叕OFFICE" [15]="UptimeKuma鐩戞帶宸ュ叿"
+	[16]="Memos缃戦〉澶囧繕褰?      [17]="drawio鍏嶈垂鐨勫湪绾垮浘琛ㄨ蒋浠? [18]="Sun-Panel瀵艰埅闈㈡澘"
+	[19]="webssh缃戦〉鐗圫SH杩炴帴宸ュ叿" [20]="LobeChatAI鑱婂ぉ鑱氬悎缃戠珯" [21]="MyIP宸ュ叿绠?
+	[22]="ghproxy(GitHub鍔犻€熺珯)" [23]="AllinSSL璇佷功绠＄悊骞冲彴" [24]="DDNS-GO"
+	[25]="Lucky"                [26]="LibreTV绉佹湁褰辫"      [27]="MoonTV绉佹湁褰辫"
+	[28]="Melody闊充箰绮剧伒"       [29]="Beszel鏈嶅姟鍣ㄧ洃鎺?     [30]="SyncTV涓€璧风湅鐗囩鍣?
+	[31]="X-UI闈㈡澘"             [32]="3X-UI闈㈡澘"            [33]="Microsoft 365 E5 Renew X"
+	[34]="DecoTV绉佹湁褰辫"       [35]="Drawnix鍦ㄧ嚎鐧芥澘"
+	[36]="Portainer瀹瑰櫒绠＄悊"    [37]="Cloudreve缃戠洏"        [38]="Nextcloud绉佹湁缃戠洏"
+	[39]="emby濯掍綋绠＄悊"         [40]="jellyfin濯掍綋绠＄悊"     [41]="AdGuardHome鍘诲箍鍛?
+	[42]="Navidrome闊充箰鏈嶅姟鍣?  [43]="Vaultwarden瀵嗙爜绠＄悊"  [44]="StirlingPDF宸ュ叿澶у叏"
+	[45]="Speedtest娴嬮€熼潰鏉?    [46]="PhotoPrism绉佹湁鐩稿唽"   [47]="searxng鑱氬悎鎼滅储"
+	[48]="Pingvin-Share鏂囦欢鍒嗕韩" [49]="Dockge瀹瑰櫒绠＄悊"       [50]="it-tools宸ュ叿绠?
+	[51]="n8n鑷姩鍖栧伐浣滄祦"      [52]="OpenWebUI鑷墭绠I"    [53]="Dify澶фā鍨嬬煡璇嗗簱"
+	[54]="gitea绉佹湁浠ｇ爜浠撳簱"    [55]="FileBrowser鏂囦欢绠＄悊"  [56]="FRP鍐呯綉绌块€?鏈嶅姟绔?"
+	[57]="WireGuard缁勭綉(鏈嶅姟绔?" [58]="JumpServer鍫″瀿鏈?     [59]="immich鍥剧墖瑙嗛绠＄悊"
+	[60]="Syncthing鏂囦欢鍚屾"    [61]="Umami缃戠珯缁熻"        [62]="鎬濇簮绗旇"
+	[63]="SFTPGo鏂囦欢浼犺緭"       [64]="Owncast鑷墭绠＄洿鎾?     [65]="Deepseek AI澶фā鍨?
+	[66]="RocketChat鑱婂ぉ绯荤粺"   [67]="Gopeed楂橀€熶笅杞?       [68]="2FAuth浜屾楠岃瘉鍣?
+	[69]="ZFile鍦ㄧ嚎缃戠洏"        [70]="Nexterm杩滅▼杩炴帴"      [71]="JitsiMeet瑙嗛浼氳"
+	[72]="Stream鍥涘眰浠ｇ悊杞彂"   [73]="FileCodeBox鏂囦欢蹇€?  [74]="Matrix鍘讳腑蹇冨寲鑱婂ぉ"
+	[75]="yt-dlp瑙嗛涓嬭浇"       [76]="paperless鏂囨。绠＄悊"    [77]="Wallos璐㈠姟绠＄悊"
+	[78]="PairDrop鏂囦欢浼犺緭"      [79]="Dufs闈欐€佹枃浠舵湇鍔″櫒"   [80]="PandaWiki鏂囨。绠＄悊"
+	[81]="linkwarden涔︾绠＄悊"   [82]="VoceChat鑱婂ぉ绯荤粺"     [83]="Karakeep涔︾绠＄悊"
+	[84]="NewAPI澶фā鍨嬭祫浜х鐞? [85]="RAGFlow鐭ヨ瘑搴?        [86]="AstrBot鑱婂ぉ鏈哄櫒浜?
+	[87]="LangBot鑱婂ぉ鏈哄櫒浜?    [88]="澶氭牸寮忔枃浠惰浆鎹?       [89]="LibreSpeed娴嬮€?
+	[90]="gpt-load AI閫忔槑浠ｇ悊"  [91]="琛ヨ揣鐩戞帶宸ュ叿"         [92]="PVE铏氭嫙鍖栫鐞?
+	[93]="DSM缇ゆ櫀铏氭嫙鏈?        [94]="鍦ㄧ嚎DOS鑰佹父鎴?        [95]="杩呴浄绂荤嚎涓嬭浇"
+	[96]="灏忛泤Alist鍏ㄥ妗?      [97]="Bililive鐩存挱褰曞埗"     [98]="鏋佺畝鏈嬪弸鍦?
+	[99]="PanSou缃戠洏鎼滅储"       [100]="绠€鍗曞浘搴妉skypro"     [101]="绂呴亾椤圭洰绠＄悊"
+	[102]="QD-Today瀹氭椂浠诲姟"    [103]="鑰楀瓙绠＄悊闈㈡澘"        [104]="AMH寤虹珯闈㈡澘"
+	[105]="鍦ㄧ嚎缈昏瘧鏈嶅姟鍣?      [106]="AI瑙嗛鐢熸垚宸ュ叿"      [107]="RustDesk杩滅▼妗岄潰"
+	[108]="Firefox娴忚鍣?       [109]="DPanel瀹瑰櫒绠＄悊"      [110]="鏅綏绫充慨鏂洃鎺?
 )
 
-# 注册当前 app 到全局表 (linux_app 入口处统一调一次)
+# 娉ㄥ唽褰撳墠 app 鍒板叏灞€琛?(linux_app 鍏ュ彛澶勭粺涓€璋冧竴娆?
 register_app() {
 	APP_REGISTRY_IDS+=("$1")
 	APP_REGISTRY_NAMES+=("$2")
 }
 
-# 清空 app 注册表
-clear_app_registry() {
+# 娓呯┖ app 娉ㄥ唽琛?clear_app_registry() {
 	APP_REGISTRY_IDS=()
 	APP_REGISTRY_NAMES=()
 }
 
-# 根据 app_id 查找显示名
-get_app_name_by_id() {
+# 鏍规嵁 app_id 鏌ユ壘鏄剧ず鍚?get_app_name_by_id() {
 	local id="$1"
 	local i
 	for i in "${!APP_REGISTRY_IDS[@]}"; do
@@ -627,14 +604,13 @@ get_app_name_by_id() {
 	echo "app_id=$id"
 }
 
-# 判断 app_id 是否已安装 (看 /home/docker/appno.txt)
+# 鍒ゆ柇 app_id 鏄惁宸插畨瑁?(鐪?/home/docker/appno.txt)
 is_app_installed() {
 	local id="$1"
 	[ -f /home/docker/appno.txt ] && grep -qxF "$id" /home/docker/appno.txt 2>/dev/null
 }
 
-# 获取 docker 容器的运行状态
-# 输出: "not_installed" | "running <started_iso>" | "<state>" (exited/paused/...)
+# 鑾峰彇 docker 瀹瑰櫒鐨勮繍琛岀姸鎬?# 杈撳嚭: "not_installed" | "running <started_iso>" | "<state>" (exited/paused/...)
 get_docker_app_status() {
 	if ! docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${docker_name}$"; then
 		echo "not_installed"
@@ -650,7 +626,7 @@ get_docker_app_status() {
 	fi
 }
 
-# 把秒数格式化成 "X天Y小时Z分" / "X小时Y分" / "X分Y秒"
+# 鎶婄鏁版牸寮忓寲鎴?"X澶℡灏忔椂Z鍒? / "X灏忔椂Y鍒? / "X鍒哬绉?
 format_uptime() {
 	local secs=$1
 	if [ -z "$secs" ] || ! [[ "$secs" =~ ^[0-9]+$ ]]; then
@@ -662,24 +638,24 @@ format_uptime() {
 	local m=$(((secs%3600)/60))
 	local s=$((secs%60))
 	if [ "$d" -gt 0 ]; then
-		# 天+小时+分 (分可选, 不显示秒)
+		# 澶?灏忔椂+鍒?(鍒嗗彲閫? 涓嶆樉绀虹)
 		if [ "$m" -gt 0 ]; then
-			echo "${d}天${h}小时${m}分"
+			echo "${d}澶?{h}灏忔椂${m}鍒?
 		elif [ "$h" -gt 0 ]; then
-			echo "${d}天${h}小时"
+			echo "${d}澶?{h}灏忔椂"
 		else
-			echo "${d}天"
+			echo "${d}澶?
 		fi
 	elif [ "$h" -gt 0 ]; then
-		echo "${h}小时${m}分"
+		echo "${h}灏忔椂${m}鍒?
 	elif [ "$m" -gt 0 ]; then
-		echo "${m}分${s}秒"
+		echo "${m}鍒?{s}绉?
 	else
-		echo "${s}秒"
+		echo "${s}绉?
 	fi
 }
 
-# 计算两个 ISO 时间戳之间的秒数
+# 璁＄畻涓や釜 ISO 鏃堕棿鎴充箣闂寸殑绉掓暟
 _secs_between() {
 	local from="$1" to="$2"
 	local from_ts to_ts
@@ -692,7 +668,7 @@ _secs_between() {
 	fi
 }
 
-# 渲染端口表格 (边框 + 多行单元格: 同一端口 v4 / v6 各占一行)
+# 娓叉煋绔彛琛ㄦ牸 (杈规 + 澶氳鍗曞厓鏍? 鍚屼竴绔彛 v4 / v6 鍚勫崰涓€琛?
 render_app_ports_table() {
 	_auto_register_fallback_port
 	if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
@@ -706,24 +682,24 @@ render_app_ports_table() {
 	local ipv4="${ipv4_address:-}"
 	local ipv6="${ipv6_address:-}"
 
-	# 列宽
+	# 鍒楀
 	local LBL_W=22
 	local PORT_W=6
 	local URL_W=44
 
-	# 绘制表格顶/中/底分隔线
+	# 缁樺埗琛ㄦ牸椤?涓?搴曞垎闅旂嚎
 	_hline() {
 		printf "${cyan}+%*s+%*s+%*s+${white}\n" \
 			$((LBL_W + 2)) '' $((PORT_W + 2)) '' $((URL_W + 2)) '' | tr ' ' '-'
 	}
 
-	# 绘制单行
+	# 缁樺埗鍗曡
 	_row() {
 		printf "${cyan}|${white} %-${LBL_W}s ${cyan}|${white} %-${PORT_W}s ${cyan}|${white} %-${URL_W}s ${cyan}|${white}\n" "$1" "$2" "$3"
 	}
 
 	_hline
-	_row "标签" "端口" "访问地址"
+	_row "鏍囩" "绔彛" "璁块棶鍦板潃"
 	_hline
 
 	local i label port v4 v6
@@ -734,28 +710,28 @@ render_app_ports_table() {
 		v6=""
 		[ -n "$ipv4" ] && v4="http://$ipv4:$port"
 		[ -n "$ipv6" ] && v6="http://[$ipv6]:$port"
-		# 第一行带 label/port
+		# 绗竴琛屽甫 label/port
 		if [ -n "$v4" ]; then
 			_row "$label" "$port" "$v4"
-			# v6 单独占一行 (空 label/port)
+			# v6 鍗曠嫭鍗犱竴琛?(绌?label/port)
 			[ -n "$v6" ] && _row "" "" "$v6"
 		elif [ -n "$v6" ]; then
 			_row "$label" "$port" "$v6"
 		else
-			_row "$label" "$port" "(本机无可用 IP)"
+			_row "$label" "$port" "(鏈満鏃犲彲鐢?IP)"
 		fi
 		_hline
 	done
 }
 
-# 渲染应用运行状态行 (详情页用)
-# 输出: "Docker 状态: running (已运行 3天 4小时)" / "Docker 状态: exited" / ...
+# 娓叉煋搴旂敤杩愯鐘舵€佽 (璇︽儏椤电敤)
+# 杈撳嚭: "Docker 鐘舵€? running (宸茶繍琛?3澶?4灏忔椂)" / "Docker 鐘舵€? exited" / ...
 render_app_status_line() {
 	local status
 	status=$(get_docker_app_status)
 	case "$status" in
 		not_installed)
-			echo -e "${red}未安装${white}"
+			echo -e "${red}鏈畨瑁?{white}"
 			;;
 		running\ *)
 			local started="${status#running }"
@@ -763,13 +739,13 @@ render_app_status_line() {
 			secs=$(_secs_between "$started" "$(date -Iseconds)")
 			local uptime
 			uptime=$(format_uptime "$secs")
-			echo -e "${green}运行中${white} (已运行 ${uptime})"
+			echo -e "${green}杩愯涓?{white} (宸茶繍琛?${uptime})"
 			;;
 		exited)
-			echo -e "${yellow}已停止${white}"
+			echo -e "${yellow}宸插仠姝?{white}"
 			;;
 		paused)
-			echo -e "${yellow}已暂停${white}"
+			echo -e "${yellow}宸叉殏鍋?{white}"
 			;;
 		*)
 			echo -e "${yellow}${status}${white}"
@@ -777,7 +753,7 @@ render_app_status_line() {
 	esac
 }
 
-# 检查 /home/web/conf.d/ 下哪些域名 conf 引用了此端口, 输出 https://<domain>
+# 妫€鏌?/home/web/conf.d/ 涓嬪摢浜涘煙鍚?conf 寮曠敤浜嗘绔彛, 杈撳嚭 https://<domain>
 _render_domain_access() {
 	local port="$1"
 	if [ -z "$port" ]; then return; fi
@@ -794,19 +770,18 @@ _render_domain_access() {
 }
 
 
-# Docker 应用管理 (合并版)
+# Docker 搴旂敤绠＄悊 (鍚堝苟鐗?
 # ----------------------------------------------------------------------------
-# 兼容两种应用风格, 通过 compose 标志自动选择路径:
-#   1) 单容器风格 (94 个老 app): 调用方定义 docker_run, 框架用默认实现
-#      app_id / docker_name / docker_img / docker_port / docker_describe
+# 鍏煎涓ょ搴旂敤椋庢牸, 閫氳繃 compose 鏍囧織鑷姩閫夋嫨璺緞:
+#   1) 鍗曞鍣ㄩ鏍?(94 涓€?app): 璋冪敤鏂瑰畾涔?docker_run, 妗嗘灦鐢ㄩ粯璁ゅ疄鐜?#      app_id / docker_name / docker_img / docker_port / docker_describe
 #      docker_url / docker_use / docker_passwd / app_size
-#   2) compose 风格 (8 个老 app): 调用方定义 docker_app_install/update/uninstall
+#   2) compose 椋庢牸 (8 涓€?app): 璋冪敤鏂瑰畾涔?docker_app_install/update/uninstall
 #      app_id / app_name / app_text / app_url / docker_name / docker_port / app_size
-# 旧版变量名 (docker_name/docker_describe/docker_url) 与新版 (app_name/app_text/app_url)
-# 通过 ${var:-fallback} 兼容, 老的 xxx_app 不用改一行.
+# 鏃х増鍙橀噺鍚?(docker_name/docker_describe/docker_url) 涓庢柊鐗?(app_name/app_text/app_url)
+# 閫氳繃 ${var:-fallback} 鍏煎, 鑰佺殑 xxx_app 涓嶇敤鏀逛竴琛?
 # ----------------------------------------------------------------------------
 
-# 单容器风格: 默认安装 (外层已 read app_port → docker_port)
+# 鍗曞鍣ㄩ鏍? 榛樿瀹夎 (澶栧眰宸?read app_port 鈫?docker_port)
 _docker_app_default_install() {
 	install jq
 	install_docker
@@ -815,22 +790,22 @@ _docker_app_default_install() {
 	echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
 }
 
-# 单容器风格: 默认更新 (删容器+删镜像+重跑 docker_run)
+# 鍗曞鍣ㄩ鏍? 榛樿鏇存柊 (鍒犲鍣?鍒犻暅鍍?閲嶈窇 docker_run)
 _docker_app_default_update() {
 	docker rm -f "$docker_name"
 	docker rmi -f "$docker_img"
 	docker_run
 }
 
-# 单容器风格: 默认卸载 (删容器+删镜像+清数据目录)
+# 鍗曞鍣ㄩ鏍? 榛樿鍗歌浇 (鍒犲鍣?鍒犻暅鍍?娓呮暟鎹洰褰?
 _docker_app_default_uninstall() {
 	docker rm -f "$docker_name"
 	docker rmi -f "$docker_img"
 	rm -rf "/home/docker/$docker_name"
 }
 
-# 安装/更新后处理: 优先新式钩子 app_post_install / app_post_install_password,
-# 兜底走老式 $docker_use / $docker_passwd (eval 执行)
+# 瀹夎/鏇存柊鍚庡鐞? 浼樺厛鏂板紡閽╁瓙 app_post_install / app_post_install_password,
+# 鍏滃簳璧拌€佸紡 $docker_use / $docker_passwd (eval 鎵ц)
 _docker_app_post_install() {
 	if declare -F app_post_install >/dev/null 2>&1; then
 		app_post_install
@@ -844,12 +819,12 @@ _docker_app_post_install() {
 	fi
 }
 
-# 统一入口
-# 调用方需在调用前定义好变量, 可选定义 docker_app_install/update/uninstall (compose)
-# 或 docker_run (单容器). 由 declare -F 自动检测.
-# 显示标题用变量: 优先 app_* 新名, 兼容老 docker_* 命名.
+# 缁熶竴鍏ュ彛
+# 璋冪敤鏂归渶鍦ㄨ皟鐢ㄥ墠瀹氫箟濂藉彉閲? 鍙€夊畾涔?docker_app_install/update/uninstall (compose)
+# 鎴?docker_run (鍗曞鍣?. 鐢?declare -F 鑷姩妫€娴?
+# 鏄剧ず鏍囬鐢ㄥ彉閲? 浼樺厛 app_* 鏂板悕, 鍏煎鑰?docker_* 鍛藉悕.
 docker_app() {
-	# 选路径: 优先 compose 三函数, 否则用单容器默认实现
+	# 閫夎矾寰? 浼樺厛 compose 涓夊嚱鏁? 鍚﹀垯鐢ㄥ崟瀹瑰櫒榛樿瀹炵幇
 	local _install_cmd
 	if declare -F docker_app_install >/dev/null 2>&1; then
 		_install_cmd="docker_app_install"
@@ -869,80 +844,77 @@ docker_app() {
 		_uninstall_cmd="_docker_app_default_uninstall"
 	fi
 
-	# 显示标题用变量: 兼容老 (docker_*) 与新 (app_*) 两种命名
+	# 鏄剧ず鏍囬鐢ㄥ彉閲? 鍏煎鑰?(docker_*) 涓庢柊 (app_*) 涓ょ鍛藉悕
 	local _title="${app_name:-$docker_name}"
 	local _text="${app_text:-$docker_describe}"
 	local _url="${app_url:-$docker_url}"
 
 	while true; do
 		clear
-		# 先执行检查函数, 确定容器状态
-		check_docker_app
+		# 鍏堟墽琛屾鏌ュ嚱鏁? 纭畾瀹瑰櫒鐘舵€?		check_docker_app
 		check_docker_image_update "$docker_name"
 
-		# 标题行 + 状态
-		echo -e "$_title  $check_docker  $update_status"
+		# 鏍囬琛?+ 鐘舵€?		echo -e "$_title  $check_docker  $update_status"
 		echo "$_text"
 		echo "$_url"
 
-		# 已安装时: 状态行 + 访问入口表
-		if check_docker_app; then
-			# 容器运行状态 (running/exited/...)
+		# 宸插畨瑁呮椂: 鐘舵€佽 + 璁块棶鍏ュ彛琛?		if check_docker_app; then
+			# 瀹瑰櫒杩愯鐘舵€?(running/exited/...)
 			local _status
 			_status=$(get_docker_app_status)
 			if [ "$_status" != "not_installed" ]; then
 				local _line
 				_line=$(render_app_status_line)
 				echo ""
-				echo -e "${cyan}应用状态${white}:  $_line"
+				echo -e "${cyan}搴旂敤鐘舵€?{white}:  $_line"
 			fi
 
-			# 域名访问 (扫 /home/web/conf.d/)
+			# 鍩熷悕璁块棶 (鎵?/home/web/conf.d/)
 			local _primary
 			_primary=$(get_primary_port)
 			local _domain
 			_domain=$(_render_domain_access "$_primary")
 			if [ -n "$_domain" ]; then
-				echo -e "${cyan}域名访问${white}:  ${green}$_domain${white}"
+				echo -e "${cyan}鍩熷悕璁块棶${white}:  ${green}$_domain${white}"
 			fi
 
-			# 端口表 (支持多端口)
+			# 绔彛琛?(鏀寔澶氱鍙?
 			render_app_ports_table
 		fi
 
 		echo ""
 		echo -e "${cyan}------------------------------------------------------${white}"
 
-		# 根据容器是否存在显示不同菜单
-		if check_docker_app; then  # 容器存在 (返回0)
-			echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
-		else  # 容器不存在 (返回非0)
-			echo -e "${green}1. 安装${white}"
+		# 鏍规嵁瀹瑰櫒鏄惁瀛樺湪鏄剧ず涓嶅悓鑿滃崟
+		if check_docker_app; then  # 瀹瑰櫒瀛樺湪 (杩斿洖0)
+			echo -e "${green}1. 鏇存柊${white}              ${red}2. 鍗歌浇${white}"
+		else  # 瀹瑰櫒涓嶅瓨鍦?(杩斿洖闈?)
+			echo -e "${green}1. 瀹夎${white}"
 		fi
 
 		echo -e "${pink}------------------------------------------------------${white}"
 
-		# 仅当容器存在时显示域名和端口相关操作
+		# 浠呭綋瀹瑰櫒瀛樺湪鏃舵樉绀哄煙鍚嶅拰绔彛鐩稿叧鎿嶄綔
 		if check_docker_app; then
-			echo -e "5. 添加域名访问      6. 删除域名访问"
-			echo -e "7. 允许IP+端口访问   8. 阻止IP+端口访问"
+			echo -e "5. 娣诲姞鍩熷悕璁块棶      6. 鍒犻櫎鍩熷悕璁块棶"
+			echo -e "7. 鍏佽IP+绔彛璁块棶   8. 闃绘IP+绔彛璁块棶"
 			echo -e "${pink}------------------------------------------------------${white}"
 		fi
 
-		echo -e "${yellow}0. 返回上一级菜单${white}"
+		echo -e "${yellow}0. 杩斿洖涓婁竴绾ц彍鍗?{white}"
 		echo -e "${pink}------------------------------------------------------${white}"
 
-		read -e -p "请输入你的选择: " choice
+		read -e -p "璇疯緭鍏ヤ綘鐨勯€夋嫨: " choice
 
-		# 解析主端口 (供 ldnmp_Proxy 等使用)
+		# 瑙ｆ瀽涓荤鍙?(渚?ldnmp_Proxy 绛変娇鐢?
 		local _primary_port
 		_primary_port=$(get_primary_port)
 
-		# 根据容器状态限制可执行的选项
+		# 鏍规嵁瀹瑰櫒鐘舵€侀檺鍒跺彲鎵ц鐨勯€夐」
 		if check_docker_app; then
-			# 容器存在时允许的操作
+			# 瀹瑰櫒瀛樺湪鏃跺厑璁哥殑鎿嶄綔
 			case $choice in
-				1)  # 更新
+				1)  # 鏇存柊
 					"$_update_cmd"
 					if check_docker_app; then
 						add_app_id
@@ -950,46 +922,45 @@ docker_app() {
 					fi
 
 					clear
-					echo "$docker_name 已经更新完成"
+					echo "$docker_name 宸茬粡鏇存柊瀹屾垚"
 					render_app_ports_table
 					echo ""
 					_docker_app_post_install
 					;;
-				2)  # 卸载
+				2)  # 鍗歌浇
 					"$_uninstall_cmd"
 					rm -f /home/docker/${docker_name}_port.conf
 					rm -f /home/docker/${docker_name}_ports.txt
 					sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-					echo "应用已卸载"
+					echo "搴旂敤宸插嵏杞?
 					;;
-				5)  # 添加域名访问
-					echo "${docker_name}域名访问设置"
+				5)  # 娣诲姞鍩熷悕璁块棶
+					echo "${docker_name}鍩熷悕璁块棶璁剧疆"
 					add_yuming
 					ldnmp_Proxy "${yuming}" 127.0.0.1 "${_primary_port}"
 					block_container_port "$docker_name" "$ipv4_address"
 					;;
-				6)  # 删除域名访问
-					echo "域名格式 example.com 不带https://"
+				6)  # 鍒犻櫎鍩熷悕璁块棶
+					echo "鍩熷悕鏍煎紡 example.com 涓嶅甫https://"
 					web_del
 					;;
-				7)  # 允许IP+端口访问
+				7)  # 鍏佽IP+绔彛璁块棶
 					clear_container_rules "$docker_name" "$ipv4_address"
 					;;
-				8)  # 阻止IP+端口访问
+				8)  # 闃绘IP+绔彛璁块棶
 					block_container_port "$docker_name" "$ipv4_address"
 					;;
-				0)  # 返回上一级
-					break
+				0)  # 杩斿洖涓婁竴绾?					break
 					;;
-				*)  # 无效选项
-					echo -e "${red}无效选择, 请重新输入 !${white}"
+				*)  # 鏃犳晥閫夐」
+					echo -e "${red}鏃犳晥閫夋嫨, 璇烽噸鏂拌緭鍏?!${white}"
 					sleep 1
 					;;
 			esac
 		else
-			# 容器不存在时仅允许安装和返回操作
+			# 瀹瑰櫒涓嶅瓨鍦ㄦ椂浠呭厑璁稿畨瑁呭拰杩斿洖鎿嶄綔
 			case $choice in
-				1)  # 全新安装
+				1)  # 鍏ㄦ柊瀹夎
 					check_disk_space "$app_size"
 
 					"$_install_cmd"
@@ -999,16 +970,15 @@ docker_app() {
 					fi
 
 					clear
-					echo "$docker_name 已经安装完成"
+					echo "$docker_name 宸茬粡瀹夎瀹屾垚"
 					render_app_ports_table
 					echo ""
 					_docker_app_post_install
 					;;
-				0)  # 返回上一级
-					break
+				0)  # 杩斿洖涓婁竴绾?					break
 					;;
-				*)  # 无效选项
-					echo -e "${red}无效选择, 当前只能选择安装或返回 !${white}"
+				*)  # 鏃犳晥閫夐」
+					echo -e "${red}鏃犳晥閫夋嫨, 褰撳墠鍙兘閫夋嫨瀹夎鎴栬繑鍥?!${white}"
 					sleep 1
 					;;
 			esac
@@ -1018,9 +988,9 @@ docker_app() {
 }
 
 ##############################
-########## 应用函数 ##########
+########## 搴旂敤鍑芥暟 ##########
 ##############################
-# 1panel面板
+# 1panel闈㈡澘
 1panel_app(){
 	local app_id="1"
 	local panel_path="command -v 1pctl"
@@ -1042,14 +1012,14 @@ docker_app() {
 	panel_manage
 }
 
-# 宝塔面板
+# 瀹濆闈㈡澘
 bt_app(){
 	local app_id="2"
-	local app_name="宝塔面板"
-	local app_text="宝塔面板是一款流行的国产 Linux 运维管理面板"
-	local app_url="官网介绍: https://www.bt.cn"
+	local app_name="瀹濆闈㈡澘"
+	local app_text="瀹濆闈㈡澘鏄竴娆炬祦琛岀殑鍥戒骇 Linux 杩愮淮绠＄悊闈㈡澘"
+	local app_url="瀹樼綉浠嬬粛: https://www.bt.cn"
 	local panel_path="[ -d "/www/server/panel" ]"
-	local panelname="宝塔面板"
+	local panelname="瀹濆闈㈡澘"
 	local panelurl="https://www.bt.cn"
 
 	panel_app_install(){
@@ -1068,12 +1038,12 @@ bt_app(){
 	panel_manage
 }
 
-# aapanel面板
+# aapanel闈㈡澘
 aapanel_app(){
 	local app_id="3"
-	local app_name="aaPanel面板"
-	local app_text="aaPanel 是宝塔面板的国际版, 界面英文, 适合海外用户"
-	local app_url="官网介绍: https://www.aapanel.com/"
+	local app_name="aaPanel闈㈡澘"
+	local app_text="aaPanel 鏄疂濉旈潰鏉跨殑鍥介檯鐗? 鐣岄潰鑻辨枃, 閫傚悎娴峰鐢ㄦ埛"
+	local app_url="瀹樼綉浠嬬粛: https://www.aapanel.com/"
 	local panel_path="[ -d "/www/server/panel" ]"
 	local panelname="aapanel"
 	local panelurl="https://www.aapanel.com/"
@@ -1094,17 +1064,15 @@ aapanel_app(){
 	panel_manage
 }
 
-# NginxProxyManager可视化面板
-npm_app(){
+# NginxProxyManager鍙鍖栭潰鏉?npm_app(){
 		local app_id="4"
-	local app_name="NginxProxyManager面板"
+	local app_name="NginxProxyManager闈㈡澘"
 		local docker_name="npm"
 		local docker_img="jc21/nginx-proxy-manager:latest"
 		local docker_port=81
 
 		docker_run() {
-			# app 自管端口: 让用户输入实际对外服务端口
-			read -e -p "服务端口 (默认 81): " _user_port
+			# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?			read -e -p "鏈嶅姟绔彛 (榛樿 81): " _user_port
 			_user_port=${_user_port:-81}
 			docker_port=$_user_port
 
@@ -1118,12 +1086,12 @@ npm_app(){
 				--restart=always \
 				$docker_img
 
-			# 注册到展示表 (app 自定 label)
-			add_app_port "Web 端口" "$docker_port"
+			# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+			add_app_port "Web 绔彛" "$docker_port"
 		}
 
-		local app_text="一个Nginx反向代理工具面板, 不支持添加域名访问."
-		local app_url="官网介绍: https://nginxproxymanager.com/"
+		local app_text="涓€涓狽ginx鍙嶅悜浠ｇ悊宸ュ叿闈㈡澘, 涓嶆敮鎸佹坊鍔犲煙鍚嶈闂?"
+		local app_url="瀹樼綉浠嬬粛: https://nginxproxymanager.com/"
 		local app_size="1"
 
 		docker_app
@@ -1132,14 +1100,13 @@ npm_app(){
 # openlist
 openlist_app(){
 		local app_id="5"
-	local app_name="OpenList面板"
+	local app_name="OpenList闈㈡澘"
 		local docker_name="openlist"
 		local docker_img="openlistteam/openlist:latest"
 		local docker_port=5244
 
 		docker_run() {
-			# app 自管端口: 让用户输入实际对外服务端口
-			read -e -p "服务端口 (默认 5244): " _user_port
+			# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?			read -e -p "鏈嶅姟绔彛 (榛樿 5244): " _user_port
 			_user_port=${_user_port:-5244}
 			docker_port=$_user_port
 
@@ -1155,33 +1122,32 @@ openlist_app(){
 				--restart=unless-stopped \
 				openlistteam/openlist:latest
 
-			# 注册到展示表 (app 自定 label)
-			add_app_port "Web 端口" "$docker_port"
+			# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+			add_app_port "Web 绔彛" "$docker_port"
 		}
 
-		local app_text="一个支持多种存储, 支持网页浏览和 WebDAV 的文件列表程序, 由 gin 和 Solidjs 驱动"
-		local app_url="官网介绍: https://github.com/OpenListTeam/OpenList"
+		local app_text="涓€涓敮鎸佸绉嶅瓨鍌? 鏀寔缃戦〉娴忚鍜?WebDAV 鐨勬枃浠跺垪琛ㄧ▼搴? 鐢?gin 鍜?Solidjs 椹卞姩"
+		local app_url="瀹樼綉浠嬬粛: https://github.com/OpenListTeam/OpenList"
 		local app_size="1"
 
 		docker_app
 }
 
-# webtop(浏览器访问linux系统)
+# webtop(娴忚鍣ㄨ闂甽inux绯荤粺)
 webtop_app(){
 		local app_id="6"
-	local app_name="WebTop远程桌面网页版"
+	local app_name="WebTop杩滅▼妗岄潰缃戦〉鐗?
 		local docker_name="webtop-ubuntu"
 		local docker_img="lscr.io/linuxserver/webtop:ubuntu-kde"
 		local docker_port=3006
 
 		docker_run() {
-			# app 自管端口: 让用户输入实际对外服务端口
-			read -e -p "服务端口 (默认 3006): " _user_port
+			# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?			read -e -p "鏈嶅姟绔彛 (榛樿 3006): " _user_port
 			_user_port=${_user_port:-3006}
 			docker_port=$_user_port
 
-			read -e -p "设置登录用户名: " admin
-			read -e -p "设置登录用户密码: " admin_password
+			read -e -p "璁剧疆鐧诲綍鐢ㄦ埛鍚? " admin
+			read -e -p "璁剧疆鐧诲綍鐢ㄦ埛瀵嗙爜: " admin_password
 			docker run -d \
 				--name=webtop-ubuntu \
 				--security-opt seccomp=unconfined \
@@ -1199,133 +1165,14 @@ webtop_app(){
 				--restart unless-stopped \
 				lscr.io/linuxserver/webtop:ubuntu-kde
 
-			# 注册到展示表 (app 自定 label)
-			add_app_port "Web 端口" "$docker_port"
+			# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+			add_app_port "Web 绔彛" "$docker_port"
 		}
 
-		local app_text="webtop基于Ubuntu的容器.若IP无法访问, 请添加域名访问."
-		local app_url="官网介绍: https://docs.linuxserver.io/images/docker-webtop/"
+		local app_text="webtop鍩轰簬Ubuntu鐨勫鍣?鑻P鏃犳硶璁块棶, 璇锋坊鍔犲煙鍚嶈闂?"
+		local app_url="瀹樼綉浠嬬粛: https://docs.linuxserver.io/images/docker-webtop/"
 		local app_size="2"
 		docker_app
-}
-
-# Komari监控
-komari_app(){
-	clear
-	local app_id="7"
-	local app_name="Komari监控"
-	local docker_name="komari"
-	local docker_img="ghcr.io/komari-monitor/komari:latest"
-	local docker_port=25774
-	local app_text="Komari - 轻量自托管的服务器监控与告警平台"
-	local app_url="官网介绍: https://github.com/komari-monitor/komari"
-
-	# 探活: 容器是否存在
-	check_komari_installed() {
-		if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${docker_name}$"; then
-			return 0
-		else
-			return 1
-		fi
-	}
-
-	# 解析容器对外端口 (宿主机侧)
-	get_komari_port() {
-		docker port $docker_name 2>/dev/null | awk -F'[:]' '/->/ {print $NF}' | uniq
-	}
-
-	while true; do
-		local _state _hp _user_port choice
-		clear
-		# 顶部状态
-		if check_komari_installed; then
-			_state=$(docker inspect -f '{{.State.Status}}' $docker_name 2>/dev/null || echo "unknown")
-			if [ "$_state" = "running" ]; then
-				echo -e "Komari监控  状态: ${green}已安装 (运行中)${white}"
-			else
-				echo -e "Komari监控  状态: ${yellow}已安装 (${_state})${white}"
-			fi
-			# 显示访问地址
-			_hp=$(get_komari_port)
-			if [ -n "$_hp" ]; then
-				ip_address
-				echo -e "${cyan}面板访问${white}: ${green}http://${ipv4_address}:${_hp}${white}"
-			fi
-		else
-			echo -e "Komari监控  状态: ${grey}未安装${white}"
-		fi
-		echo "${app_text}"
-		echo "${app_url}"
-		echo ""
-
-		# 菜单
-		echo -e "${pink}------------------------${white}"
-		echo "1. 安装           2. 卸载           3. 帮助"
-		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
-		echo -e "${pink}------------------------${white}"
-		read -e -p "输入你的选择: " choice
-
-		case $choice in
-			1)  # 安装
-				if check_komari_installed; then
-					echo -e "${yellow}已经安装过, 无需重复安装${white}"
-					break_end
-					continue
-				fi
-				read -e -p "服务端口 (默认 25774): " _user_port
-				_user_port=${_user_port:-25774}
-				docker_port=$_user_port
-
-				mkdir -p /home/docker/komari
-				docker run -d \
-					--name komari \
-					--restart=unless-stopped \
-					-v /home/docker/komari:/app/data \
-					-p ${docker_port}:25774 \
-					ghcr.io/komari-monitor/komari:latest
-				add_app_id
-				clear
-				echo "Komari 已安装完成"
-				echo "可在状态栏查看访问地址"
-				break_end
-				;;
-			2)  # 卸载
-				docker rm -f $docker_name 2>/dev/null
-				docker rmi -f $docker_img 2>/dev/null
-				rm -rf /home/docker/komari
-				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-				clear
-				echo "Komari 已卸载"
-				break_end
-				;;
-			3)  # 帮助
-				clear
-				echo -e "${cyan}============ Komari 帮助 ============${white}"
-				echo ""
-				echo -e "${green}[1] 查看初始登录信息${white}"
-				echo "    容器启动后, 用以下命令查看初始账号/密码:"
-				echo ""
-				echo "      docker logs komari"
-				echo ""
-				echo -e "${green}[2] 卸载 Agent (在被控端机器上执行)${white}"
-				echo "    当你在面板端添加好一台被控服务器, 它会以 systemd 服务方式运行"
-				echo "    Agent (komari-agent), 如需在客户端上彻底卸载, 执行以下命令:"
-				echo ""
-				echo "      sudo systemctl stop komari-agent && \\"
-				echo "      sudo systemctl disable komari-agent && \\"
-				echo "      sudo rm -f /etc/systemd/system/komari-agent.service && \\"
-				echo "      sudo systemctl daemon-reload && \\"
-				echo "      sudo rm -rf /opt/komari/agent /var/log/komari"
-				echo ""
-				echo -e "${pink}------------------------${white}"
-				read -n 1 -s -r -p "按任意键返回..."
-				;;
-			*)
-				break
-				;;
-		esac
-	done
 }
 
 # PairDrop文件传输
@@ -1360,17 +1207,48 @@ pairdrop_app(){
 	docker_app
 }
 
+# Komari鐩戞帶
+komari_app(){
+	local app_id="7"
+	local app_name="Komari鐩戞帶"
+	local docker_name="komari"
+	local docker_img="ghcr.io/komari-monitor/komari:latest"
+	local docker_port=25774
+
+	docker_run() {
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 25774): " _user_port
+		_user_port=${_user_port:-25774}
+		docker_port=$_user_port
+
+		mkdir -p /home/docker/komari && \
+		docker run -d \
+			--name komari \
+			--restart=unless-stopped \
+			-v /home/docker/komari:/app/data \
+			-p ${docker_port}:25774 \
+			ghcr.io/komari-monitor/komari:latest
+
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
+	}
+
+	local app_text="Komari - 杞婚噺鑷墭绠＄殑鏈嶅姟鍣ㄧ洃鎺т笌鍛婅骞冲彴"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/komari-monitor/komari"
+	local app_size="1"
+	docker_app
+}
+
 
 
 # qbittorrent
 qb_app(){
 	local app_id="8"
-	local app_name="qbittorrent离线下载"
+	local app_name="qbittorrent绂荤嚎涓嬭浇"
 	local docker_name="qbittorrent"
 	local docker_img="lscr.io/linuxserver/qbittorrent:latest"
 	docker_run() {
-		# 让用户输入 Web管理界面 端口 (默认 8081)
-		read -e -p "设置Web管理界面端口 (默认8081): " web_port
+		# 璁╃敤鎴疯緭鍏?Web绠＄悊鐣岄潰 绔彛 (榛樿 8081)
+		read -e -p "璁剧疆Web绠＄悊鐣岄潰绔彛 (榛樿8081): " web_port
 		web_port=${web_port:-8081}
 
 		docker run -d \
@@ -1388,69 +1266,68 @@ qb_app(){
 			--restart unless-stopped \
 			lscr.io/linuxserver/qbittorrent:latest
 
-		# Web面板端口
-		add_app_port "Web管理界面" "$web_port"
-		# BT 端口保持硬编码 (暂不改)
-		add_app_port "BT下载端口 (TCP+UDP)" 56881
+		# Web闈㈡澘绔彛
+		add_app_port "Web绠＄悊鐣岄潰" "$web_port"
+		# BT 绔彛淇濇寔纭紪鐮?(鏆備笉鏀?
+		add_app_port "BT涓嬭浇绔彛 (TCP+UDP)" 56881
 	}
 
-	local app_text="qbittorrent离线BT磁力下载服务"
-	local app_url="官网介绍: https://hub.docker.com/r/linuxserver/qbittorrent"
+	local app_text="qbittorrent绂荤嚎BT纾佸姏涓嬭浇鏈嶅姟"
+	local app_url="瀹樼綉浠嬬粛: https://hub.docker.com/r/linuxserver/qbittorrent"
 	local app_size="1"
 	docker_app
 }
 
-# Poste.io邮件服务器程序
-poste_mail_app(){
+# Poste.io閭欢鏈嶅姟鍣ㄧ▼搴?poste_mail_app(){
 	clear
 	install telnet
 	local app_id="9"
-	local app_name="Poste.io邮件服务器程序"
-	local app_text="poste.io 是一个开源的邮件服务器解决方案, 支持 Webmail / 反垃圾 / 病毒扫描"
-	local app_url="官网介绍: https://poste.io/"
+	local app_name="Poste.io閭欢鏈嶅姟鍣ㄧ▼搴?
+	local app_text="poste.io 鏄竴涓紑婧愮殑閭欢鏈嶅姟鍣ㄨВ鍐虫柟妗? 鏀寔 Webmail / 鍙嶅瀮鍦?/ 鐥呮瘨鎵弿"
+	local app_url="瀹樼綉浠嬬粛: https://poste.io/"
 	local docker_name="mailserver"
 	while true; do
 		check_docker_app
 		check_docker_image_update $docker_name
 
 		clear
-		echo -e "邮局服务 $check_docker $update_status"
-		echo "poste.io 是一个开源的邮件服务器解决方案, "
-		echo "官网: https://poste.io/"
+		echo -e "閭眬鏈嶅姟 $check_docker $update_status"
+		echo "poste.io 鏄竴涓紑婧愮殑閭欢鏈嶅姟鍣ㄨВ鍐虫柟妗? "
+		echo "瀹樼綉: https://poste.io/"
 
 		echo ""
-		echo "端口检测"
+		echo "绔彛妫€娴?
 		port=25
 		timeout=3
 		if echo "quit" | timeout $timeout telnet smtp.qq.com $port | grep 'Connected'; then
-			echo -e "${green}端口 $port 当前可用${white}"
+			echo -e "${green}绔彛 $port 褰撳墠鍙敤${white}"
 		else
-			echo -e "${red}端口 $port 当前不可用${white}"
+			echo -e "${red}绔彛 $port 褰撳墠涓嶅彲鐢?{white}"
 		fi
 		echo ""
 
 		if docker ps -a --format '{{.Names}}' | grep -q "$docker_name" >/dev/null 2>&1; then
 			yuming=$(cat /home/docker/mail.txt)
-			echo "访问地址: "
+			echo "璁块棶鍦板潃: "
 			echo "https://$yuming"
 		fi
 
 		echo -e "${pink}------------------------${white}"
-		echo "1. 安装           2. 更新           3. 卸载"
+		echo "1. 瀹夎           2. 鏇存柊           3. 鍗歌浇"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.     ${white}杩斿洖涓婁竴绾ц彍鍗?
 		echo -e "${pink}------------------------${white}"
-		read -e -p "输入你的选择: " choice
+		read -e -p "杈撳叆浣犵殑閫夋嫨: " choice
 
 		case $choice in
 			1)
 				check_disk_space 2
-				read -e -p "请设置邮箱域名 例如 mail.yuming.com : " yuming
+				read -e -p "璇疯缃偖绠卞煙鍚?渚嬪 mail.yuming.com : " yuming
 				mkdir -p /home/docker
 				echo "$yuming" > /home/docker/mail.txt
 				echo -e "${pink}------------------------${white}"
 				ip_address
-				echo "先解析这些DNS记录"
+				echo "鍏堣В鏋愯繖浜汥NS璁板綍"
 				echo "A           mail            $ipv4_address"
 				echo "CNAME       imap            $yuming"
 				echo "CNAME       pop             $yuming"
@@ -1460,7 +1337,7 @@ poste_mail_app(){
 				echo "TXT         ?               ?"
 				echo ""
 				echo -e "${pink}------------------------${white}"
-				echo "按任意键继续..."
+				echo "鎸変换鎰忛敭缁х画..."
 				read -n 1 -s -r -p ""
 
 				install jq
@@ -1478,9 +1355,9 @@ poste_mail_app(){
 				add_app_id
 
 				clear
-				echo "poste.io已经安装完成"
+				echo "poste.io宸茬粡瀹夎瀹屾垚"
 				echo -e "${pink}------------------------${white}"
-				echo "您可以使用以下地址访问poste.io:"
+				echo "鎮ㄥ彲浠ヤ娇鐢ㄤ互涓嬪湴鍧€璁块棶poste.io:"
 				echo "https://$yuming"
 				echo ""
 
@@ -1502,9 +1379,9 @@ poste_mail_app(){
 				add_app_id
 
 				clear
-				echo "poste.io已经安装完成"
+				echo "poste.io宸茬粡瀹夎瀹屾垚"
 				echo -e "${pink}------------------------${white}"
-				echo "您可以使用以下地址访问poste.io:"
+				echo "鎮ㄥ彲浠ヤ娇鐢ㄤ互涓嬪湴鍧€璁块棶poste.io:"
 				echo "https://$yuming"
 				echo ""
 				;;
@@ -1515,7 +1392,7 @@ poste_mail_app(){
 				rm -rf /home/docker/mail
 
 				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-				echo "应用已卸载"
+				echo "搴旂敤宸插嵏杞?
 				;;
 
 			*)
@@ -1526,17 +1403,16 @@ poste_mail_app(){
 	done
 }
 
-# 青龙面板
+# 闈掗緳闈㈡澘
 qinglong_app(){
 	local app_id="10"
-	local app_name="青龙面板"
+	local app_name="闈掗緳闈㈡澘"
 	local docker_name="qinglong"
 	local docker_img="whyour/qinglong:latest"
 	local docker_port=5700
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 5700): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 5700): " _user_port
 		_user_port=${_user_port:-5700}
 		docker_port=$_user_port
 
@@ -1548,92 +1424,88 @@ qinglong_app(){
 			--restart unless-stopped \
 			whyour/qinglong:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="青龙面板是一个定时任务管理平台"
-	local app_url="官网介绍: ${url_proxy}github.com/whyour/qinglong"
+	local app_text="闈掗緳闈㈡澘鏄竴涓畾鏃朵换鍔＄鐞嗗钩鍙?
+	local app_url="瀹樼綉浠嬬粛: ${url_proxy}github.com/whyour/qinglong"
 	local app_size="1"
 	docker_app
 }
 
-# vscode网页版(code-server)
+# vscode缃戦〉鐗?code-server)
 code_server_app(){
 	local app_id="11"
-	local app_name="Code-Server(网页vscode)"
+	local app_name="Code-Server(缃戦〉vscode)"
 	local docker_name="code-server"
 	local docker_img="codercom/code-server"
 	local docker_port=8021
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8021): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8021): " _user_port
 		_user_port=${_user_port:-8021}
 		docker_port=$_user_port
 
 		docker run -d -p ${docker_port}:8080 -v /home/docker/vscode-web:/home/coder/.local/share/code-server --name vscode-web --restart always codercom/code-server
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="VScode是一款强大的在线代码编写工具"
-	local app_url="官网介绍: ${url_proxy}github.com/coder/code-server"
+	local app_text="VScode鏄竴娆惧己澶х殑鍦ㄧ嚎浠ｇ爜缂栧啓宸ュ叿"
+	local app_url="瀹樼綉浠嬬粛: ${url_proxy}github.com/coder/code-server"
 	local app_size="1"
 	docker_app
 
 }
 
-# Looking Glass测速面板
-looking_glass_app(){
+# Looking Glass娴嬮€熼潰鏉?looking_glass_app(){
 		local app_id="12"
-	local app_name="Looking Glass(测速面板)"
+	local app_name="Looking Glass(娴嬮€熼潰鏉?"
 		local docker_name="looking-glass"
 		local docker_img="wikihostinc/looking-glass-server"
 		local docker_port=8016
 
 		docker_run() {
-			# app 自管端口: 让用户输入实际对外服务端口
-			read -e -p "服务端口 (默认 8016): " _user_port
+			# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?			read -e -p "鏈嶅姟绔彛 (榛樿 8016): " _user_port
 			_user_port=${_user_port:-8016}
 			docker_port=$_user_port
 
 			docker run -d --name looking-glass --restart always -p ${docker_port}:80 wikihostinc/looking-glass-server
 
-			# 注册到展示表 (app 自定 label)
-			add_app_port "Web 端口" "$docker_port"
+			# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+			add_app_port "Web 绔彛" "$docker_port"
 		}
-		local app_text="Looking Glass是一个VPS网速测试工具, 多项测试功能, 还可以实时监控VPS进出站流量"
-		local app_url="官网介绍: ${url_proxy}github.com/wikihost-opensource/als"
+		local app_text="Looking Glass鏄竴涓猇PS缃戦€熸祴璇曞伐鍏? 澶氶」娴嬭瘯鍔熻兘, 杩樺彲浠ュ疄鏃剁洃鎺PS杩涘嚭绔欐祦閲?
+		local app_url="瀹樼綉浠嬬粛: ${url_proxy}github.com/wikihost-opensource/als"
 		local app_size="1"
 		docker_app
 }
 
-# 雷池WAF防火墙面板
-safeline_app(){
+# 闆锋睜WAF闃茬伀澧欓潰鏉?safeline_app(){
 	local app_id="13"
-	local app_name="雷池WAF防火墙面板"
-	local app_text="雷池是长亭科技开发的 WAF 站点防火墙程序面板, 可以反代站点进行自动化防御"
-	local app_url="官网介绍: https://waf-ce.chaitin.cn/"
+	local app_name="闆锋睜WAF闃茬伀澧欓潰鏉?
+	local app_text="闆锋睜鏄暱浜鎶€寮€鍙戠殑 WAF 绔欑偣闃茬伀澧欑▼搴忛潰鏉? 鍙互鍙嶄唬绔欑偣杩涜鑷姩鍖栭槻寰?
+	local app_url="瀹樼綉浠嬬粛: https://waf-ce.chaitin.cn/"
 	local docker_name=safeline-mgt
 	local docker_port=9443
 	while true; do
 		check_docker_app
 		clear
-		echo -e "雷池服务 $check_docker"
-		echo "雷池是长亭科技开发的WAF站点防火墙程序面板, 可以反代站点进行自动化防御"
-		echo "官网: https://waf-ce.chaitin.cn/"
+		echo -e "闆锋睜鏈嶅姟 $check_docker"
+		echo "闆锋睜鏄暱浜鎶€寮€鍙戠殑WAF绔欑偣闃茬伀澧欑▼搴忛潰鏉? 鍙互鍙嶄唬绔欑偣杩涜鑷姩鍖栭槻寰?
+		echo "瀹樼綉: https://waf-ce.chaitin.cn/"
 		if docker ps -a --format '{{.Names}}' | grep -q "$docker_name" >/dev/null 2>&1; then
 			check_docker_app_ip
 		fi
 		echo ""
 		echo -e "${pink}------------------------${white}"
-		echo "1. 安装           2. 更新           3. 重置密码           4. 卸载"
+		echo "1. 瀹夎           2. 鏇存柊           3. 閲嶇疆瀵嗙爜           4. 鍗歌浇"
 		echo -e "${pink}------------------------${white}"
-		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${yellow}0.     ${white}杩斿洖涓婁竴绾ц彍鍗?
 		echo -e "${pink}------------------------${white}"
-		read -e -p "输入你的选择: " choice
+		read -e -p "杈撳叆浣犵殑閫夋嫨: " choice
 
 		case $choice in
 			1)
@@ -1643,7 +1515,7 @@ safeline_app(){
 
 				add_app_id
 				clear
-				echo "雷池WAF面板已经安装完成"
+				echo "闆锋睜WAF闈㈡澘宸茬粡瀹夎瀹屾垚"
 				check_docker_app_ip
 				docker exec safeline-mgt resetadmin
 
@@ -1656,7 +1528,7 @@ safeline_app(){
 
 				add_app_id
 				clear
-				echo "雷池WAF面板已经更新完成"
+				echo "闆锋睜WAF闈㈡澘宸茬粡鏇存柊瀹屾垚"
 				check_docker_app_ip
 				;;
 			3)
@@ -1667,7 +1539,7 @@ safeline_app(){
 				docker compose down --rmi all
 
 				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
-				echo "如果你是默认安装目录那现在项目已经卸载.如果你是自定义安装目录你需要到安装目录下自行执行:"
+				echo "濡傛灉浣犳槸榛樿瀹夎鐩綍閭ｇ幇鍦ㄩ」鐩凡缁忓嵏杞?濡傛灉浣犳槸鑷畾涔夊畨瑁呯洰褰曚綘闇€瑕佸埌瀹夎鐩綍涓嬭嚜琛屾墽琛?"
 				echo "docker compose down && docker compose down --rmi all"
 				;;
 			*)
@@ -1678,17 +1550,16 @@ safeline_app(){
 	done
 }
 
-# onlyoffice在线办公OFFICE
+# onlyoffice鍦ㄧ嚎鍔炲叕OFFICE
 onlyoffice_app(){
 	local app_id="14"
-	local app_name="onlyoffice在线办公OFFICE"
+	local app_name="onlyoffice鍦ㄧ嚎鍔炲叕OFFICE"
 	local docker_name="onlyoffice"
 	local docker_img="onlyoffice/documentserver"
 	local docker_port=8018
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8018): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8018): " _user_port
 		_user_port=${_user_port:-8018}
 		docker_port=$_user_port
 
@@ -1699,27 +1570,26 @@ onlyoffice_app(){
 			-v /home/docker/onlyoffice/DocumentServer/data:/var/www/onlyoffice/Data  \
 				onlyoffice/documentserver
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="onlyoffice是一款开源的在线office工具, 太强大了!"
-	local app_url="官网介绍: https://www.onlyoffice.com/"
+	local app_text="onlyoffice鏄竴娆惧紑婧愮殑鍦ㄧ嚎office宸ュ叿, 澶己澶т簡!"
+	local app_url="瀹樼綉浠嬬粛: https://www.onlyoffice.com/"
 	local app_size="2"
 	docker_app
 }
 
-# UptimeKuma监控工具
+# UptimeKuma鐩戞帶宸ュ叿
 uptimekuma_app(){
 	local app_id="15"
-	local app_name="UptimeKuma监控工具"
+	local app_name="UptimeKuma鐩戞帶宸ュ叿"
 	local docker_name="uptime-kuma"
 	local docker_img="louislam/uptime-kuma:latest"
 	local docker_port=8022
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8022): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8022): " _user_port
 		_user_port=${_user_port:-8022}
 		docker_port=$_user_port
 
@@ -1730,79 +1600,74 @@ uptimekuma_app(){
 			--restart=always \
 			louislam/uptime-kuma:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="Uptime Kuma 易于使用的自托管监控工具"
-	local app_url="官网介绍: ${url_proxy}github.com/louislam/uptime-kuma"
+	local app_text="Uptime Kuma 鏄撲簬浣跨敤鐨勮嚜鎵樼鐩戞帶宸ュ叿"
+	local app_url="瀹樼綉浠嬬粛: ${url_proxy}github.com/louislam/uptime-kuma"
 	local app_size="1"
 	docker_app
 }
 
-# Memos网页备忘录
-memos_app(){
+# Memos缃戦〉澶囧繕褰?memos_app(){
 	local app_id="16"
-	local app_name="Memos网页备忘录"
+	local app_name="Memos缃戦〉澶囧繕褰?
 	local docker_name="memos"
 	local docker_img="ghcr.io/usememos/memos:latest"
 	local docker_port=8023
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8023): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8023): " _user_port
 		_user_port=${_user_port:-8023}
 		docker_port=$_user_port
 
 		docker run -d --name memos -p ${docker_port}:5230 -v /home/docker/memos:/var/opt/memos --restart always ghcr.io/usememos/memos:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="Memos是一款轻量级、自托管的备忘录中心"
-	local app_url="官网介绍: ${url_proxy}github.com/usememos/memos"
+	local app_text="Memos鏄竴娆捐交閲忕骇銆佽嚜鎵樼鐨勫蹇樺綍涓績"
+	local app_url="瀹樼綉浠嬬粛: ${url_proxy}github.com/usememos/memos"
 	local app_size="1"
 	docker_app
 }
 
-# drawio免费的在线图表软件
-drawio_app(){
+# drawio鍏嶈垂鐨勫湪绾垮浘琛ㄨ蒋浠?drawio_app(){
 	local app_id="17"
-	local app_name="drawio免费的在线图表软件"
+	local app_name="drawio鍏嶈垂鐨勫湪绾垮浘琛ㄨ蒋浠?
 	local docker_name="drawio"
 	local docker_img="jgraph/drawio"
 	local docker_port=8032
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8032): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8032): " _user_port
 		_user_port=${_user_port:-8032}
 		docker_port=$_user_port
 
 		docker run -d --restart=always --name drawio -p ${docker_port}:8080 -v /home/docker/drawio:/var/lib/drawio jgraph/drawio
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="这是一个强大图表绘制软件.思维导图, 拓扑图, 流程图, 都能画"
-	local app_url="官网介绍: https://www.drawio.com/"
+	local app_text="杩欐槸涓€涓己澶у浘琛ㄧ粯鍒惰蒋浠?鎬濈淮瀵煎浘, 鎷撴墤鍥? 娴佺▼鍥? 閮借兘鐢?
+	local app_url="瀹樼綉浠嬬粛: https://www.drawio.com/"
 	local app_size="1"
 	docker_app
 }
 
-# Sun-Panel导航面板
+# Sun-Panel瀵艰埅闈㈡澘
 sun_panel_app(){
 	local app_id="18"
-	local app_name="Sun-Panel导航面板"
+	local app_name="Sun-Panel瀵艰埅闈㈡澘"
 	local docker_name="sun-panel"
 	local docker_img="hslr/sun-panel"
 	local docker_port=8033
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8033): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8033): " _user_port
 		_user_port=${_user_port:-8033}
 		docker_port=$_user_port
 
@@ -1813,39 +1678,38 @@ sun_panel_app(){
 			--name sun-panel \
 			hslr/sun-panel
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="Sun-Panel服务器、NAS导航面板、Homepage、浏览器首页"
-	local app_url="官网介绍: https://doc.sun-panel.top/zh_cn/"
+	local app_text="Sun-Panel鏈嶅姟鍣ㄣ€丯AS瀵艰埅闈㈡澘銆丠omepage銆佹祻瑙堝櫒棣栭〉"
+	local app_url="瀹樼綉浠嬬粛: https://doc.sun-panel.top/zh_cn/"
 	local app_size="1"
 	docker_app
 }
 
-# webssh网页版SSH连接工具
+# webssh缃戦〉鐗圫SH杩炴帴宸ュ叿
 webssh_app(){
 	local app_id="19"
-	local app_name="webssh网页版SSH连接工具"
+	local app_name="webssh缃戦〉鐗圫SH杩炴帴宸ュ叿"
 	local docker_name="webssh"
 	local docker_img="jrohy/webssh"
 	local docker_port=8040
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8040): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8040): " _user_port
 		_user_port=${_user_port:-8040}
 		docker_port=$_user_port
 
 		docker run -d -p ${docker_port}:5032 --restart always --name webssh -e TZ=Asia/Shanghai jrohy/webssh
 	}
 
-	local app_text="简易在线ssh连接工具和sftp工具"
-	local app_url="官网介绍: ${url_proxy}github.com/Jrohy/webssh"
+	local app_text="绠€鏄撳湪绾縮sh杩炴帴宸ュ叿鍜宻ftp宸ュ叿"
+	local app_url="瀹樼綉浠嬬粛: ${url_proxy}github.com/Jrohy/webssh"
 	local app_size="1"
 	docker_app
 }
 
-# LobeChatAI聊天聚合网站
+# LobeChatAI鑱婂ぉ鑱氬悎缃戠珯
 lobe_chat(){
 	local app_id="20"
 	local docker_name="lobe-chat"
@@ -1858,53 +1722,50 @@ lobe_chat(){
 			--restart=always \
 			lobehub/lobe-chat
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="LobeChat聚合市面上主流的AI大模型, ChatGPT/Claude/Gemini/Groq/Ollama"
-	local app_url="官网介绍: ${url_proxy}github.com/lobehub/lobe-chat"
+	local app_text="LobeChat鑱氬悎甯傞潰涓婁富娴佺殑AI澶фā鍨? ChatGPT/Claude/Gemini/Groq/Ollama"
+	local app_url="瀹樼綉浠嬬粛: ${url_proxy}github.com/lobehub/lobe-chat"
 	local app_size="2"
 	docker_app
 }
 
-# MyIP工具箱
-myip_app(){
+# MyIP宸ュ叿绠?myip_app(){
 	local app_id="21"
-	local app_name="MyIP工具箱"
+	local app_name="MyIP宸ュ叿绠?
 	local docker_name="myip"
 	local docker_img="jason5ng32/myip:latest"
 	local docker_port=8037
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8037): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8037): " _user_port
 		_user_port=${_user_port:-8037}
 		docker_port=$_user_port
 
 		docker run -d -p ${docker_port}:18966 --name myip jason5ng32/myip:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="是一个多功能IP工具箱, 可以查看自己IP信息及连通性, 用网页面板呈现"
-	local app_url="官网介绍: ${url_proxy}github.com/jason5ng32/MyIP/blob/main/README_ZH.md"
+	local app_text="鏄竴涓鍔熻兘IP宸ュ叿绠? 鍙互鏌ョ湅鑷繁IP淇℃伅鍙婅繛閫氭€? 鐢ㄧ綉椤甸潰鏉垮憟鐜?
+	local app_url="瀹樼綉浠嬬粛: ${url_proxy}github.com/jason5ng32/MyIP/blob/main/README_ZH.md"
 	local app_size="1"
 	docker_app
 }
 
-# ghproxy(GitHub加速站)
+# ghproxy(GitHub鍔犻€熺珯)
 ghproxy_app(){
 	local app_id="22"
-	local app_name="ghproxy(GitHub加速站)"
+	local app_name="ghproxy(GitHub鍔犻€熺珯)"
 	local docker_name="ghproxy"
 	local docker_img="wjqserver/ghproxy:latest"
 	local docker_port=8046
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8046): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8046): " _user_port
 		_user_port=${_user_port:-8046}
 		docker_port=$_user_port
 
@@ -1914,38 +1775,37 @@ ghproxy_app(){
 		-p ${docker_port}:8080 \
 		-v /home/docker/ghproxy/config:/data/ghproxy/config wjqserver/ghproxy:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="使用Go实现的GHProxy, 用于加速部分地区Github仓库的拉取."
-	local app_url="官网介绍: https://github.com/WJQSERVER-STUDIO/ghproxy"
+	local app_text="浣跨敤Go瀹炵幇鐨凣HProxy, 鐢ㄤ簬鍔犻€熼儴鍒嗗湴鍖篏ithub浠撳簱鐨勬媺鍙?"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/WJQSERVER-STUDIO/ghproxy"
 	local app_size="1"
 	docker_app
 }
 
-# AllinSSL证书管理平台
+# AllinSSL璇佷功绠＄悊骞冲彴
 allinssl_app(){
 	local app_id="23"
-	local app_name="AllinSSL证书管理平台"
+	local app_name="AllinSSL璇佷功绠＄悊骞冲彴"
 	local docker_name="allinssl"
 	local docker_img="allinssl/allinssl:latest"
 	local docker_port=8068
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8068): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8068): " _user_port
 		_user_port=${_user_port:-8068}
 		docker_port=$_user_port
 
 		docker run -itd --name allinssl -p ${docker_port}:8888 -v /home/docker/allinssl/data:/www/allinssl/data -e ALLINSSL_USER=allinssl -e ALLINSSL_PWD=allinssldocker -e ALLINSSL_URL=allinssl allinssl/allinssl:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源免费的 SSL 证书自动化管理平台"
-	local app_url="官网介绍: https://allinssl.com"
+	local app_text="寮€婧愬厤璐圭殑 SSL 璇佷功鑷姩鍖栫鐞嗗钩鍙?
+	local app_url="瀹樼綉浠嬬粛: https://allinssl.com"
 	local app_size="1"
 	docker_app
 }
@@ -1959,8 +1819,7 @@ ddnsgo_app(){
 	local docker_port=8067
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8067): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8067): " _user_port
 		_user_port=${_user_port:-8067}
 		docker_port=$_user_port
 
@@ -1971,12 +1830,12 @@ ddnsgo_app(){
 			-v /home/docker/ddns-go:/root \
 			jeessy/ddns-go
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
-	local app_url="官网介绍: https://github.com/jeessy2/ddns-go"
+	local app_text="鑷姩灏嗕綘鐨勫叕缃?IP(IPv4/IPv6)瀹炴椂鏇存柊鍒板悇澶?DNS 鏈嶅姟鍟? 瀹炵幇鍔ㄦ€佸煙鍚嶈В鏋?"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/jeessy2/ddns-go"
 	local app_size="1"
 	docker_app
 }
@@ -1990,8 +1849,7 @@ lucky_app(){
 	local docker_port=8068
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8068): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8068): " _user_port
 		_user_port=${_user_port:-8068}
 		docker_port=$_user_port
 
@@ -2001,31 +1859,30 @@ lucky_app(){
 		-v /home/docker/lucky:/goodluck \
 		gdy666/lucky
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="自动将你的公网 IP(IPv4/IPv6)实时更新到各大 DNS 服务商, 实现动态域名解析."
-	local app_url="官网介绍: https://github.com/gdy666/lucky"
+	local app_text="鑷姩灏嗕綘鐨勫叕缃?IP(IPv4/IPv6)瀹炴椂鏇存柊鍒板悇澶?DNS 鏈嶅姟鍟? 瀹炵幇鍔ㄦ€佸煙鍚嶈В鏋?"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/gdy666/lucky"
 	local app_size="1"
 	docker_app
 }
 
-# LibreTV私有影视
+# LibreTV绉佹湁褰辫
 libretv_app(){
 		local app_id="26"
-	local app_name="LibreTV私有影视"
+	local app_name="LibreTV绉佹湁褰辫"
 		local docker_name="libretv"
 		local docker_img="bestzwei/libretv:latest"
 		local docker_port=8073
 
 		docker_run() {
-			# app 自管端口: 让用户输入实际对外服务端口
-			read -e -p "服务端口 (默认 8073): " _user_port
+			# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?			read -e -p "鏈嶅姟绔彛 (榛樿 8073): " _user_port
 			_user_port=${_user_port:-8073}
 			docker_port=$_user_port
 
-			read -e -p "设置LibreTV的登录密码: " app_passwd
+			read -e -p "璁剧疆LibreTV鐨勭櫥褰曞瘑鐮? " app_passwd
 			docker run -d \
 				--name libretv \
 				--restart unless-stopped \
@@ -2033,38 +1890,38 @@ libretv_app(){
 				-e PASSWORD=${app_passwd} \
 				bestzwei/libretv:latest
 
-			# 注册到展示表 (app 自定 label)
-			add_app_port "Web 端口" "$docker_port"
+			# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+			add_app_port "Web 绔彛" "$docker_port"
 		}
 
-		local app_text="免费在线视频搜索与观看平台"
-		local app_url="官网介绍: https://github.com/LibreSpark/LibreTV"
+		local app_text="鍏嶈垂鍦ㄧ嚎瑙嗛鎼滅储涓庤鐪嬪钩鍙?
+		local app_url="瀹樼綉浠嬬粛: https://github.com/LibreSpark/LibreTV"
 		local app_size="1"
 		docker_app
 }
 
-# MoonTV私有影视
+# MoonTV绉佹湁褰辫
 moontv_app(){
 	local app_id="27"
 
-	local app_name="moontv私有影视"
-	local app_text="免费在线视频搜索与观看平台"
-	local app_url="官网介绍: https://github.com/MoonTechLab/LunaTV"
+	local app_name="moontv绉佹湁褰辫"
+	local app_text="鍏嶈垂鍦ㄧ嚎瑙嗛鎼滅储涓庤鐪嬪钩鍙?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/MoonTechLab/LunaTV"
 	local docker_name="moontv-core"
 	local docker_port="8074"
 	local app_size="2"
 
 	docker_app_install() {
-		read -e -p "设置登录用户名: " admin
+		read -e -p "璁剧疆鐧诲綍鐢ㄦ埛鍚? " admin
 		while true; do
-			read -e -p "设置登录用户密码: " admin_password
+			read -e -p "璁剧疆鐧诲綍鐢ㄦ埛瀵嗙爜: " admin_password
 			if [ ${#admin_password} -ge 8 ]; then
 				break
 			else
-				echo "密码长度必须大于8位, 请重新输入! "
+				echo "瀵嗙爜闀垮害蹇呴』澶т簬8浣? 璇烽噸鏂拌緭鍏? "
 			fi
 		done
-		read -e -p "输入授权码: " shouquanma
+		read -e -p "杈撳叆鎺堟潈鐮? " shouquanma
 
 
 		mkdir -p /home/docker/moontv
@@ -2080,7 +1937,7 @@ moontv_app(){
 		cd /home/docker/moontv/
 		docker compose up -d
 		clear
-		echo "已经安装完成"
+		echo "宸茬粡瀹夎瀹屾垚"
 		check_docker_app_ip
 	}
 
@@ -2094,23 +1951,22 @@ moontv_app(){
 	docker_app_uninstall() {
 		cd /home/docker/moontv/ && docker compose down --rmi all
 		rm -rf /home/docker/moontv
-		echo "应用已卸载"
+		echo "搴旂敤宸插嵏杞?
 	}
 
 	docker_app
 }
 
-# Melody音乐精灵
+# Melody闊充箰绮剧伒
 melody_app(){
 	local app_id="28"
-	local app_name="Melody音乐精灵"
+	local app_name="Melody闊充箰绮剧伒"
 	local docker_name="melody"
 	local docker_img="foamzou/melody:latest"
 	local docker_port=8075
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8075): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8075): " _user_port
 		_user_port=${_user_port:-8075}
 		docker_port=$_user_port
 
@@ -2121,27 +1977,25 @@ melody_app(){
 			-v /home/docker/melody/.profile:/app/backend/.profile \
 			foamzou/melody:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="你的音乐精灵, 旨在帮助你更好地管理音乐."
-	local app_url="官网介绍: https://github.com/foamzou/melody"
+	local app_text="浣犵殑闊充箰绮剧伒, 鏃ㄥ湪甯姪浣犳洿濂藉湴绠＄悊闊充箰."
+	local app_url="瀹樼綉浠嬬粛: https://github.com/foamzou/melody"
 	local app_size="1"
 	docker_app
 }
 
-# Beszel服务器监控
-beszel_app(){
+# Beszel鏈嶅姟鍣ㄧ洃鎺?beszel_app(){
 	local app_id="29"
-	local app_name="Beszel服务器监控"
+	local app_name="Beszel鏈嶅姟鍣ㄧ洃鎺?
 	local docker_name="beszel"
 	local docker_img="henrygd/beszel"
 	local docker_port=8079
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8079): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8079): " _user_port
 		_user_port=${_user_port:-8079}
 		docker_port=$_user_port
 
@@ -2153,27 +2007,25 @@ beszel_app(){
 			-p ${docker_port}:8090 \
 			henrygd/beszel
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="Beszel轻量易用的服务器监控"
-	local app_url="官网介绍: https://beszel.dev/zh/"
+	local app_text="Beszel杞婚噺鏄撶敤鐨勬湇鍔″櫒鐩戞帶"
+	local app_url="瀹樼綉浠嬬粛: https://beszel.dev/zh/"
 	local app_size="1"
 	docker_app
 }
 
-# SyncTV一起看片神器
-synctv_app(){
+# SyncTV涓€璧风湅鐗囩鍣?synctv_app(){
 		local app_id="30"
-	local app_name="SyncTV一起看片神器"
+	local app_name="SyncTV涓€璧风湅鐗囩鍣?
 		local docker_name="synctv"
 		local docker_img="synctvorg/synctv"
 		local docker_port=8087
 
 		docker_run() {
-			# app 自管端口: 让用户输入实际对外服务端口
-			read -e -p "服务端口 (默认 8087): " _user_port
+			# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?			read -e -p "鏈嶅姟绔彛 (榛樿 8087): " _user_port
 			_user_port=${_user_port:-8087}
 			docker_port=$_user_port
 
@@ -2184,20 +2036,20 @@ synctv_app(){
 				--restart=always \
 				synctvorg/synctv
 
-			# 注册到展示表 (app 自定 label)
-			add_app_port "Web 端口" "$docker_port"
+			# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+			add_app_port "Web 绔彛" "$docker_port"
 		}
 
-		local app_text="远程一起观看电影和直播的程序.它提供了同步观影、直播、聊天等功能"
-		local app_url="官网介绍: https://github.com/synctv-org/synctv"
+		local app_text="杩滅▼涓€璧疯鐪嬬數褰卞拰鐩存挱鐨勭▼搴?瀹冩彁渚涗簡鍚屾瑙傚奖銆佺洿鎾€佽亰澶╃瓑鍔熻兘"
+		local app_url="瀹樼綉浠嬬粛: https://github.com/synctv-org/synctv"
 		local app_size="1"
 		docker_app
 }
 
-# X-UI面板
+# X-UI闈㈡澘
 xui_app(){
 	local app_id="31"
-	local app_name="X-UI面板"
+	local app_name="X-UI闈㈡澘"
 	local panel_path="[ -d "/usr/local/x-ui/" ]"
 	local panelname="xui"
 	local panelurl="https://github.com/FranzKafkaYu/x-ui"
@@ -2211,13 +2063,13 @@ xui_app(){
 	}
 
 	panel_app_uninstall() {
-		echo "请通过管理面板卸载, 谢谢!"
+		echo "璇烽€氳繃绠＄悊闈㈡澘鍗歌浇, 璋㈣阿!"
 		break_end
 	}
 	panel_manage
 }
 
-# 3X-UI面板
+# 3X-UI闈㈡澘
 3xui_app(){
 	local app_id="32"
 	local panel_path="[ -d "/usr/local/x-ui/" ]"
@@ -2233,7 +2085,7 @@ xui_app(){
 	}
 
 	panel_app_uninstall() {
-		echo "请通过管理面板卸载, 谢谢!"
+		echo "璇烽€氳繃绠＄悊闈㈡澘鍗歌浇, 璋㈣阿!"
 		break_end
 	}
 	panel_manage
@@ -2247,15 +2099,14 @@ e5_renew_x_app(){
 		local docker_port=1066
 
 		docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 1066): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 1066): " _user_port
 		_user_port=${_user_port:-1066}
 		docker_port=$_user_port
 
-		read -e -p "请输入发送邮件的服务邮箱: " send_email
-		read -e -p "请输入服务邮箱的授权码: " token
-		read -e -p "请输入接收邮件的邮箱: " receiver_email
-		read -e -p "请输入Web界面管理员登录密码: " admin_pwd
+		read -e -p "璇疯緭鍏ュ彂閫侀偖浠剁殑鏈嶅姟閭: " send_email
+		read -e -p "璇疯緭鍏ユ湇鍔￠偖绠辩殑鎺堟潈鐮? " token
+		read -e -p "璇疯緭鍏ユ帴鏀堕偖浠剁殑閭: " receiver_email
+		read -e -p "璇疯緭鍏eb鐣岄潰绠＄悊鍛樼櫥褰曞瘑鐮? " admin_pwd
 
 			docker run -d \
 				-p ${docker_port}:1066 \
@@ -2266,35 +2117,35 @@ e5_renew_x_app(){
 				-e adminpwd="${admin_pwd}" \
 				hanhongyong/ms365-e5-renew-x:pubemail
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 		}
 
-		local app_text="Microsoft 365 E5 Renew X 一键续订脚本"
-		local app_url="官网介绍: https://github.com/hongyonghan/Docker_Microsoft365_E5_Renew_X"
+		local app_text="Microsoft 365 E5 Renew X 涓€閿画璁㈣剼鏈?
+		local app_url="瀹樼綉浠嬬粛: https://github.com/hongyonghan/Docker_Microsoft365_E5_Renew_X"
 		local app_size="1"
 		docker_app
 }
 
-# DecoTV私有影视
+# DecoTV绉佹湁褰辫
 decotv_app(){
 	local app_id="34"
 
-	local app_name="decotv私有影视"
-	local app_text="免费在线视频搜索与观看平台"
-	local app_url="官网介绍: https://github.com/decohererk/decotv"
+	local app_name="decotv绉佹湁褰辫"
+	local app_text="鍏嶈垂鍦ㄧ嚎瑙嗛鎼滅储涓庤鐪嬪钩鍙?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/decohererk/decotv"
 	local docker_name="decotv-core"
 	local docker_port="8076"
 	local app_size="2"
 
 	docker_app_install() {
-		read -e -p "设置登录用户名: " admin
+		read -e -p "璁剧疆鐧诲綍鐢ㄦ埛鍚? " admin
 		while true; do
-			read -e -p "设置登录用户密码: " admin_password
+			read -e -p "璁剧疆鐧诲綍鐢ㄦ埛瀵嗙爜: " admin_password
 			if [ ${#admin_password} -ge 8 ]; then
 				break
 			else
-				echo "密码长度必须大于8位, 请重新输入! "
+				echo "瀵嗙爜闀垮害蹇呴』澶т簬8浣? 璇烽噸鏂拌緭鍏? "
 			fi
 		done
 
@@ -2336,7 +2187,7 @@ volumes:
   kvrocks-data:
 EOF
 		
-		# 替换变量
+		# 鏇挎崲鍙橀噺
 		sed -i "s/\${docker_port}/${docker_port}/g" /home/docker/decotv/docker-compose.yml
 		sed -i "s/\${admin}/${admin}/g" /home/docker/decotv/docker-compose.yml
 		sed -i "s/\${admin_password}/${admin_password}/g" /home/docker/decotv/docker-compose.yml
@@ -2344,7 +2195,7 @@ EOF
 		cd /home/docker/decotv/
 		docker compose up -d
 		clear
-		echo "已经安装完成"
+		echo "宸茬粡瀹夎瀹屾垚"
 		check_docker_app_ip
 	}
 
@@ -2358,16 +2209,16 @@ EOF
 	docker_app_uninstall() {
 		cd /home/docker/decotv/ && docker compose down --rmi all
 		rm -rf /home/docker/decotv
-		echo "应用已卸载"
+		echo "搴旂敤宸插嵏杞?
 	}
 
 	docker_app
 }
 
-# Drawnix在线白板
+# Drawnix鍦ㄧ嚎鐧芥澘
 drawnix_app(){
 	local app_id="35"
-	local app_name="Drawnix在线白板"
+	local app_name="Drawnix鍦ㄧ嚎鐧芥澘"
 	local docker_name="drawnix"
 	local docker_img="pubuzhixing/drawnix:latest"
 	local docker_port=8077
@@ -2380,79 +2231,66 @@ drawnix_app(){
 			pubuzhixing/drawnix:latest
 	}
 
-	local app_text="一款开源的在线白板工具，类似Excalidraw，支持思维导图、流程图和自由绘图。"
-	local app_url="官网介绍: https://github.com/pubuzhixing/drawnix"
+	local app_text="涓€娆惧紑婧愮殑鍦ㄧ嚎鐧芥澘宸ュ叿锛岀被浼糆xcalidraw锛屾敮鎸佹€濈淮瀵煎浘銆佹祦绋嬪浘鍜岃嚜鐢辩粯鍥俱€?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/pubuzhixing/drawnix"
 	local app_size="1"
 	docker_app
 }
 
 ##############################
-######## 应用中心菜单 #########
+######## 搴旂敤涓績鑿滃崟 #########
 ##############################
 linux_app() {
 
-	# 状态点: 颜色支持时用 ANSI 颜色码 (绿/红), 否则用 unicode 符号 (●/○) 区分
-	# 这样 dumb terminal (TERM=dumb / NO_COLOR / 各种 Windows ssh 客户端) 也不会输出乱码
+	# 鐘舵€佺偣 (鍗曞瓧绗? 棰滆壊鏍规嵁瀹夎鐘舵€?
 	_dot() {
-		# 检测: TTY 且非 dumb 且无 NO_COLOR → 支持颜色
-		if [ -t 1 ] && [ "${NO_COLOR:-}" = "" ] && [ "${TERM:-}" != "dumb" ]; then
-			# 有颜色: 已装=绿●, 未装=红●
-			if [ "${INSTALLED_MAP[$1]:-0}" = "1" ]; then
-				echo "${green}●${white}"
-			else
-				echo "${red}●${white}"
-			fi
+		if [ "${INSTALLED_MAP[$1]:-0}" = "1" ]; then
+			echo "${green}鈼?{white}"
 		else
-			# 无颜色: 已装=●, 未装=○
-			if [ "${INSTALLED_MAP[$1]:-0}" = "1" ]; then
-				echo "●"
-			else
-				echo "○"
-			fi
+			echo "${red}鈼?{white}"
 		fi
 	}
 
-	# 渲染已安装应用列表 (666 入口)
+	# 娓叉煋宸插畨瑁呭簲鐢ㄥ垪琛?(666 鍏ュ彛)
 	_render_installed_list() {
 		clear
-		echo -e "${green}===== 已安装应用 =====${white}"
+		echo -e "${green}===== 宸插畨瑁呭簲鐢?=====${white}"
 		echo ""
 		if [ ${#INSTALLED_IDS[@]} -eq 0 ]; then
-			echo -e "${yellow}暂无已安装应用${white}"
+			echo -e "${yellow}鏆傛棤宸插畨瑁呭簲鐢?{white}"
 			break_end
 			return 1
 		fi
-		# 按 app_id 数字排序
+		# 鎸?app_id 鏁板瓧鎺掑簭
 		local sorted
 		sorted=$(printf '%s\n' "${INSTALLED_IDS[@]}" | sort -n)
 		while read -r id; do
 			[ -n "$id" ] || continue
-			local name="${APP_DISPLAY_NAMES[$id]:-?未注册}"
-			echo -e "  ${cyan}$id. ${white}$name  ${green}●${white}"
+			local name="${APP_DISPLAY_NAMES[$id]:-?鏈敞鍐寎"
+			echo -e "  ${cyan}$id. ${white}$name  ${green}鈼?{white}"
 		done <<< "$sorted"
 		echo ""
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${yellow}0.   ${white}返回应用市场"
+		echo -e "${yellow}0.   ${white}杩斿洖搴旂敤甯傚満"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		read -e -p "输入编号进入应用详情 (0 返回): " jump_choice
+		read -e -p "杈撳叆缂栧彿杩涘叆搴旂敤璇︽儏 (0 杩斿洖): " jump_choice
 		if [ "$jump_choice" = "0" ] || [ -z "$jump_choice" ]; then
 			return 1
 		fi
-		# 直接跳到该 sub_choice (复用主 case 调度)
+		# 鐩存帴璺冲埌璇?sub_choice (澶嶇敤涓?case 璋冨害)
 		if [ -n "${APP_DISPLAY_NAMES[$jump_choice]:-}" ]; then
 			_linux_app_dispatch "$jump_choice"
 		else
-			echo -e "${red}无效编号 $jump_choice${white}"
+			echo -e "${red}鏃犳晥缂栧彿 $jump_choice${white}"
 			sleep 1
 			return 1
 		fi
 	}
 
-	# sub_choice 调度 (主菜单 + 666 列表共用)
+	# sub_choice 璋冨害 (涓昏彍鍗?+ 666 鍒楄〃鍏辩敤)
 	_linux_app_dispatch() {
 		local sub_choice="$1"
-		# 清理上一个 app 残留的内嵌函数定义
-		unset -f docker_app_install docker_app_update docker_app_uninstall app_post_install app_post_install_password 2>/dev/null
+		# 娓呯悊涓婁竴涓?app 娈嬬暀鐨勫唴宓屽嚱鏁板畾涔?		unset -f docker_app_install docker_app_update docker_app_uninstall app_post_install app_post_install_password 2>/dev/null
 		clear_app_ports
 
 		case $sub_choice in
@@ -2570,7 +2408,7 @@ linux_app() {
 	}
 
 	while true; do
-		# 每次渲染菜单前刷新已安装状态（解决安装后主界面不刷新为绿色的问题）
+		# 姣忔娓叉煋鑿滃崟鍓嶅埛鏂板凡瀹夎鐘舵€侊紙瑙ｅ喅瀹夎鍚庝富鐣岄潰涓嶅埛鏂颁负缁胯壊鐨勯棶棰橈級
 		declare -A INSTALLED_MAP=()
 		INSTALLED_IDS=()
 		if [ -f /home/docker/appno.txt ]; then
@@ -2582,322 +2420,54 @@ linux_app() {
 		fi
 
 		clear
-		echo -e "${green}===== 应用市场 =====${white}"
-		echo -e "[图例] ${green}●${white} 已安装  ${red}●${white} 未安装"
+		echo -e "${green}===== 搴旂敤甯傚満 =====${white}"
+		echo -e "[鍥句緥] ${green}鈼?{white} 宸插畨瑁? ${red}鈼?{white} 鏈畨瑁?
 		echo ""
 		docker_tato
-
-		# 动态算列宽: 所有 app 名称中最长可见宽 + 5 字符缓冲 (超长 cell 会在单元格内自动换行)
-		local _grid_names=(
-			"1Panel面板"
-			"宝塔面板"
-			"aaPanel面板"
-			"NginxProxyManager面板"
-			"OpenList面板"
-			"WebTop远程桌面网页版"
-			"Komari监控"
-			"qbittorrent离线下载"
-			"Poste.io邮件服务器程序"
-			"青龙面板"
-			"Code-Server(网页vscode)"
-			"Looking Glass(测速面板)"
-			"雷池WAF防火墙面板"
-			"onlyoffice在线办公OFFICE"
-			"UptimeKuma监控工具"
-			"Memos网页备忘录"
-			"drawio免费的在线图表软件"
-			"Sun-Panel导航面板"
-			"webssh网页版SSH连接工具"
-			"LobeChatAI聊天聚合网站"
-			"MyIP工具箱"
-			"ghproxy(GitHub加速站)"
-			"AllinSSL证书管理平台"
-			"DDNS-GO"
-			"Lucky"
-			"LibreTV私有影视"
-			"MoonTV私有影视"
-			"Melody音乐精灵"
-			"Beszel服务器监控"
-			"SyncTV一起看片神器"
-			"X-UI面板"
-			"3X-UI面板"
-			"Microsoft 365 E5 Renew X"
-			"DecoTV私有影视"
-			"Drawnix在线白板"
-			"Portainer容器管理"
-			"Cloudreve网盘"
-			"Nextcloud私有网盘"
-			"emby媒体管理"
-			"jellyfin媒体管理"
-			"AdGuardHome去广告"
-			"Navidrome音乐服务器"
-			"Vaultwarden密码管理"
-			"StirlingPDF工具大全"
-			"Speedtest测速面板"
-			"PhotoPrism私有相册"
-			"searxng聚合搜索"
-			"Pingvin-Share文件分享"
-			"Dockge容器管理"
-			"it-tools工具箱"
-			"n8n自动化工作流"
-			"OpenWebUI自托管AI"
-			"Dify大模型知识库"
-			"gitea私有代码仓库"
-			"FileBrowser文件管理"
-			"FRP内网穿透(服务端)"
-			"WireGuard组网(服务端)"
-			"JumpServer堡垒机"
-			"immich图片视频管理"
-			"Syncthing文件同步"
-			"Umami网站统计"
-			"思源笔记"
-			"SFTPGo文件传输"
-			"Owncast自托管直播"
-			"Deepseek AI大模型"
-			"RocketChat聊天系统"
-			"Gopeed高速下载"
-			"2FAuth二步验证器"
-			"ZFile在线网盘"
-			"Nexterm远程连接"
-			"JitsiMeet视频会议"
-			"Stream四层代理转发"
-			"FileCodeBox文件快递"
-			"Matrix去中心化聊天"
-			"yt-dlp视频下载"
-			"paperless文档管理"
-			"Wallos财务管理"
-			"PairDrop文件传输"
-			"Dufs静态文件服务器"
-			"PandaWiki文档管理"
-			"linkwarden书签管理"
-			"VoceChat聊天系统"
-			"Karakeep书签管理"
-			"NewAPI大模型资产管理"
-			"RAGFlow知识库"
-			"AstrBot聊天机器人"
-			"LangBot聊天机器人"
-			"多格式文件转换"
-			"LibreSpeed测速"
-			"gpt-load AI透明代理"
-			"补货监控工具"
-			"PVE虚拟化管理"
-			"DSM群晖虚拟机"
-			"在线DOS老游戏"
-			"迅雷离线下载"
-			"小雅Alist全家桶"
-			"Bililive直播录制"
-			"极简朋友圈"
-			"PanSou网盘搜索"
-			"简单图床lskypro"
-			"禅道项目管理"
-			"QD-Today定时任务"
-			"耗子管理面板"
-			"AMH建站面板"
-			"在线翻译服务器"
-			"AI视频生成工具"
-			"RustDesk远程桌面"
-			"Firefox浏览器"
-			"DPanel容器管理"
-			"普罗米修斯监控"
-		)
-		local _grid_max=0 _grid_w
-		for _grid_n in "${_grid_names[@]}"; do
-			_grid_w=$(str_width "$_grid_n")
-			[ "$_grid_w" -gt "$_grid_max" ] && _grid_max="$_grid_w"
-		done
-		local col_width=$((_grid_max + 15))
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		
-		# 使用虚拟表格输出应用列表
-		render_grid_row "$col_width" \
-			"${cyan}1.   ${white}1Panel面板 $(_dot 1)" \
-			"${cyan}2.   ${white}宝塔面板 $(_dot 2)" \
-			"${cyan}3.   ${white}aaPanel面板 $(_dot 3)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}4.   ${white}NginxProxyManager面板 $(_dot 4)" \
-			"${cyan}5.   ${white}OpenList面板 $(_dot 5)" \
-			"${cyan}6.   ${white}WebTop远程桌面网页版 $(_dot 6)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}7.   ${white}Komari监控 $(_dot 7)" \
-			"${cyan}8.   ${white}qbittorrent离线下载 $(_dot 8)" \
-			"${cyan}9.   ${white}Poste.io邮件服务器程序 $(_dot 9)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}10.  ${white}青龙面板 $(_dot 10)" \
-			"${cyan}11.  ${white}Code-Server(网页vscode) $(_dot 11)" \
-			"${cyan}12.  ${white}Looking Glass(测速面板) $(_dot 12)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}13.  ${white}雷池WAF防火墙面板 $(_dot 13)" \
-			"${cyan}14.  ${white}onlyoffice在线办公OFFICE $(_dot 14)" \
-			"${cyan}15.  ${white}UptimeKuma监控工具 $(_dot 15)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}16.  ${white}Memos网页备忘录 $(_dot 16)" \
-			"${cyan}17.  ${white}drawio免费的在线图表软件 $(_dot 17)" \
-			"${cyan}18.  ${white}Sun-Panel导航面板 $(_dot 18)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}19.  ${white}webssh网页版SSH连接工具 $(_dot 19)" \
-			"${cyan}20.  ${white}LobeChatAI聊天聚合网站 $(_dot 20)" \
-			"${cyan}21.  ${white}MyIP工具箱 $(_dot 21)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}22.  ${white}ghproxy(GitHub加速站) $(_dot 22)" \
-			"${cyan}23.  ${white}AllinSSL证书管理平台 $(_dot 23)" \
-			"${cyan}24.  ${white}DDNS-GO $(_dot 24)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}25.  ${white}Lucky $(_dot 25)" \
-			"${cyan}26.  ${white}LibreTV私有影视 $(_dot 26)" \
-			"${cyan}27.  ${white}MoonTV私有影视 $(_dot 27)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}28.  ${white}Melody音乐精灵 $(_dot 28)" \
-			"${cyan}29.  ${white}Beszel服务器监控 $(_dot 29)" \
-			"${cyan}30.  ${white}SyncTV一起看片神器 $(_dot 30)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}31.  ${white}X-UI面板 $(_dot 31)" \
-			"${cyan}32.  ${white}3X-UI面板 $(_dot 32)" \
-			"${cyan}33.  ${white}Microsoft 365 E5 Renew X $(_dot 33)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}34.  ${white}DecoTV私有影视 $(_dot 34)" \
-			"${cyan}35.  ${white}Drawnix在线白板 $(_dot 35)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}36.  ${white}Portainer容器管理 $(_dot 36)" \
-			"${cyan}37.  ${white}Cloudreve网盘 $(_dot 37)" \
-			"${cyan}38.  ${white}Nextcloud私有网盘 $(_dot 38)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}39.  ${white}emby媒体管理 $(_dot 39)" \
-			"${cyan}40.  ${white}jellyfin媒体管理 $(_dot 40)" \
-			"${cyan}41.  ${white}AdGuardHome去广告 $(_dot 41)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}42.  ${white}Navidrome音乐服务器 $(_dot 42)" \
-			"${cyan}43.  ${white}Vaultwarden密码管理 $(_dot 43)" \
-			"${cyan}44.  ${white}StirlingPDF工具大全 $(_dot 44)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}45.  ${white}Speedtest测速面板 $(_dot 45)" \
-			"${cyan}46.  ${white}PhotoPrism私有相册 $(_dot 46)" \
-			"${cyan}47.  ${white}searxng聚合搜索 $(_dot 47)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}48.  ${white}Pingvin-Share文件分享 $(_dot 48)" \
-			"${cyan}49.  ${white}Dockge容器管理 $(_dot 49)" \
-			"${cyan}50.  ${white}it-tools工具箱 $(_dot 50)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}51.  ${white}n8n自动化工作流 $(_dot 51)" \
-			"${cyan}52.  ${white}OpenWebUI自托管AI $(_dot 52)" \
-			"${cyan}53.  ${white}Dify大模型知识库 $(_dot 53)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}54.  ${white}gitea私有代码仓库 $(_dot 54)" \
-			"${cyan}55.  ${white}FileBrowser文件管理 $(_dot 55)" \
-			"${cyan}56.  ${white}FRP内网穿透(服务端) $(_dot 56)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}57.  ${white}WireGuard组网(服务端) $(_dot 57)" \
-			"${cyan}58.  ${white}JumpServer堡垒机 $(_dot 58)" \
-			"${cyan}59.  ${white}immich图片视频管理 $(_dot 59)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}60.  ${white}Syncthing文件同步 $(_dot 60)" \
-			"${cyan}61.  ${white}Umami网站统计 $(_dot 61)" \
-			"${cyan}62.  ${white}思源笔记 $(_dot 62)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}63.  ${white}SFTPGo文件传输 $(_dot 63)" \
-			"${cyan}64.  ${white}Owncast自托管直播 $(_dot 64)" \
-			"${cyan}65.  ${white}Deepseek AI大模型 $(_dot 65)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}66.  ${white}RocketChat聊天系统 $(_dot 66)" \
-			"${cyan}67.  ${white}Gopeed高速下载 $(_dot 67)" \
-			"${cyan}68.  ${white}2FAuth二步验证器 $(_dot 68)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}69.  ${white}ZFile在线网盘 $(_dot 69)" \
-			"${cyan}70.  ${white}Nexterm远程连接 $(_dot 70)" \
-			"${cyan}71.  ${white}JitsiMeet视频会议 $(_dot 71)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}72.  ${white}Stream四层代理转发 $(_dot 72)" \
-			"${cyan}73.  ${white}FileCodeBox文件快递 $(_dot 73)" \
-			"${cyan}74.  ${white}Matrix去中心化聊天 $(_dot 74)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}75.  ${white}yt-dlp视频下载 $(_dot 75)" \
-			"${cyan}76.  ${white}paperless文档管理 $(_dot 76)" \
-			"${cyan}77.  ${white}Wallos财务管理 $(_dot 77)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}78.  ${white}PairDrop文件传输 $(_dot 78)" \
-			"${cyan}79.  ${white}Dufs静态文件服务器 $(_dot 79)" \
-			"${cyan}80.  ${white}PandaWiki文档管理 $(_dot 80)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}81.  ${white}linkwarden书签管理 $(_dot 81)" \
-			"${cyan}82.  ${white}VoceChat聊天系统 $(_dot 82)" \
-			"${cyan}83.  ${white}Karakeep书签管理 $(_dot 83)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}84.  ${white}NewAPI大模型资产管理 $(_dot 84)" \
-			"${cyan}85.  ${white}RAGFlow知识库 $(_dot 85)" \
-			"${cyan}86.  ${white}AstrBot聊天机器人 $(_dot 86)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}87.  ${white}LangBot聊天机器人 $(_dot 87)" \
-			"${cyan}88.  ${white}多格式文件转换 $(_dot 88)" \
-			"${cyan}89.  ${white}LibreSpeed测速 $(_dot 89)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}90.  ${white}gpt-load AI透明代理 $(_dot 90)" \
-			"${cyan}91.  ${white}补货监控工具 $(_dot 91)" \
-			"${cyan}92.  ${white}PVE虚拟化管理 $(_dot 92)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}93.  ${white}DSM群晖虚拟机 $(_dot 93)" \
-			"${cyan}94.  ${white}在线DOS老游戏 $(_dot 94)" \
-			"${cyan}95.  ${white}迅雷离线下载 $(_dot 95)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}96.  ${white}小雅Alist全家桶 $(_dot 96)" \
-			"${cyan}97.  ${white}Bililive直播录制 $(_dot 97)" \
-			"${cyan}98.  ${white}极简朋友圈 $(_dot 98)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}99.  ${white}PanSou网盘搜索 $(_dot 99)" \
-			"${cyan}100. ${white}简单图床lskypro $(_dot 100)" \
-			"${cyan}101. ${white}禅道项目管理 $(_dot 101)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}102. ${white}QD-Today定时任务 $(_dot 102)" \
-			"${cyan}103. ${white}耗子管理面板 $(_dot 103)" \
-			"${cyan}104. ${white}AMH建站面板 $(_dot 104)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}105. ${white}在线翻译服务器 $(_dot 105)" \
-			"${cyan}106. ${white}AI视频生成工具 $(_dot 106)" \
-			"${cyan}107. ${white}RustDesk远程桌面 $(_dot 107)"
-		
-		render_grid_row "$col_width" \
-			"${cyan}108. ${white}Firefox浏览器 $(_dot 108)" \
-			"${cyan}109. ${white}DPanel容器管理 $(_dot 109)" \
-			"${cyan}110. ${white}普罗米修斯监控 $(_dot 110)"
-		
+		echo -e "${cyan}1.  ${white}1Panel闈㈡澘 $(_dot 1)            ${cyan}2.  ${white}瀹濆闈㈡澘 $(_dot 2)                  ${cyan}3.  ${white}aaPanel闈㈡澘 $(_dot 3)"
+		echo -e "${cyan}4.  ${white}NginxProxyManager闈㈡澘 $(_dot 4)  ${cyan}5.  ${white}OpenList闈㈡澘 $(_dot 5)              ${cyan}6.  ${white}WebTop杩滅▼妗岄潰缃戦〉鐗?$(_dot 6)"
+		echo -e "${cyan}7.  ${white}Komari鐩戞帶 $(_dot 7)             ${cyan}8.  ${white}qbittorrent绂荤嚎涓嬭浇 $(_dot 8)        ${cyan}9.  ${white}Poste.io閭欢鏈嶅姟鍣ㄧ▼搴?$(_dot 9)"
+		echo -e "${cyan}10. ${white}闈掗緳闈㈡澘 $(_dot 10)               ${cyan}11. ${white}Code-Server(缃戦〉vscode) $(_dot 11)  ${cyan}12. ${white}Looking Glass(娴嬮€熼潰鏉? $(_dot 12)"
+		echo -e "${cyan}13. ${white}闆锋睜WAF闃茬伀澧欓潰鏉?$(_dot 13)      ${cyan}14. ${white}onlyoffice鍦ㄧ嚎鍔炲叕OFFICE $(_dot 14) ${cyan}15. ${white}UptimeKuma鐩戞帶宸ュ叿 $(_dot 15)"
+		echo -e "${cyan}16. ${white}Memos缃戦〉澶囧繕褰?$(_dot 16)        ${cyan}17. ${white}drawio鍏嶈垂鐨勫湪绾垮浘琛ㄨ蒋浠?$(_dot 17) ${cyan}18. ${white}Sun-Panel瀵艰埅闈㈡澘 $(_dot 18)"
+		echo -e "${cyan}19. ${white}webssh缃戦〉鐗圫SH杩炴帴宸ュ叿 $(_dot 19)${cyan}20. ${white}LobeChatAI鑱婂ぉ鑱氬悎缃戠珯 $(_dot 20)   ${cyan}21. ${white}MyIP宸ュ叿绠?$(_dot 21)"
+		echo -e "${cyan}22. ${white}ghproxy(GitHub鍔犻€熺珯) $(_dot 22)  ${cyan}23. ${white}AllinSSL璇佷功绠＄悊骞冲彴 $(_dot 23)     ${cyan}24. ${white}DDNS-GO $(_dot 24)"
+		echo -e "${cyan}25. ${white}Lucky $(_dot 25)                  ${cyan}26. ${white}LibreTV绉佹湁褰辫 $(_dot 26)          ${cyan}27. ${white}MoonTV绉佹湁褰辫 $(_dot 27)"
+		echo -e "${cyan}28. ${white}Melody闊充箰绮剧伒 $(_dot 28)         ${cyan}29. ${white}Beszel鏈嶅姟鍣ㄧ洃鎺?$(_dot 29)         ${cyan}30. ${white}SyncTV涓€璧风湅鐗囩鍣?$(_dot 30)"
+		echo -e "${cyan}31. ${white}X-UI闈㈡澘 $(_dot 31)               ${cyan}32. ${white}3X-UI闈㈡澘 $(_dot 32)                  ${cyan}33. ${white}Microsoft 365 E5 Renew X $(_dot 33)"
+		echo -e "${cyan}34. ${white}DecoTV绉佹湁褰辫 $(_dot 34)         ${cyan}35. ${white}Drawnix鍦ㄧ嚎鐧芥澘 $(_dot 35)"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${yellow}0.   ${white}返回主菜单"
-		echo -e "${green}666. ${white}查看已安装应用 (当前: ${#INSTALLED_IDS[@]} 个)"
+		echo -e "${cyan}36. ${white}Portainer瀹瑰櫒绠＄悊 $(_dot 36)      ${cyan}37. ${white}Cloudreve缃戠洏 $(_dot 37)            ${cyan}38. ${white}Nextcloud绉佹湁缃戠洏 $(_dot 38)"
+		echo -e "${cyan}39. ${white}emby濯掍綋绠＄悊 $(_dot 39)           ${cyan}40. ${white}jellyfin濯掍綋绠＄悊 $(_dot 40)         ${cyan}41. ${white}AdGuardHome鍘诲箍鍛?$(_dot 41)"
+		echo -e "${cyan}42. ${white}Navidrome闊充箰鏈嶅姟鍣?$(_dot 42)    ${cyan}43. ${white}Vaultwarden瀵嗙爜绠＄悊 $(_dot 43)     ${cyan}44. ${white}StirlingPDF宸ュ叿澶у叏 $(_dot 44)"
+		echo -e "${cyan}45. ${white}Speedtest娴嬮€熼潰鏉?$(_dot 45)      ${cyan}46. ${white}PhotoPrism绉佹湁鐩稿唽 $(_dot 46)       ${cyan}47. ${white}searxng鑱氬悎鎼滅储 $(_dot 47)"
+		echo -e "${cyan}48. ${white}Pingvin-Share鏂囦欢鍒嗕韩 $(_dot 48)  ${cyan}49. ${white}Dockge瀹瑰櫒绠＄悊 $(_dot 49)          ${cyan}50. ${white}it-tools宸ュ叿绠?$(_dot 50)"
+		echo -e "${cyan}51. ${white}n8n鑷姩鍖栧伐浣滄祦 $(_dot 51)       ${cyan}52. ${white}OpenWebUI鑷墭绠I $(_dot 52)        ${cyan}53. ${white}Dify澶фā鍨嬬煡璇嗗簱 $(_dot 53)"
+		echo -e "${cyan}54. ${white}gitea绉佹湁浠ｇ爜浠撳簱 $(_dot 54)      ${cyan}55. ${white}FileBrowser鏂囦欢绠＄悊 $(_dot 55)      ${cyan}56. ${white}FRP鍐呯綉绌块€?鏈嶅姟绔? $(_dot 56)"
+		echo -e "${cyan}57. ${white}WireGuard缁勭綉(鏈嶅姟绔? $(_dot 57)  ${cyan}58. ${white}JumpServer鍫″瀿鏈?$(_dot 58)         ${cyan}59. ${white}immich鍥剧墖瑙嗛绠＄悊 $(_dot 59)"
+		echo -e "${cyan}60. ${white}Syncthing鏂囦欢鍚屾 $(_dot 60)       ${cyan}61. ${white}Umami缃戠珯缁熻 $(_dot 61)           ${cyan}62. ${white}鎬濇簮绗旇 $(_dot 62)"
+		echo -e "${cyan}63. ${white}SFTPGo鏂囦欢浼犺緭 $(_dot 63)         ${cyan}64. ${white}Owncast鑷墭绠＄洿鎾?$(_dot 64)        ${cyan}65. ${white}Deepseek AI澶фā鍨?$(_dot 65)"
+		echo -e "${cyan}66. ${white}RocketChat鑱婂ぉ绯荤粺 $(_dot 66)     ${cyan}67. ${white}Gopeed楂橀€熶笅杞?$(_dot 67)           ${cyan}68. ${white}2FAuth浜屾楠岃瘉鍣?$(_dot 68)"
+		echo -e "${cyan}69. ${white}ZFile鍦ㄧ嚎缃戠洏 $(_dot 69)          ${cyan}70. ${white}Nexterm杩滅▼杩炴帴 $(_dot 70)          ${cyan}71. ${white}JitsiMeet瑙嗛浼氳 $(_dot 71)"
+		echo -e "${cyan}72. ${white}Stream鍥涘眰浠ｇ悊杞彂 $(_dot 72)     ${cyan}73. ${white}FileCodeBox鏂囦欢蹇€?$(_dot 73)      ${cyan}74. ${white}Matrix鍘讳腑蹇冨寲鑱婂ぉ $(_dot 74)"
+		echo -e "${cyan}75. ${white}yt-dlp瑙嗛涓嬭浇 $(_dot 75)         ${cyan}76. ${white}paperless鏂囨。绠＄悊 $(_dot 76)        ${cyan}77. ${white}Wallos璐㈠姟绠＄悊 $(_dot 77)"
+		echo -e "${cyan}78.  ${white}PairDrop文件传输 $(_dot 78)        ${cyan}79.  ${white}Dufs静态文件服务器 $(_dot 79)         ${cyan}80.  ${white}PandaWiki文档管理 $(_dot 80)"
+		echo -e "${cyan}81. ${white}linkwarden涔︾绠＄悊 $(_dot 81)     ${cyan}82. ${white}VoceChat鑱婂ぉ绯荤粺 $(_dot 82)         ${cyan}83. ${white}Karakeep涔︾绠＄悊 $(_dot 83)"
+		echo -e "${cyan}84. ${white}NewAPI澶фā鍨嬭祫浜х鐞?$(_dot 84)   ${cyan}85. ${white}RAGFlow鐭ヨ瘑搴?$(_dot 85)            ${cyan}86. ${white}AstrBot鑱婂ぉ鏈哄櫒浜?$(_dot 86)"
+		echo -e "${cyan}87. ${white}LangBot鑱婂ぉ鏈哄櫒浜?$(_dot 87)      ${cyan}88. ${white}澶氭牸寮忔枃浠惰浆鎹?$(_dot 88)           ${cyan}89. ${white}LibreSpeed娴嬮€?$(_dot 89)"
+		echo -e "${cyan}90. ${white}gpt-load AI閫忔槑浠ｇ悊 $(_dot 90)    ${cyan}91. ${white}琛ヨ揣鐩戞帶宸ュ叿 $(_dot 91)             ${cyan}92. ${white}PVE铏氭嫙鍖栫鐞?$(_dot 92)"
+		echo -e "${cyan}93. ${white}DSM缇ゆ櫀铏氭嫙鏈?$(_dot 93)          ${cyan}94. ${white}鍦ㄧ嚎DOS鑰佹父鎴?$(_dot 94)            ${cyan}95. ${white}杩呴浄绂荤嚎涓嬭浇 $(_dot 95)"
+		echo -e "${cyan}96. ${white}灏忛泤Alist鍏ㄥ妗?$(_dot 96)        ${cyan}97. ${white}Bililive鐩存挱褰曞埗 $(_dot 97)         ${cyan}98. ${white}鏋佺畝鏈嬪弸鍦?$(_dot 98)"
+		echo -e "${cyan}99. ${white}PanSou缃戠洏鎼滅储 $(_dot 99)         ${cyan}100.${white}绠€鍗曞浘搴妉skypro $(_dot 100)          ${cyan}101.${white}绂呴亾椤圭洰绠＄悊 $(_dot 101)"
+		echo -e "${cyan}102.${white}QD-Today瀹氭椂浠诲姟 $(_dot 102)       ${cyan}103.${white}鑰楀瓙绠＄悊闈㈡澘 $(_dot 103)             ${cyan}104.${white}AMH寤虹珯闈㈡澘 $(_dot 104)"
+		echo -e "${cyan}105.${white}鍦ㄧ嚎缈昏瘧鏈嶅姟鍣?$(_dot 105)         ${cyan}106.${white}AI瑙嗛鐢熸垚宸ュ叿 $(_dot 106)           ${cyan}107.${white}RustDesk杩滅▼妗岄潰 $(_dot 107)"
+		echo -e "${cyan}108.${white}Firefox娴忚鍣?$(_dot 108)          ${cyan}109.${white}DPanel瀹瑰櫒绠＄悊 $(_dot 109)           ${cyan}110.${white}鏅綏绫充慨鏂洃鎺?$(_dot 110)"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		read -e -p "请输入你的选择: " sub_choice
+		echo -e "${yellow}0.   ${white}杩斿洖涓昏彍鍗?
+		echo -e "${green}666. ${white}鏌ョ湅宸插畨瑁呭簲鐢?(褰撳墠: ${#INSTALLED_IDS[@]} 涓?"
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
+		read -e -p "璇疯緭鍏ヤ綘鐨勯€夋嫨: " sub_choice
 
 		case $sub_choice in
 			0)
@@ -2910,7 +2480,7 @@ linux_app() {
 				if [ -n "${APP_DISPLAY_NAMES[$sub_choice]:-}" ]; then
 					_linux_app_dispatch "$sub_choice"
 				else
-					echo -e "${red}无效选择, 请重新输入 !${white}"
+					echo -e "${red}鏃犳晥閫夋嫨, 璇烽噸鏂拌緭鍏?!${white}"
 					sleep 1
 				fi
 				;;
@@ -2919,19 +2489,18 @@ linux_app() {
 }
 
 #############################################################################
-########################### 补充应用 (36-110) #############################
+########################### 琛ュ厖搴旂敤 (36-110) #############################
 
-# portainer容器管理面板
+# portainer瀹瑰櫒绠＄悊闈㈡澘
 portainer_app(){
 	local app_id="36"
-	local app_name="Portainer容器管理"
+	local app_name="Portainer瀹瑰櫒绠＄悊"
 	local docker_name="portainer"
 	local docker_img="portainer/portainer-ce:latest"
 	local docker_port=9000
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 9000): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 9000): " _user_port
 		_user_port=${_user_port:-9000}
 		docker_port=$_user_port
 
@@ -2945,27 +2514,26 @@ portainer_app(){
 			-v portainer_data:/data \
 			portainer/portainer-ce:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="轻量级的Docker容器管理UI面板, 支持容器/镜像/网络/卷的可视化管理"
-	local app_url="官网介绍: https://www.portainer.io/"
+	local app_text="杞婚噺绾х殑Docker瀹瑰櫒绠＄悊UI闈㈡澘, 鏀寔瀹瑰櫒/闀滃儚/缃戠粶/鍗风殑鍙鍖栫鐞?
+	local app_url="瀹樼綉浠嬬粛: https://www.portainer.io/"
 	local app_size="1"
 	docker_app
 }
 
-# Cloudreve网盘
+# Cloudreve缃戠洏
 cloudreve_app(){
 	local app_id="37"
-	local app_name="Cloudreve网盘"
+	local app_name="Cloudreve缃戠洏"
 	local docker_name="cloudreve"
 	local docker_img="cloudreve/cloudreve:latest"
 	local docker_port=8088
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8088): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8088): " _user_port
 		_user_port=${_user_port:-8088}
 		docker_port=$_user_port
 
@@ -2977,23 +2545,23 @@ cloudreve_app(){
 			-v /home/docker/cloudreve:/cloudreve \
 			cloudreve/cloudreve:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="支持多种存储的云盘系统, 支持本地存储/对象存储/S3等"
-	local app_url="官网介绍: https://github.com/cloudreve/Cloudreve"
+	local app_text="鏀寔澶氱瀛樺偍鐨勪簯鐩樼郴缁? 鏀寔鏈湴瀛樺偍/瀵硅薄瀛樺偍/S3绛?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/cloudreve/Cloudreve"
 	local app_size="1"
 	docker_app
 }
 
-# Nextcloud网盘
+# Nextcloud缃戠洏
 nextcloud_app(){
 	local app_id="38"
 
-	local app_name="Nextcloud私有网盘"
-	local app_text="功能强大的私有云存储和协作平台"
-	local app_url="官网介绍: https://nextcloud.com/"
+	local app_name="Nextcloud绉佹湁缃戠洏"
+	local app_text="鍔熻兘寮哄ぇ鐨勭鏈変簯瀛樺偍鍜屽崗浣滃钩鍙?
+	local app_url="瀹樼綉浠嬬粛: https://nextcloud.com/"
 	local docker_name="nextcloud-app"
 	local docker_port="8089"
 	local app_size="2"
@@ -3056,7 +2624,7 @@ EOF
 		sed -i "s/\${docker_port}/${docker_port}/g" docker-compose.yml
 		docker compose up -d
 		clear
-		echo "Nextcloud 安装完成"
+		echo "Nextcloud 瀹夎瀹屾垚"
 		check_docker_app_ip
 	}
 
@@ -3068,23 +2636,21 @@ EOF
 	docker_app_uninstall() {
 		cd /home/docker/nextcloud && docker compose down --rmi all -v
 		rm -rf /home/docker/nextcloud
-		echo "Nextcloud 已卸载"
+		echo "Nextcloud 宸插嵏杞?
 	}
 
 	docker_app
 }
 
-# emby多媒体管理系统
-emby_app(){
+# emby澶氬獟浣撶鐞嗙郴缁?emby_app(){
 	local app_id="39"
-	local app_name="emby媒体管理"
+	local app_name="emby濯掍綋绠＄悊"
 	local docker_name="emby"
 	local docker_img="emby/embyserver:latest"
 	local docker_port=8096
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8096): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8096): " _user_port
 		_user_port=${_user_port:-8096}
 		docker_port=$_user_port
 
@@ -3099,27 +2665,26 @@ emby_app(){
 			--device=/dev/dri:/dev/dri \
 			emby/embyserver:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="功能强大的个人媒体服务器, 支持电影/电视剧/音乐管理和在线播放"
-	local app_url="官网介绍: https://emby.media/"
+	local app_text="鍔熻兘寮哄ぇ鐨勪釜浜哄獟浣撴湇鍔″櫒, 鏀寔鐢靛奖/鐢佃鍓?闊充箰绠＄悊鍜屽湪绾挎挱鏀?
+	local app_url="瀹樼綉浠嬬粛: https://emby.media/"
 	local app_size="3"
 	docker_app
 }
 
-# jellyfin媒体管理系统
+# jellyfin濯掍綋绠＄悊绯荤粺
 jellyfin_app(){
 	local app_id="40"
-	local app_name="jellyfin媒体管理"
+	local app_name="jellyfin濯掍綋绠＄悊"
 	local docker_name="jellyfin"
 	local docker_img="jellyfin/jellyfin:latest"
 	local docker_port=8097
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8097): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8097): " _user_port
 		_user_port=${_user_port:-8097}
 		docker_port=$_user_port
 
@@ -3133,26 +2698,25 @@ jellyfin_app(){
 			--device=/dev/dri:/dev/dri \
 			jellyfin/jellyfin:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="免费开源的媒体服务器, Emby的替代品, 支持电影/电视剧/音乐管理和在线播放"
-	local app_url="官网介绍: https://jellyfin.org/"
+	local app_text="鍏嶈垂寮€婧愮殑濯掍綋鏈嶅姟鍣? Emby鐨勬浛浠ｅ搧, 鏀寔鐢靛奖/鐢佃鍓?闊充箰绠＄悊鍜屽湪绾挎挱鏀?
+	local app_url="瀹樼綉浠嬬粛: https://jellyfin.org/"
 	local app_size="2"
 	docker_app
 }
 
-# AdGuardHome去广告软件
-adguardhome_app(){
+# AdGuardHome鍘诲箍鍛婅蒋浠?adguardhome_app(){
 	local app_id="41"
-	local app_name="AdGuardHome去广告"
+	local app_name="AdGuardHome鍘诲箍鍛?
 	local docker_name="adguardhome"
 	local docker_img="adguard/adguardhome:latest"
 	docker_run() {
 		mkdir -p /home/docker/adguardhome/work /home/docker/adguardhome/conf
-		# 让用户输入 Web管理界面 端口 (默认 3000)
-		read -e -p "设置Web管理界面端口 (默认3000): " web_port
+		# 璁╃敤鎴疯緭鍏?Web绠＄悊鐣岄潰 绔彛 (榛樿 3000)
+		read -e -p "璁剧疆Web绠＄悊鐣岄潰绔彛 (榛樿3000): " web_port
 		web_port=${web_port:-3000}
 
 		docker run -d \
@@ -3169,33 +2733,31 @@ adguardhome_app(){
 			-v /home/docker/adguardhome/conf:/opt/adguardhome/conf \
 			adguard/adguardhome:latest
 
-		# Web面板端口
-		add_app_port "Web管理界面" "$web_port"
-		# 其他 DNS/DHCP 端口保持硬编码 (暂不改)
-		add_app_port "DNS端口 (TCP+UDP)" 53
-		add_app_port "DHCP客户端" 67
-		add_app_port "DHCP服务端" 68
+		# Web闈㈡澘绔彛
+		add_app_port "Web绠＄悊鐣岄潰" "$web_port"
+		# 鍏朵粬 DNS/DHCP 绔彛淇濇寔纭紪鐮?(鏆備笉鏀?
+		add_app_port "DNS绔彛 (TCP+UDP)" 53
+		add_app_port "DHCP瀹㈡埛绔? 67
+		add_app_port "DHCP鏈嶅姟绔? 68
 		add_app_port "DNS-over-HTTPS" 443
 		add_app_port "DNS-over-TLS" 853
 	}
 
-	local app_text="全网广告拦截与隐私保护DNS服务, 支持DNS-over-HTTPS/TLS"
-	local app_url="官网介绍: https://adguard.com/adguard-home/overview.html"
+	local app_text="鍏ㄧ綉骞垮憡鎷︽埅涓庨殣绉佷繚鎶NS鏈嶅姟, 鏀寔DNS-over-HTTPS/TLS"
+	local app_url="瀹樼綉浠嬬粛: https://adguard.com/adguard-home/overview.html"
 	local app_size="1"
 	docker_app
 }
 
-# Navidrome私有音乐服务器
-navidrome_app(){
+# Navidrome绉佹湁闊充箰鏈嶅姟鍣?navidrome_app(){
 	local app_id="42"
-	local app_name="Navidrome音乐服务器"
+	local app_name="Navidrome闊充箰鏈嶅姟鍣?
 	local docker_name="navidrome"
 	local docker_img="deluan/navidrome:latest"
 	local docker_port=8098
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8098): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8098): " _user_port
 		_user_port=${_user_port:-8098}
 		docker_port=$_user_port
 
@@ -3208,27 +2770,26 @@ navidrome_app(){
 			-v /home/docker/navidrome/data:/data \
 			navidrome/navidrome:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="现代的私人音乐流媒体服务器, 支持多用户, 兼容Subsonic/Airsonic API"
-	local app_url="官网介绍: https://github.com/navidrome/navidrome"
+	local app_text="鐜颁唬鐨勭浜洪煶涔愭祦濯掍綋鏈嶅姟鍣? 鏀寔澶氱敤鎴? 鍏煎Subsonic/Airsonic API"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/navidrome/navidrome"
 	local app_size="1"
 	docker_app
 }
 
-# bitwarden密码管理器 (使用Vaultwarden轻量替代)
+# bitwarden瀵嗙爜绠＄悊鍣?(浣跨敤Vaultwarden杞婚噺鏇夸唬)
 bitwarden_app(){
 	local app_id="43"
-	local app_name="Vaultwarden密码管理"
+	local app_name="Vaultwarden瀵嗙爜绠＄悊"
 	local docker_name="vaultwarden"
 	local docker_img="vaultwarden/server:latest"
 	local docker_port=8099
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8099): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8099): " _user_port
 		_user_port=${_user_port:-8099}
 		docker_port=$_user_port
 
@@ -3241,27 +2802,26 @@ bitwarden_app(){
 			-v /home/docker/vaultwarden/data:/data \
 			vaultwarden/server:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="Bitwarden的轻量级替代(Vaultwarden), 自托管密码管理器"
-	local app_url="官网介绍: https://github.com/dani-garcia/vaultwarden"
+	local app_text="Bitwarden鐨勮交閲忕骇鏇夸唬(Vaultwarden), 鑷墭绠″瘑鐮佺鐞嗗櫒"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/dani-garcia/vaultwarden"
 	local app_size="1"
 	docker_app
 }
 
-# StirlingPDF工具大全
+# StirlingPDF宸ュ叿澶у叏
 stirlingpdf_app(){
 	local app_id="44"
-	local app_name="StirlingPDF工具大全"
+	local app_name="StirlingPDF宸ュ叿澶у叏"
 	local docker_name="stirlingpdf"
 	local docker_img="frooodle/s-pdf:latest"
 	local docker_port=8100
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8100): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8100): " _user_port
 		_user_port=${_user_port:-8100}
 		docker_port=$_user_port
 
@@ -3275,27 +2835,25 @@ stirlingpdf_app(){
 			-e DOCKER_ENABLE_SECURITY=false \
 			frooodle/s-pdf:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="功能强大的PDF处理工具箱, 支持合并/拆分/转换/压缩/加水印等"
-	local app_url="官网介绍: https://github.com/Stirling-Tools/Stirling-PDF"
+	local app_text="鍔熻兘寮哄ぇ鐨凱DF澶勭悊宸ュ叿绠? 鏀寔鍚堝苟/鎷嗗垎/杞崲/鍘嬬缉/鍔犳按鍗扮瓑"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/Stirling-Tools/Stirling-PDF"
 	local app_size="2"
 	docker_app
 }
 
-# Speedtest测速面板
-speedtest_app(){
+# Speedtest娴嬮€熼潰鏉?speedtest_app(){
 	local app_id="45"
-	local app_name="Speedtest测速面板"
+	local app_name="Speedtest娴嬮€熼潰鏉?
 	local docker_name="speedtest"
 	local docker_img="adolfintel/speedtest:latest"
 	local docker_port=8101
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8101): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8101): " _user_port
 		_user_port=${_user_port:-8101}
 		docker_port=$_user_port
 
@@ -3306,23 +2864,23 @@ speedtest_app(){
 			--network host \
 			adolfintel/speedtest:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="LibreSpeed测速面板, 自托管的网络测速工具"
-	local app_url="官网介绍: https://github.com/librespeed/speedtest"
+	local app_text="LibreSpeed娴嬮€熼潰鏉? 鑷墭绠＄殑缃戠粶娴嬮€熷伐鍏?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/librespeed/speedtest"
 	local app_size="1"
 	docker_app
 }
 
-# PhotoPrism私有相册系统
+# PhotoPrism绉佹湁鐩稿唽绯荤粺
 photoprism_app(){
 	local app_id="46"
 
-	local app_name="PhotoPrism私有相册"
-	local app_text="基于AI的私有照片管理和浏览系统"
-	local app_url="官网介绍: https://photoprism.app/"
+	local app_name="PhotoPrism绉佹湁鐩稿唽"
+	local app_text="鍩轰簬AI鐨勭鏈夌収鐗囩鐞嗗拰娴忚绯荤粺"
+	local app_url="瀹樼綉浠嬬粛: https://photoprism.app/"
 	local docker_name="photoprism-app"
 	local docker_port="8102"
 	local app_size="3"
@@ -3361,7 +2919,7 @@ EOF
 		sed -i "s/\${docker_port}/${docker_port}/g" docker-compose.yml
 		docker compose up -d
 		clear
-		echo "PhotoPrism 安装完成"
+		echo "PhotoPrism 瀹夎瀹屾垚"
 		check_docker_app_ip
 	}
 
@@ -3373,23 +2931,21 @@ EOF
 	docker_app_uninstall() {
 		cd /home/docker/photoprism && docker compose down --rmi all -v
 		rm -rf /home/docker/photoprism
-		echo "PhotoPrism 已卸载"
+		echo "PhotoPrism 宸插嵏杞?
 	}
 
 	docker_app
 }
 
-# searxng聚合搜索站
-searxng_app(){
+# searxng鑱氬悎鎼滅储绔?searxng_app(){
 	local app_id="47"
-	local app_name="searxng聚合搜索"
+	local app_name="searxng鑱氬悎鎼滅储"
 	local docker_name="searxng"
 	local docker_img="searxng/searxng:latest"
 	local docker_port=8103
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8103): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8103): " _user_port
 		_user_port=${_user_port:-8103}
 		docker_port=$_user_port
 
@@ -3403,27 +2959,26 @@ searxng_app(){
 			-e SEARXNG_SECRET: "$(openssl rand -hex 32)" \
 			searxng/searxng:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="注重隐私的元搜索引擎聚合平台, 不追踪用户"
-	local app_url="官网介绍: https://github.com/searxng/searxng"
+	local app_text="娉ㄩ噸闅愮鐨勫厓鎼滅储寮曟搸鑱氬悎骞冲彴, 涓嶈拷韪敤鎴?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/searxng/searxng"
 	local app_size="1"
 	docker_app
 }
 
-# Pingvin-Share文件分享平台
+# Pingvin-Share鏂囦欢鍒嗕韩骞冲彴
 pingvinshare_app(){
 	local app_id="48"
-	local app_name="Pingvin-Share文件分享"
+	local app_name="Pingvin-Share鏂囦欢鍒嗕韩"
 	local docker_name="pingvin-share"
 	local docker_img="stonith404/pingvin-share:latest"
 	local docker_port=8104
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8104): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8104): " _user_port
 		_user_port=${_user_port:-8104}
 		docker_port=$_user_port
 
@@ -3436,27 +2991,26 @@ pingvinshare_app(){
 			-v /home/docker/pingvin/images:/app/backend/images \
 			stonith404/pingvin-share:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="自托管文件分享平台, 支持创建分享链接和上传文件"
-	local app_url="官网介绍: https://github.com/stonith404/pingvin-share"
+	local app_text="鑷墭绠℃枃浠跺垎浜钩鍙? 鏀寔鍒涘缓鍒嗕韩閾炬帴鍜屼笂浼犳枃浠?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/stonith404/pingvin-share"
 	local app_size="1"
 	docker_app
 }
 
-# Dockge容器堆栈管理面板
+# Dockge瀹瑰櫒鍫嗘爤绠＄悊闈㈡澘
 dockge_app(){
 	local app_id="49"
-	local app_name="Dockge容器管理"
+	local app_name="Dockge瀹瑰櫒绠＄悊"
 	local docker_name="dockge"
 	local docker_img="louislam/dockge:latest"
 	local docker_port=8105
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8105): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8105): " _user_port
 		_user_port=${_user_port:-8105}
 		docker_port=$_user_port
 
@@ -3470,27 +3024,25 @@ dockge_app(){
 			-v /home/docker/dockge/stacks:/opt/stacks \
 			louislam/dockge:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="简洁优雅的Docker Compose堆栈管理面板"
-	local app_url="官网介绍: https://github.com/louislam/dockge"
+	local app_text="绠€娲佷紭闆呯殑Docker Compose鍫嗘爤绠＄悊闈㈡澘"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/louislam/dockge"
 	local app_size="1"
 	docker_app
 }
 
-# it-tools工具箱
-ittools_app(){
+# it-tools宸ュ叿绠?ittools_app(){
 	local app_id="50"
-	local app_name="it-tools工具箱"
+	local app_name="it-tools宸ュ叿绠?
 	local docker_name="it-tools"
 	local docker_img="corentintho/it-tools:latest"
 	local docker_port=8106
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8106): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8106): " _user_port
 		_user_port=${_user_port:-8106}
 		docker_port=$_user_port
 
@@ -3501,13 +3053,13 @@ ittools_app(){
 			corentintho/it-tools:latest
 	}
 
-	local app_text="开发者常用工具集合, 包含JSON格式化/Base64编解码/UUID生成等数百个工具"
-	local app_url="官网介绍: https://github.com/CorentinTh/it-tools"
+	local app_text="寮€鍙戣€呭父鐢ㄥ伐鍏烽泦鍚? 鍖呭惈JSON鏍煎紡鍖?Base64缂栬В鐮?UUID鐢熸垚绛夋暟鐧句釜宸ュ叿"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/CorentinTh/it-tools"
 	local app_size="1"
 	docker_app
 }
 
-# n8n自动化工作流平台
+# n8n鑷姩鍖栧伐浣滄祦骞冲彴
 n8n_app(){
 	local app_id="51"
 	local docker_name="n8n"
@@ -3524,27 +3076,26 @@ n8n_app(){
 			-e N8N_HOST=0.0.0.0 \
 			n8nio/n8n:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的工作流自动化平台, 可视化连接各种API和服务"
-	local app_url="官网介绍: https://n8n.io/"
+	local app_text="寮€婧愮殑宸ヤ綔娴佽嚜鍔ㄥ寲骞冲彴, 鍙鍖栬繛鎺ュ悇绉岮PI鍜屾湇鍔?
+	local app_url="瀹樼綉浠嬬粛: https://n8n.io/"
 	local app_size="2"
 	docker_app
 }
 
-# OpenWebUI自托管AI平台
+# OpenWebUI鑷墭绠I骞冲彴
 openwebui_app(){
 	local app_id="52"
-	local app_name="OpenWebUI自托管AI"
+	local app_name="OpenWebUI鑷墭绠I"
 	local docker_name="open-webui"
 	local docker_img="ghcr.io/open-webui/open-webui:main"
 	local docker_port=8108
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8108): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8108): " _user_port
 		_user_port=${_user_port:-8108}
 		docker_port=$_user_port
 
@@ -3557,23 +3108,23 @@ openwebui_app(){
 			-e WEBUI_AUTH=true \
 			ghcr.io/open-webui/open-webui:main
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="自托管的AI对话界面, 支持Ollama/OpenAI等多种后端"
-	local app_url="官网介绍: https://github.com/open-webui/open-webui"
+	local app_text="鑷墭绠＄殑AI瀵硅瘽鐣岄潰, 鏀寔Ollama/OpenAI绛夊绉嶅悗绔?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/open-webui/open-webui"
 	local app_size="2"
 	docker_app
 }
 
-# Dify大模型知识库
+# Dify澶фā鍨嬬煡璇嗗簱
 dify_app(){
 	local app_id="53"
 
-	local app_name="Dify大模型知识库"
-	local app_text="开源的LLM应用开发平台, 可视化编排AI工作流"
-	local app_url="官网介绍: https://dify.ai/"
+	local app_name="Dify澶фā鍨嬬煡璇嗗簱"
+	local app_text="寮€婧愮殑LLM搴旂敤寮€鍙戝钩鍙? 鍙鍖栫紪鎺扐I宸ヤ綔娴?
+	local app_url="瀹樼綉浠嬬粛: https://dify.ai/"
 	local docker_name="dify-app"
 	local docker_port="8109"
 	local app_size="3"
@@ -3591,7 +3142,7 @@ dify_app(){
 
 		docker compose up -d
 		clear
-		echo "Dify 安装完成"
+		echo "Dify 瀹夎瀹屾垚"
 		check_docker_app_ip
 	}
 
@@ -3602,23 +3153,22 @@ dify_app(){
 	docker_app_uninstall() {
 		cd /home/docker/dify && docker compose down --rmi all -v
 		rm -rf /home/docker/dify
-		echo "Dify 已卸载"
+		echo "Dify 宸插嵏杞?
 	}
 
 	docker_app
 }
 
-# gitea私有代码仓库
+# gitea绉佹湁浠ｇ爜浠撳簱
 gitea_app(){
 	local app_id="54"
-	local app_name="gitea私有代码仓库"
+	local app_name="gitea绉佹湁浠ｇ爜浠撳簱"
 	local docker_name="gitea"
 	local docker_img="gitea/gitea:latest"
 	local docker_port=8110
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8110): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8110): " _user_port
 		_user_port=${_user_port:-8110}
 		docker_port=$_user_port
 
@@ -3633,27 +3183,25 @@ gitea_app(){
 			-v /etc/localtime:/etc/localtime:ro \
 			gitea/gitea:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="轻量级的自托管Git服务, 类似GitHub/GitLab"
-	local app_url="官网介绍: https://gitea.io/"
+	local app_text="杞婚噺绾х殑鑷墭绠it鏈嶅姟, 绫讳技GitHub/GitLab"
+	local app_url="瀹樼綉浠嬬粛: https://gitea.io/"
 	local app_size="2"
 	docker_app
 }
 
-# FileBrowser文件管理器
-filebrowser_app(){
+# FileBrowser鏂囦欢绠＄悊鍣?filebrowser_app(){
 	local app_id="55"
-	local app_name="FileBrowser文件管理"
+	local app_name="FileBrowser鏂囦欢绠＄悊"
 	local docker_name="filebrowser"
 	local docker_img="filebrowser/filebrowser:latest"
 	local docker_port=8111
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8111): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8111): " _user_port
 		_user_port=${_user_port:-8111}
 		docker_port=$_user_port
 
@@ -3666,45 +3214,44 @@ filebrowser_app(){
 			-v /home/docker/filebrowser/srv:/srv \
 			filebrowser/filebrowser:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="轻量级的网页文件管理器, 支持文件上传/下载/编辑/分享"
-	local app_url="官网介绍: https://github.com/filebrowser/filebrowser"
+	local app_text="杞婚噺绾х殑缃戦〉鏂囦欢绠＄悊鍣? 鏀寔鏂囦欢涓婁紶/涓嬭浇/缂栬緫/鍒嗕韩"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/filebrowser/filebrowser"
 	local app_size="1"
 	docker_app
 }
 
-# FRP内网穿透(服务端)
-# 多端口样本: Dashboard + Server 端口
+# FRP鍐呯綉绌块€?鏈嶅姟绔?
+# 澶氱鍙ｆ牱鏈? Dashboard + Server 绔彛
 frp_server_app(){
 	local app_id="56"
-	local app_name="FRP内网穿透(服务端)"
+	local app_name="FRP鍐呯綉绌块€?鏈嶅姟绔?"
 	local docker_name="frps"
 	local docker_img="snowdreamtech/frps:latest"
-	local app_text="FRP内网穿透服务端, 让内网服务暴露到公网"
-	local app_url="官网介绍: https://github.com/fatedier/frp"
+	local app_text="FRP鍐呯綉绌块€忔湇鍔＄, 璁╁唴缃戞湇鍔℃毚闇插埌鍏綉"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/fatedier/frp"
 	local app_size="1"
 
 	docker_run() {
 		mkdir -p /home/docker/frps
 
-		# 1. 收集面板与服务端口
-		read -e -p "设置FRP面板端口 (默认7500): " dash_port
+		# 1. 鏀堕泦闈㈡澘涓庢湇鍔＄鍙?		read -e -p "璁剧疆FRP闈㈡澘绔彛 (榛樿7500): " dash_port
 		dash_port=${dash_port:-7500}
 
-		read -e -p "设置FRP服务端口 (默认7000): " frp_port
+		read -e -p "璁剧疆FRP鏈嶅姟绔彛 (榛樿7000): " frp_port
 		frp_port=${frp_port:-7000}
 
-		# 2. 收集客户端连接的认证 Token
-        read -e -p "设置FRP客户端连接认证Token(通信密码, 默认12345678): " auth_token
+		# 2. 鏀堕泦瀹㈡埛绔繛鎺ョ殑璁よ瘉 Token
+        read -e -p "璁剧疆FRP瀹㈡埛绔繛鎺ヨ璇乀oken(閫氫俊瀵嗙爜, 榛樿12345678): " auth_token
         auth_token=${auth_token:-12345678}
 
-		# 3. 收集面板密码
-		read -e -p "设置Dashboard密码: " dash_pwd
+		# 3. 鏀堕泦闈㈡澘瀵嗙爜
+		read -e -p "璁剧疆Dashboard瀵嗙爜: " dash_pwd
 
-		# 4. 生成 frps.toml 配置文件
+		# 4. 鐢熸垚 frps.toml 閰嶇疆鏂囦欢
 		cat > /home/docker/frps/frps.toml << EOF
 bindPort = $frp_port
 
@@ -3713,8 +3260,7 @@ webServer.port = $dash_port
 webServer.user = "admin"
 webServer.password = "$dash_pwd"
 
-# 开启 Token 认证保护服务端
-auth.method = "token"
+# 寮€鍚?Token 璁よ瘉淇濇姢鏈嶅姟绔?auth.method = "token"
 auth.token = "$auth_token"
 EOF
 
@@ -3725,33 +3271,33 @@ EOF
 			-v /home/docker/frps/frps.toml:/etc/frp/frps.toml \
 			snowdreamtech/frps:latest
 		
-		# Dashboard端口
-		add_app_port "Dashboard访问地址" "$dash_port"
-		# Server端口
-		add_app_port "Server访问地址" "$frp_port"
+		# Dashboard绔彛
+		add_app_port "Dashboard璁块棶鍦板潃" "$dash_port"
+		# Server绔彛
+		add_app_port "Server璁块棶鍦板潃" "$frp_port"
 	}
 
 	docker_app
 }
 
-# WireGuard组网(服务端)
-# 多端口样本: Web 管理面板 + WireGuard UDP 端口
+# WireGuard缁勭綉(鏈嶅姟绔?
+# 澶氱鍙ｆ牱鏈? Web 绠＄悊闈㈡澘 + WireGuard UDP 绔彛
 wireguard_server_app(){
 	local app_id="57"
-	local app_name="WireGuard组网(服务端)"
+	local app_name="WireGuard缁勭綉(鏈嶅姟绔?"
 	local docker_name="wg-easy"
 	local docker_img="ghcr.io/wg-easy/wg-easy:latest"
-	local app_text="WireGuard VPN服务端, 简单易用的虚拟组网工具"
-	local app_url="官网介绍: https://github.com/wg-easy/wg-easy"
+	local app_text="WireGuard VPN鏈嶅姟绔? 绠€鍗曟槗鐢ㄧ殑铏氭嫙缁勭綉宸ュ叿"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/wg-easy/wg-easy"
 	local app_size="1"
 
 	docker_run() {
 		mkdir -p /home/docker/wireguard
-		read -e -p "设置面板端口 (默认8113): " dash_port
+		read -e -p "璁剧疆闈㈡澘绔彛 (榛樿8113): " dash_port
 		dash_port=${dash_port:-8113}
-		read -e -p "设置WireGuard端口 (默认51820): " wg_udp_port
+		read -e -p "璁剧疆WireGuard绔彛 (榛樿51820): " wg_udp_port
 		wg_udp_port=${wg_udp_port:-51820}
-		read -e -p "设置管理面板密码: " wg_pwd
+		read -e -p "璁剧疆绠＄悊闈㈡澘瀵嗙爜: " wg_pwd
 
 		docker run -d \
 			--name wg-easy \
@@ -3768,26 +3314,26 @@ wireguard_server_app(){
 			ghcr.io/wg-easy/wg-easy:latest
 
 
-		# Web 管理面板端口
-		add_app_port "Web管理面板" "$dash_port"
-		# WireGuard UDP端口
-		add_app_port "WireGuard端口 (UDP)" "$wg_udp_port"
+		# Web 绠＄悊闈㈡澘绔彛
+		add_app_port "Web绠＄悊闈㈡澘" "$dash_port"
+		# WireGuard UDP绔彛
+		add_app_port "WireGuard绔彛 (UDP)" "$wg_udp_port"
 	}
 
 	docker_app
 }
 
-# JumpServer开源堡垒机
+# JumpServer寮€婧愬牎鍨掓満
 jumpserver_app(){
 	local app_id="58"
 
-	local app_name="JumpServer堡垒机"
-	local app_text="开源的运维安全审计系统, 集中管理SSH/RDP访问"
-	local app_url="官网介绍: https://www.jumpserver.org/"
+	local app_name="JumpServer鍫″瀿鏈?
+	local app_text="寮€婧愮殑杩愮淮瀹夊叏瀹¤绯荤粺, 闆嗕腑绠＄悊SSH/RDP璁块棶"
+	local app_url="瀹樼綉浠嬬粛: https://www.jumpserver.org/"
 	local docker_name="jms-all"
 	local docker_port="8114"
-	add_app_port "Web管理界面" 8114
-	add_app_port "SSH连接端口" 2222
+	add_app_port "Web绠＄悊鐣岄潰" 8114
+	add_app_port "SSH杩炴帴绔彛" 2222
 	local app_size="4"
 
 	docker_app_install() {
@@ -3857,8 +3403,8 @@ EOF
 		sed -i "s/\${docker_port}/${docker_port}/g" docker-compose.yml
 		docker compose up -d
 		clear
-		echo "JumpServer 安装完成"
-		echo "默认用户: admin  密码: ChangeMe"
+		echo "JumpServer 瀹夎瀹屾垚"
+		echo "榛樿鐢ㄦ埛: admin  瀵嗙爜: ChangeMe"
 		check_docker_app_ip
 	}
 
@@ -3870,19 +3416,18 @@ EOF
 	docker_app_uninstall() {
 		cd /home/docker/jumpserver && docker compose down --rmi all -v
 		rm -rf /home/docker/jumpserver
-		echo "JumpServer 已卸载"
+		echo "JumpServer 宸插嵏杞?
 	}
 
 	docker_app
 }
 
-# immich图片视频管理器
-immich_app(){
+# immich鍥剧墖瑙嗛绠＄悊鍣?immich_app(){
 	local app_id="59"
 
-	local app_name="Immich图片视频管理"
-	local app_text="高性能的自托管Google Photos替代品"
-	local app_url="官网介绍: https://immich.app/"
+	local app_name="Immich鍥剧墖瑙嗛绠＄悊"
+	local app_text="楂樻€ц兘鐨勮嚜鎵樼Google Photos鏇夸唬鍝?
+	local app_url="瀹樼綉浠嬬粛: https://immich.app/"
 	local docker_name="immich-server"
 	local docker_port="8115"
 	local app_size="3"
@@ -3899,7 +3444,7 @@ immich_app(){
 
 		docker compose up -d
 		clear
-		echo "Immich 安装完成"
+		echo "Immich 瀹夎瀹屾垚"
 		check_docker_app_ip
 	}
 
@@ -3910,22 +3455,21 @@ immich_app(){
 	docker_app_uninstall() {
 		cd /home/docker/immich && docker compose down --rmi all -v
 		rm -rf /home/docker/immich
-		echo "Immich 已卸载"
+		echo "Immich 宸插嵏杞?
 	}
 
 	docker_app
 }
 
-# Syncthing点对点文件同步工具
-syncthing_app(){
+# Syncthing鐐瑰鐐规枃浠跺悓姝ュ伐鍏?syncthing_app(){
 	local app_id="60"
-	local app_name="Syncthing文件同步"
+	local app_name="Syncthing鏂囦欢鍚屾"
 	local docker_name="syncthing"
 	local docker_img="syncthing/syncthing:latest"
 	docker_run() {
 		mkdir -p /home/docker/syncthing/config
-		# 让用户输入 Web管理界面 端口 (默认 8116)
-		read -e -p "设置Web管理界面端口 (默认8116): " web_port
+		# 璁╃敤鎴疯緭鍏?Web绠＄悊鐣岄潰 绔彛 (榛樿 8116)
+		read -e -p "璁剧疆Web绠＄悊鐣岄潰绔彛 (榛樿8116): " web_port
 		web_port=${web_port:-8116}
 
 		docker run -d \
@@ -3937,29 +3481,28 @@ syncthing_app(){
 			-v /home/docker/syncthing/config:/var/syncthing/config \
 			syncthing/syncthing:latest
 
-		# Web面板端口
-		add_app_port "Web管理界面" "$web_port"
-		# TCP/UDP 同步端口保持硬编码 (暂不改)
-		add_app_port "设备同步端口 (TCP+UDP)" 22000
+		# Web闈㈡澘绔彛
+		add_app_port "Web绠＄悊鐣岄潰" "$web_port"
+		# TCP/UDP 鍚屾绔彛淇濇寔纭紪鐮?(鏆備笉鏀?
+		add_app_port "璁惧鍚屾绔彛 (TCP+UDP)" 22000
 	}
 
-	local app_text="开源的连续文件同步工具, 支持P2P多设备间文件同步"
-	local app_url="官网介绍: https://syncthing.net/"
+	local app_text="寮€婧愮殑杩炵画鏂囦欢鍚屾宸ュ叿, 鏀寔P2P澶氳澶囬棿鏂囦欢鍚屾"
+	local app_url="瀹樼綉浠嬬粛: https://syncthing.net/"
 	local app_size="1"
 	docker_app
 }
 
-# Umami网站统计工具
+# Umami缃戠珯缁熻宸ュ叿
 umami_app(){
 	local app_id="61"
-	local app_name="Umami网站统计"
+	local app_name="Umami缃戠珯缁熻"
 	local docker_name="umami"
 	local docker_img="ghcr.io/umami-software/umami:postgresql-latest"
 	local docker_port=8117
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8117): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8117): " _user_port
 		_user_port=${_user_port:-8117}
 		docker_port=$_user_port
 
@@ -3972,27 +3515,26 @@ umami_app(){
 			-e UMAMI_APP_SECRET="$(openssl rand -hex 32)" \
 			umami/umami:postgresql-latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的网站分析统计工具, Google Analytics的隐私友好替代"
-	local app_url="官网介绍: https://umami.is/"
+	local app_text="寮€婧愮殑缃戠珯鍒嗘瀽缁熻宸ュ叿, Google Analytics鐨勯殣绉佸弸濂芥浛浠?
+	local app_url="瀹樼綉浠嬬粛: https://umami.is/"
 	local app_size="1"
 	docker_app
 }
 
-# 思源笔记
+# 鎬濇簮绗旇
 siyuan_app(){
 	local app_id="62"
-	local app_name="思源笔记"
+	local app_name="鎬濇簮绗旇"
 	local docker_name="siyuan"
 	local docker_img="b3log/siyuan:latest"
 	local docker_port=8118
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8118): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8118): " _user_port
 		_user_port=${_user_port:-8118}
 		docker_port=$_user_port
 
@@ -4004,27 +3546,26 @@ siyuan_app(){
 			-v /home/docker/siyuan/workspace:/siyuan/workspace \
 			b3log/siyuan:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="本地优先的个人知识管理系统, 支持块级引用和双向链接"
-	local app_url="官网介绍: https://b3log.org/siyuan/"
+	local app_text="鏈湴浼樺厛鐨勪釜浜虹煡璇嗙鐞嗙郴缁? 鏀寔鍧楃骇寮曠敤鍜屽弻鍚戦摼鎺?
+	local app_url="瀹樼綉浠嬬粛: https://b3log.org/siyuan/"
 	local app_size="2"
 	docker_app
 }
 
-# SFTPGo文件传输工具
+# SFTPGo鏂囦欢浼犺緭宸ュ叿
 sftpgp_app(){
 	local app_id="63"
-	local app_name="SFTPGo文件传输"
+	local app_name="SFTPGo鏂囦欢浼犺緭"
 	local docker_name="sftpgo"
 	local docker_img="drakkan/sftpgo:latest"
 	local docker_port=8119
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8119): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8119): " _user_port
 		_user_port=${_user_port:-8119}
 		docker_port=$_user_port
 
@@ -4038,27 +3579,25 @@ sftpgp_app(){
 			-v /home/docker/sftpgo/config:/etc/sftpgo \
 			drakkan/sftpgo:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="功能齐全的SFTP/FTP/WebDAV服务器, 支持多种协议"
-	local app_url="官网介绍: https://github.com/drakkan/sftpgo"
+	local app_text="鍔熻兘榻愬叏鐨凷FTP/FTP/WebDAV鏈嶅姟鍣? 鏀寔澶氱鍗忚"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/drakkan/sftpgo"
 	local app_size="1"
 	docker_app
 }
 
-# Owncast自托管直播平台
-owncast_app(){
+# Owncast鑷墭绠＄洿鎾钩鍙?owncast_app(){
 	local app_id="64"
-	local app_name="Owncast自托管直播"
+	local app_name="Owncast鑷墭绠＄洿鎾?
 	local docker_name="owncast"
 	local docker_img="owncast/owncast:latest"
 	local docker_port=8120
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8120): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8120): " _user_port
 		_user_port=${_user_port:-8120}
 		docker_port=$_user_port
 
@@ -4071,27 +3610,25 @@ owncast_app(){
 			-v /home/docker/owncast/data:/app/data \
 			owncast/owncast:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="自托管的视频直播平台, 支持RTMP推流和Web观看"
-	local app_url="官网介绍: https://owncast.online/"
+	local app_text="鑷墭绠＄殑瑙嗛鐩存挱骞冲彴, 鏀寔RTMP鎺ㄦ祦鍜學eb瑙傜湅"
+	local app_url="瀹樼綉浠嬬粛: https://owncast.online/"
 	local app_size="2"
 	docker_app
 }
 
-# Deepseek聊天AI大模型
-deepseek_app(){
+# Deepseek鑱婂ぉAI澶фā鍨?deepseek_app(){
 	local app_id="65"
-	local app_name="Deepseek AI大模型"
+	local app_name="Deepseek AI澶фā鍨?
 	local docker_name="deepseek"
 	local docker_img="deepseek-ai/deepseek-coder:6.7b-instruct-q4_0"
 	local docker_port=8121
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8121): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8121): " _user_port
 		_user_port=${_user_port:-8121}
 		docker_port=$_user_port
 
@@ -4102,23 +3639,23 @@ deepseek_app(){
 			-v /home/docker/deepseek:/root/.ollama \
 			deepseek-ai/deepseek-coder:6.7b-instruct-q4_0
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="DeepSeek AI大模型本地部署, 支持代码生成和对话"
-	local app_url="官网介绍: https://github.com/deepseek-ai/DeepSeek-Coder"
+	local app_text="DeepSeek AI澶фā鍨嬫湰鍦伴儴缃? 鏀寔浠ｇ爜鐢熸垚鍜屽璇?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/deepseek-ai/DeepSeek-Coder"
 	local app_size="4"
 	docker_app
 }
 
-# RocketChat多人在线聊天系统
+# RocketChat澶氫汉鍦ㄧ嚎鑱婂ぉ绯荤粺
 rocketchat_app(){
 	local app_id="66"
 
 	local app_name="RocketChat"
-	local app_text="开源的团队协作聊天平台, Slack的替代品"
-	local app_url="官网介绍: https://rocket.chat/"
+	local app_text="寮€婧愮殑鍥㈤槦鍗忎綔鑱婂ぉ骞冲彴, Slack鐨勬浛浠ｅ搧"
+	local app_url="瀹樼綉浠嬬粛: https://rocket.chat/"
 	local docker_name="rocketchat-app"
 	local docker_port="8122"
 	local app_size="3"
@@ -4176,7 +3713,7 @@ EOF
 		sed -i "s/\${docker_port}/${docker_port}/g" docker-compose.yml
 		docker compose up -d
 		clear
-		echo "RocketChat 安装完成"
+		echo "RocketChat 瀹夎瀹屾垚"
 		check_docker_app_ip
 	}
 
@@ -4188,23 +3725,21 @@ EOF
 	docker_app_uninstall() {
 		cd /home/docker/rocketchat && docker compose down --rmi all -v
 		rm -rf /home/docker/rocketchat
-		echo "RocketChat 已卸载"
+		echo "RocketChat 宸插嵏杞?
 	}
 
 	docker_app
 }
 
-# Gopeed高速下载工具
-gopeed_app(){
+# Gopeed楂橀€熶笅杞藉伐鍏?gopeed_app(){
 	local app_id="67"
-	local app_name="Gopeed高速下载"
+	local app_name="Gopeed楂橀€熶笅杞?
 	local docker_name="gopeed"
 	local docker_img="liwei2633/gopeed:latest"
 	local docker_port=8123
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8123): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8123): " _user_port
 		_user_port=${_user_port:-8123}
 		docker_port=$_user_port
 
@@ -4216,27 +3751,26 @@ gopeed_app(){
 			-v /home/docker/gopeed:/app/data \
 			liwei2633/gopeed:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="高速下载工具, 支持HTTP/BitTorrent等协议"
-	local app_url="官网介绍: https://github.com/GoproxyFoss/gopeed"
+	local app_text="楂橀€熶笅杞藉伐鍏? 鏀寔HTTP/BitTorrent绛夊崗璁?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/GoproxyFoss/gopeed"
 	local app_size="1"
 	docker_app
 }
 
-# 2FAuth自托管二步验证器
+# 2FAuth鑷墭绠′簩姝ラ獙璇佸櫒
 twofauth_app(){
 	local app_id="68"
-	local app_name="2FAuth二步验证器"
+	local app_name="2FAuth浜屾楠岃瘉鍣?
 	local docker_name="2fauth"
 	local docker_img="2fauth/2fauth:latest"
 	local docker_port=8124
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8124): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8124): " _user_port
 		_user_port=${_user_port:-8124}
 		docker_port=$_user_port
 
@@ -4250,27 +3784,26 @@ twofauth_app(){
 			-e APP_KEY=base64:$(openssl rand -base64 32) \
 			2fauth/2fauth:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="自托管的二步验证(2FA)管理器, 管理所有TOTP/HOTP令牌"
-	local app_url="官网介绍: https://docs.2fauth.app/"
+	local app_text="鑷墭绠＄殑浜屾楠岃瘉(2FA)绠＄悊鍣? 绠＄悊鎵€鏈塗OTP/HOTP浠ょ墝"
+	local app_url="瀹樼綉浠嬬粛: https://docs.2fauth.app/"
 	local app_size="1"
 	docker_app
 }
 
-# ZFile在线网盘
+# ZFile鍦ㄧ嚎缃戠洏
 zfile_app(){
 	local app_id="69"
-	local app_name="ZFile在线网盘"
+	local app_name="ZFile鍦ㄧ嚎缃戠洏"
 	local docker_name="zfile"
 	local docker_img="zhaojun1998/zfile:latest"
 	local docker_port=8125
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8125): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8125): " _user_port
 		_user_port=${_user_port:-8125}
 		docker_port=$_user_port
 
@@ -4282,27 +3815,26 @@ zfile_app(){
 			-v /home/docker/zfile/data:/data \
 			zhaojun1998/zfile:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的在线网盘系统, 支持多种存储策略"
-	local app_url="官网介绍: https://github.com/zhaojun1998/zfile"
+	local app_text="寮€婧愮殑鍦ㄧ嚎缃戠洏绯荤粺, 鏀寔澶氱瀛樺偍绛栫暐"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/zhaojun1998/zfile"
 	local app_size="1"
 	docker_app
 }
 
-# Nexterm远程连接
+# Nexterm杩滅▼杩炴帴
 nexterm_app(){
 	local app_id="70"
-	local app_name="Nexterm远程连接"
+	local app_name="Nexterm杩滅▼杩炴帴"
 	local docker_name="nexterm"
 	local docker_img="germannewsmaker/nexterm:latest"
 	local docker_port=8126
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8126): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8126): " _user_port
 		_user_port=${_user_port:-8126}
 		docker_port=$_user_port
 
@@ -4314,27 +3846,26 @@ nexterm_app(){
 			-v /home/docker/nexterm:/app/data \
 			germannewsmaker/nexterm:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的远程连接管理工具, 支持SSH/VNC/RDP"
-	local app_url="官网介绍: https://github.com/gnmyt/Nexterm"
+	local app_text="寮€婧愮殑杩滅▼杩炴帴绠＄悊宸ュ叿, 鏀寔SSH/VNC/RDP"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/gnmyt/Nexterm"
 	local app_size="1"
 	docker_app
 }
 
-# JitsiMeet视频会议
+# JitsiMeet瑙嗛浼氳
 jitsimeet_app(){
 	local app_id="71"
-	local app_name="JitsiMeet视频会议"
+	local app_name="JitsiMeet瑙嗛浼氳"
 	local docker_name="jitsi-meet"
 	local docker_img="jitsi/web:latest"
 	local docker_port=8127
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8127): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8127): " _user_port
 		_user_port=${_user_port:-8127}
 		docker_port=$_user_port
 
@@ -4347,27 +3878,26 @@ jitsimeet_app(){
 			-e ENABLE_LETSENCRYPT=0 \
 			jitsi/web:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的视频会议系统, 支持多人视频会议"
-	local app_url="官网介绍: https://jitsi.org/"
+	local app_text="寮€婧愮殑瑙嗛浼氳绯荤粺, 鏀寔澶氫汉瑙嗛浼氳"
+	local app_url="瀹樼綉浠嬬粛: https://jitsi.org/"
 	local app_size="2"
 	docker_app
 }
 
-# Stream四层代理转发
+# Stream鍥涘眰浠ｇ悊杞彂
 stream_app(){
 	local app_id="72"
-	local app_name="Stream四层代理转发"
+	local app_name="Stream鍥涘眰浠ｇ悊杞彂"
 	local docker_name="stream"
 	local docker_img="nginx:alpine"
 	local docker_port=8128
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8128): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8128): " _user_port
 		_user_port=${_user_port:-8128}
 		docker_port=$_user_port
 
@@ -4387,27 +3917,25 @@ EOF
 			-v /home/docker/stream/nginx.conf:/etc/nginx/nginx.conf \
 			nginx:alpine
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="四层代理转发服务, 基于Nginx Stream模块"
-	local app_url="官网介绍: https://nginx.org/"
+	local app_text="鍥涘眰浠ｇ悊杞彂鏈嶅姟, 鍩轰簬Nginx Stream妯″潡"
+	local app_url="瀹樼綉浠嬬粛: https://nginx.org/"
 	local app_size="1"
 	docker_app
 }
 
-# FileCodeBox文件快递
-filecodebox_app(){
+# FileCodeBox鏂囦欢蹇€?filecodebox_app(){
 	local app_id="73"
-	local app_name="FileCodeBox文件快递"
+	local app_name="FileCodeBox鏂囦欢蹇€?
 	local docker_name="filecodebox"
 	local docker_img="lanol/filecodebox:latest"
 	local docker_port=8129
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8129): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8129): " _user_port
 		_user_port=${_user_port:-8129}
 		docker_port=$_user_port
 
@@ -4419,27 +3947,26 @@ filecodebox_app(){
 			-v /home/docker/filecodebox:/app/data \
 			lanol/filecodebox:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="文件快递柜, 匿名口令分享文件"
-	local app_url="官网介绍: https://github.com/vastsa/FileCodeBox"
+	local app_text="鏂囦欢蹇€掓煖, 鍖垮悕鍙ｄ护鍒嗕韩鏂囦欢"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/vastsa/FileCodeBox"
 	local app_size="1"
 	docker_app
 }
 
-# Matrix去中心化聊天
+# Matrix鍘讳腑蹇冨寲鑱婂ぉ
 matrix_app(){
 	local app_id="74"
-	local app_name="Matrix去中心化聊天"
+	local app_name="Matrix鍘讳腑蹇冨寲鑱婂ぉ"
 	local docker_name="matrix"
 	local docker_img="matrixdotorg/synapse:latest"
 	local docker_port=8130
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8130): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8130): " _user_port
 		_user_port=${_user_port:-8130}
 		docker_port=$_user_port
 
@@ -4453,27 +3980,26 @@ matrix_app(){
 			-e SYNAPSE_REPORT_STATS=no \
 			matrixdotorg/synapse:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="去中心化的即时通讯协议, 支持端到端加密"
-	local app_url="官网介绍: https://matrix.org/"
+	local app_text="鍘讳腑蹇冨寲鐨勫嵆鏃堕€氳鍗忚, 鏀寔绔埌绔姞瀵?
+	local app_url="瀹樼綉浠嬬粛: https://matrix.org/"
 	local app_size="2"
 	docker_app
 }
 
-# yt-dlp视频下载
+# yt-dlp瑙嗛涓嬭浇
 ytdlp_app(){
 	local app_id="75"
-	local app_name="yt-dlp视频下载"
+	local app_name="yt-dlp瑙嗛涓嬭浇"
 	local docker_name="yt-dlp"
 	local docker_img="mikenye/yt-dlp:latest"
 	local docker_port=8131
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8131): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8131): " _user_port
 		_user_port=${_user_port:-8131}
 		docker_port=$_user_port
 
@@ -4485,27 +4011,26 @@ ytdlp_app(){
 			-v /home/docker/ytdlp/downloads:/downloads \
 			mikenye/yt-dlp:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="强大的视频下载工具, 支持YouTube等数百个网站"
-	local app_url="官网介绍: https://github.com/yt-dlp/yt-dlp"
+	local app_text="寮哄ぇ鐨勮棰戜笅杞藉伐鍏? 鏀寔YouTube绛夋暟鐧句釜缃戠珯"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/yt-dlp/yt-dlp"
 	local app_size="1"
 	docker_app
 }
 
-# paperless文档管理
+# paperless鏂囨。绠＄悊
 paperless_app(){
 	local app_id="76"
-	local app_name="paperless文档管理"
+	local app_name="paperless鏂囨。绠＄悊"
 	local docker_name="paperless"
 	local docker_img="ghcr.io/paperless-ngx/paperless-ngx:latest"
 	local docker_port=8132
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8132): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8132): " _user_port
 		_user_port=${_user_port:-8132}
 		docker_port=$_user_port
 
@@ -4519,27 +4044,26 @@ paperless_app(){
 			-e PAPERLESS_REDIS=redis://localhost:6379 \
 			ghcr.io/paperless-ngx/paperless-ngx:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的文档管理系统, 支持OCR和全文搜索"
-	local app_url="官网介绍: https://docs.paperless-ngx.com/"
+	local app_text="寮€婧愮殑鏂囨。绠＄悊绯荤粺, 鏀寔OCR鍜屽叏鏂囨悳绱?
+	local app_url="瀹樼綉浠嬬粛: https://docs.paperless-ngx.com/"
 	local app_size="2"
 	docker_app
 }
 
-# Wallos财务管理
+# Wallos璐㈠姟绠＄悊
 wallos_app(){
 	local app_id="77"
-	local app_name="Wallos财务管理"
+	local app_name="Wallos璐㈠姟绠＄悊"
 	local docker_name="wallos"
 	local docker_img="bellamy/wallos:latest"
 	local docker_port=8133
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8133): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8133): " _user_port
 		_user_port=${_user_port:-8133}
 		docker_port=$_user_port
 
@@ -4551,28 +4075,27 @@ wallos_app(){
 			-v /home/docker/wallos:/var/www/html \
 			bellamy/wallos:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的个人财务管理工具, 追踪订阅和支出"
-	local app_url="官网介绍: https://github.com/ellite/Wallos"
+	local app_text="寮€婧愮殑涓汉璐㈠姟绠＄悊宸ュ叿, 杩借釜璁㈤槄鍜屾敮鍑?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/ellite/Wallos"
 	local app_size="1"
 	docker_app
 }
 
 
-# Dufs静态文件服务器
+# Dufs闈欐€佹枃浠舵湇鍔″櫒
 dufs_app(){
 	local app_id="79"
-	local app_name="Dufs静态文件服务器"
+	local app_name="Dufs闈欐€佹枃浠舵湇鍔″櫒"
 	local docker_name="dufs"
 	local docker_img="sigoden/dufs:latest"
 	local docker_port=8135
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8135): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8135): " _user_port
 		_user_port=${_user_port:-8135}
 		docker_port=$_user_port
 
@@ -4584,27 +4107,26 @@ dufs_app(){
 			-v /home/docker/dufs/data:/data \
 			sigoden/dufs:latest /data
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="简单的静态文件服务器, 支持上传下载"
-	local app_url="官网介绍: https://github.com/sigoden/dufs"
+	local app_text="绠€鍗曠殑闈欐€佹枃浠舵湇鍔″櫒, 鏀寔涓婁紶涓嬭浇"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/sigoden/dufs"
 	local app_size="1"
 	docker_app
 }
 
-# PandaWiki文档管理
+# PandaWiki鏂囨。绠＄悊
 pandawiki_app(){
 	local app_id="80"
-	local app_name="PandaWiki文档管理"
+	local app_name="PandaWiki鏂囨。绠＄悊"
 	local docker_name="pandawiki"
 	local docker_img="pandawiki/pandawiki:latest"
 	local docker_port=8136
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8136): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8136): " _user_port
 		_user_port=${_user_port:-8136}
 		docker_port=$_user_port
 
@@ -4616,27 +4138,26 @@ pandawiki_app(){
 			-v /home/docker/pandawiki:/data \
 			pandawiki/pandawiki:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的Wiki文档管理系统"
-	local app_url="官网介绍: https://github.com/pandawiki"
+	local app_text="寮€婧愮殑Wiki鏂囨。绠＄悊绯荤粺"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/pandawiki"
 	local app_size="1"
 	docker_app
 }
 
-# linkwarden书签管理
+# linkwarden涔︾绠＄悊
 linkwarden_app(){
 	local app_id="81"
-	local app_name="linkwarden书签管理"
+	local app_name="linkwarden涔︾绠＄悊"
 	local docker_name="linkwarden"
 	local docker_img="ghcr.io/linkwarden/linkwarden:latest"
 	local docker_port=8137
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8137): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8137): " _user_port
 		_user_port=${_user_port:-8137}
 		docker_port=$_user_port
 
@@ -4649,27 +4170,26 @@ linkwarden_app(){
 			-e NEXTAUTH_SECRET=$(openssl rand -base64 32) \
 			ghcr.io/linkwarden/linkwarden:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的书签管理工具, 支持网页归档"
-	local app_url="官网介绍: https://github.com/linkwarden/linkwarden"
+	local app_text="寮€婧愮殑涔︾绠＄悊宸ュ叿, 鏀寔缃戦〉褰掓。"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/linkwarden/linkwarden"
 	local app_size="1"
 	docker_app
 }
 
-# VoceChat聊天系统
+# VoceChat鑱婂ぉ绯荤粺
 vocechat_app(){
 	local app_id="82"
-	local app_name="VoceChat聊天系统"
+	local app_name="VoceChat鑱婂ぉ绯荤粺"
 	local docker_name="vocechat"
 	local docker_img="privoce/vocechat-server:latest"
 	local docker_port=8138
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8138): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8138): " _user_port
 		_user_port=${_user_port:-8138}
 		docker_port=$_user_port
 
@@ -4681,27 +4201,26 @@ vocechat_app(){
 			-v /home/docker/vocechat:/home/vocechat-server/data \
 			privoce/vocechat-server:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的轻量级聊天系统, 支持自托管"
-	local app_url="官网介绍: https://voce.chat/"
+	local app_text="寮€婧愮殑杞婚噺绾ц亰澶╃郴缁? 鏀寔鑷墭绠?
+	local app_url="瀹樼綉浠嬬粛: https://voce.chat/"
 	local app_size="1"
 	docker_app
 }
 
-# Karakeep书签管理
+# Karakeep涔︾绠＄悊
 karakeep_app(){
 	local app_id="83"
-	local app_name="Karakeep书签管理"
+	local app_name="Karakeep涔︾绠＄悊"
 	local docker_name="karakeep"
 	local docker_img="ghcr.io/karakeep-app/karakeep:latest"
 	local docker_port=8139
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8139): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8139): " _user_port
 		_user_port=${_user_port:-8139}
 		docker_port=$_user_port
 
@@ -4713,27 +4232,25 @@ karakeep_app(){
 			-v /home/docker/karakeep:/data \
 			ghcr.io/karakeep-app/karakeep:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="智能书签管理工具, 支持AI自动标签"
-	local app_url="官网介绍: https://github.com/karakeep-app/karakeep"
+	local app_text="鏅鸿兘涔︾绠＄悊宸ュ叿, 鏀寔AI鑷姩鏍囩"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/karakeep-app/karakeep"
 	local app_size="1"
 	docker_app
 }
 
-# NewAPI大模型资产管理
-newapi_app(){
+# NewAPI澶фā鍨嬭祫浜х鐞?newapi_app(){
 	local app_id="84"
-	local app_name="NewAPI大模型资产管理"
+	local app_name="NewAPI澶фā鍨嬭祫浜х鐞?
 	local docker_name="newapi"
 	local docker_img="calciumion/new-api:latest"
 	local docker_port=8140
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8140): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8140): " _user_port
 		_user_port=${_user_port:-8140}
 		docker_port=$_user_port
 
@@ -4745,27 +4262,25 @@ newapi_app(){
 			-v /home/docker/newapi:/data \
 			calciumion/new-api:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="大模型API管理和分发系统"
-	local app_url="官网介绍: https://github.com/Calcium-Ion/new-api"
+	local app_text="澶фā鍨婣PI绠＄悊鍜屽垎鍙戠郴缁?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/Calcium-Ion/new-api"
 	local app_size="1"
 	docker_app
 }
 
-# RAGFlow知识库
-ragflow_app(){
+# RAGFlow鐭ヨ瘑搴?ragflow_app(){
 	local app_id="85"
-	local app_name="RAGFlow知识库"
+	local app_name="RAGFlow鐭ヨ瘑搴?
 	local docker_name="ragflow"
 	local docker_img="infiniflow/ragflow:latest"
 	local docker_port=8141
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8141): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8141): " _user_port
 		_user_port=${_user_port:-8141}
 		docker_port=$_user_port
 
@@ -4777,27 +4292,25 @@ ragflow_app(){
 			-v /home/docker/ragflow:/ragflow \
 			infiniflow/ragflow:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的RAG引擎, 构建企业知识库"
-	local app_url="官网介绍: https://github.com/infiniflow/ragflow"
+	local app_text="寮€婧愮殑RAG寮曟搸, 鏋勫缓浼佷笟鐭ヨ瘑搴?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/infiniflow/ragflow"
 	local app_size="3"
 	docker_app
 }
 
-# AstrBot聊天机器人
-astrbot_app(){
+# AstrBot鑱婂ぉ鏈哄櫒浜?astrbot_app(){
 	local app_id="86"
-	local app_name="AstrBot聊天机器人"
+	local app_name="AstrBot鑱婂ぉ鏈哄櫒浜?
 	local docker_name="astrbot"
 	local docker_img="soulter/astrbot:latest"
 	local docker_port=8142
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8142): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8142): " _user_port
 		_user_port=${_user_port:-8142}
 		docker_port=$_user_port
 
@@ -4809,27 +4322,25 @@ astrbot_app(){
 			-v /home/docker/astrbot:/AstrBot/data \
 			soulter/astrbot:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="多平台聊天机器人框架, 支持QQ/微信/飞书"
-	local app_url="官网介绍: https://github.com/Soulter/AstrBot"
+	local app_text="澶氬钩鍙拌亰澶╂満鍣ㄤ汉妗嗘灦, 鏀寔QQ/寰俊/椋炰功"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/Soulter/AstrBot"
 	local app_size="1"
 	docker_app
 }
 
-# LangBot聊天机器人
-langbot_app(){
+# LangBot鑱婂ぉ鏈哄櫒浜?langbot_app(){
 	local app_id="87"
-	local app_name="LangBot聊天机器人"
+	local app_name="LangBot鑱婂ぉ鏈哄櫒浜?
 	local docker_name="langbot"
 	local docker_img="rockchin/langbot:latest"
 	local docker_port=8143
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8143): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8143): " _user_port
 		_user_port=${_user_port:-8143}
 		docker_port=$_user_port
 
@@ -4841,27 +4352,25 @@ langbot_app(){
 			-v /home/docker/langbot:/app \
 			rockchin/langbot:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="大模型原生即时通信机器人平台"
-	local app_url="官网介绍: https://github.com/RockChinQ/LangBot"
+	local app_text="澶фā鍨嬪師鐢熷嵆鏃堕€氫俊鏈哄櫒浜哄钩鍙?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/RockChinQ/LangBot"
 	local app_size="1"
 	docker_app
 }
 
-# 多格式文件转换
-gotenberg_app(){
+# 澶氭牸寮忔枃浠惰浆鎹?gotenberg_app(){
 	local app_id="88"
-	local app_name="多格式文件转换"
+	local app_name="澶氭牸寮忔枃浠惰浆鎹?
 	local docker_name="gotenberg"
 	local docker_img="gotenberg/gotenberg:latest"
 	local docker_port=8144
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8144): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8144): " _user_port
 		_user_port=${_user_port:-8144}
 		docker_port=$_user_port
 
@@ -4871,27 +4380,25 @@ gotenberg_app(){
 			-p ${docker_port}:3000 \
 			gotenberg/gotenberg:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的文档转换服务, 支持多种格式互转"
-	local app_url="官网介绍: https://github.com/gotenberg/gotenberg"
+	local app_text="寮€婧愮殑鏂囨。杞崲鏈嶅姟, 鏀寔澶氱鏍煎紡浜掕浆"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/gotenberg/gotenberg"
 	local app_size="1"
 	docker_app
 }
 
-# LibreSpeed测速
-librespeed_app(){
+# LibreSpeed娴嬮€?librespeed_app(){
 	local app_id="89"
-	local app_name="LibreSpeed测速"
+	local app_name="LibreSpeed娴嬮€?
 	local docker_name="librespeed"
 	local docker_img="adolfintel/speedtest:latest"
 	local docker_port=8145
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8145): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8145): " _user_port
 		_user_port=${_user_port:-8145}
 		docker_port=$_user_port
 
@@ -4901,27 +4408,26 @@ librespeed_app(){
 			-p ${docker_port}:80 \
 			adolfintel/speedtest:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的网络测速工具, 类似Speedtest"
-	local app_url="官网介绍: https://github.com/librespeed/speedtest"
+	local app_text="寮€婧愮殑缃戠粶娴嬮€熷伐鍏? 绫讳技Speedtest"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/librespeed/speedtest"
 	local app_size="1"
 	docker_app
 }
 
-# gpt-load AI透明代理
+# gpt-load AI閫忔槑浠ｇ悊
 gptload_app(){
 	local app_id="90"
-	local app_name="gpt-load AI透明代理"
+	local app_name="gpt-load AI閫忔槑浠ｇ悊"
 	local docker_name="gpt-load"
 	local docker_img="ghcr.io/gpt-load/gpt-load:latest"
 	local docker_port=8146
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8146): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8146): " _user_port
 		_user_port=${_user_port:-8146}
 		docker_port=$_user_port
 
@@ -4933,27 +4439,26 @@ gptload_app(){
 			-v /home/docker/gptload:/data \
 			ghcr.io/gpt-load/gpt-load:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="AI服务透明代理工具"
-	local app_url="官网介绍: https://github.com/gpt-load"
+	local app_text="AI鏈嶅姟閫忔槑浠ｇ悊宸ュ叿"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/gpt-load"
 	local app_size="1"
 	docker_app
 }
 
-# 补货监控工具
+# 琛ヨ揣鐩戞帶宸ュ叿
 stockmonitor_app(){
 	local app_id="91"
-	local app_name="补货监控工具"
+	local app_name="琛ヨ揣鐩戞帶宸ュ叿"
 	local docker_name="stockmonitor"
 	local docker_img="stock-monitor:latest"
 	local docker_port=8147
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8147): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8147): " _user_port
 		_user_port=${_user_port:-8147}
 		docker_port=$_user_port
 
@@ -4965,27 +4470,25 @@ stockmonitor_app(){
 			-v /home/docker/stockmonitor:/data \
 			stock-monitor:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="商品库存监控和补货提醒工具"
-	local app_url="官网介绍: https://github.com/stock-monitor"
+	local app_text="鍟嗗搧搴撳瓨鐩戞帶鍜岃ˉ璐ф彁閱掑伐鍏?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/stock-monitor"
 	local app_size="1"
 	docker_app
 }
 
-# PVE虚拟化管理
-pve_app(){
+# PVE铏氭嫙鍖栫鐞?pve_app(){
 	local app_id="92"
-	local app_name="PVE虚拟化管理"
+	local app_name="PVE铏氭嫙鍖栫鐞?
 	local docker_name="pve"
 	local docker_img="pve-manager:latest"
 	local docker_port=8148
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8148): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8148): " _user_port
 		_user_port=${_user_port:-8148}
 		docker_port=$_user_port
 
@@ -4998,27 +4501,25 @@ pve_app(){
 			-v /home/docker/pve:/data \
 			pve-manager:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="Proxmox VE虚拟化管理平台"
-	local app_url="官网介绍: https://www.proxmox.com/"
+	local app_text="Proxmox VE铏氭嫙鍖栫鐞嗗钩鍙?
+	local app_url="瀹樼綉浠嬬粛: https://www.proxmox.com/"
 	local app_size="3"
 	docker_app
 }
 
-# DSM群晖虚拟机
-dsm_app(){
+# DSM缇ゆ櫀铏氭嫙鏈?dsm_app(){
 	local app_id="93"
-	local app_name="DSM群晖虚拟机"
+	local app_name="DSM缇ゆ櫀铏氭嫙鏈?
 	local docker_name="dsm"
 	local docker_img="kroese/virtual-dsm:latest"
 	local docker_port=8149
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8149): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8149): " _user_port
 		_user_port=${_user_port:-8149}
 		docker_port=$_user_port
 
@@ -5031,27 +4532,25 @@ dsm_app(){
 			-v /home/docker/dsm:/storage \
 			kroese/virtual-dsm:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="在Docker中运行群晖DSM系统"
-	local app_url="官网介绍: https://github.com/kroese/virtual-dsm"
+	local app_text="鍦―ocker涓繍琛岀兢鏅朌SM绯荤粺"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/kroese/virtual-dsm"
 	local app_size="3"
 	docker_app
 }
 
-# 在线DOS老游戏
-dosgame_app(){
+# 鍦ㄧ嚎DOS鑰佹父鎴?dosgame_app(){
 	local app_id="94"
-	local app_name="在线DOS老游戏"
+	local app_name="鍦ㄧ嚎DOS鑰佹父鎴?
 	local docker_name="dosgame"
 	local docker_img="oldiy/dosgame-web-docker:latest"
 	local docker_port=8150
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8150): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8150): " _user_port
 		_user_port=${_user_port:-8150}
 		docker_port=$_user_port
 
@@ -5061,27 +4560,26 @@ dosgame_app(){
 			-p ${docker_port}:262 \
 			oldiy/dosgame-web-docker:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="在线DOS游戏合集, 怀旧经典游戏"
-	local app_url="官网介绍: https://github.com/rwv/dosgame"
+	local app_text="鍦ㄧ嚎DOS娓告垙鍚堥泦, 鎬€鏃х粡鍏告父鎴?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/rwv/dosgame"
 	local app_size="1"
 	docker_app
 }
 
-# 迅雷离线下载
+# 杩呴浄绂荤嚎涓嬭浇
 xunlei_app(){
 	local app_id="95"
-	local app_name="迅雷离线下载"
+	local app_name="杩呴浄绂荤嚎涓嬭浇"
 	local docker_name="xunlei"
 	local docker_img="cnk3x/xunlei:latest"
 	local docker_port=8151
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8151): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8151): " _user_port
 		_user_port=${_user_port:-8151}
 		docker_port=$_user_port
 
@@ -5094,27 +4592,25 @@ xunlei_app(){
 			-v /home/docker/xunlei/downloads:/downloads \
 			cnk3x/xunlei:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="迅雷离线下载服务, 支持远程下载"
-	local app_url="官网介绍: https://github.com/cnk3x/xunlei"
+	local app_text="杩呴浄绂荤嚎涓嬭浇鏈嶅姟, 鏀寔杩滅▼涓嬭浇"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/cnk3x/xunlei"
 	local app_size="1"
 	docker_app
 }
 
-# 小雅Alist全家桶
-xiaoya_app(){
+# 灏忛泤Alist鍏ㄥ妗?xiaoya_app(){
 	local app_id="96"
-	local app_name="小雅Alist全家桶"
+	local app_name="灏忛泤Alist鍏ㄥ妗?
 	local docker_name="xiaoya"
 	local docker_img="xiaoyaliu/alist:latest"
 	local docker_port=8152
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8152): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8152): " _user_port
 		_user_port=${_user_port:-8152}
 		docker_port=$_user_port
 
@@ -5126,27 +4622,26 @@ xiaoya_app(){
 			-v /home/docker/xiaoya:/data \
 			xiaoyaliu/alist:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="小雅Alist, 整合多网盘资源"
-	local app_url="官网介绍: https://github.com/xiaoyaliu/alist"
+	local app_text="灏忛泤Alist, 鏁村悎澶氱綉鐩樿祫婧?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/xiaoyaliu/alist"
 	local app_size="1"
 	docker_app
 }
 
-# Bililive直播录制
+# Bililive鐩存挱褰曞埗
 bililive_app(){
 	local app_id="97"
-	local app_name="Bililive直播录制"
+	local app_name="Bililive鐩存挱褰曞埗"
 	local docker_name="bililive"
 	local docker_img="bililive/recorder:latest"
 	local docker_port=8153
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8153): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8153): " _user_port
 		_user_port=${_user_port:-8153}
 		docker_port=$_user_port
 
@@ -5158,27 +4653,25 @@ bililive_app(){
 			-v /home/docker/bililive:/rec \
 			bililive/recorder:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="B站直播录制工具, 自动录制直播间"
-	local app_url="官网介绍: https://github.com/BililiveRecorder/BililiveRecorder"
+	local app_text="B绔欑洿鎾綍鍒跺伐鍏? 鑷姩褰曞埗鐩存挱闂?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/BililiveRecorder/BililiveRecorder"
 	local app_size="1"
 	docker_app
 }
 
-# 极简朋友圈
-moments_app(){
+# 鏋佺畝鏈嬪弸鍦?moments_app(){
 	local app_id="98"
-	local app_name="极简朋友圈"
+	local app_name="鏋佺畝鏈嬪弸鍦?
 	local docker_name="moments"
 	local docker_img="moments-app:latest"
 	local docker_port=8154
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8154): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8154): " _user_port
 		_user_port=${_user_port:-8154}
 		docker_port=$_user_port
 
@@ -5190,27 +4683,26 @@ moments_app(){
 			-v /home/docker/moments:/data \
 			moments-app:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="极简风格的朋友圈/微博系统"
-	local app_url="官网介绍: https://github.com/moments-app"
+	local app_text="鏋佺畝椋庢牸鐨勬湅鍙嬪湀/寰崥绯荤粺"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/moments-app"
 	local app_size="1"
 	docker_app
 }
 
-# PanSou网盘搜索
+# PanSou缃戠洏鎼滅储
 pansou_app(){
 	local app_id="99"
-	local app_name="PanSou网盘搜索"
+	local app_name="PanSou缃戠洏鎼滅储"
 	local docker_name="pansou"
 	local docker_img="pansou-search:latest"
 	local docker_port=8155
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8155): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8155): " _user_port
 		_user_port=${_user_port:-8155}
 		docker_port=$_user_port
 
@@ -5222,27 +4714,26 @@ pansou_app(){
 			-v /home/docker/pansou:/data \
 			pansou-search:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="网盘资源搜索引擎"
-	local app_url="官网介绍: https://github.com/pansou"
+	local app_text="缃戠洏璧勬簮鎼滅储寮曟搸"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/pansou"
 	local app_size="1"
 	docker_app
 }
 
-# 简单图床lskypro
+# 绠€鍗曞浘搴妉skypro
 lskypro_app(){
 	local app_id="100"
-	local app_name="简单图床lskypro"
+	local app_name="绠€鍗曞浘搴妉skypro"
 	local docker_name="lskypro"
 	local docker_img="halcyonazure/lsky-pro-docker:latest"
 	local docker_port=8156
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8156): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8156): " _user_port
 		_user_port=${_user_port:-8156}
 		docker_port=$_user_port
 
@@ -5254,27 +4745,26 @@ lskypro_app(){
 			-v /home/docker/lskypro:/var/www/html \
 			halcyonazure/lsky-pro-docker:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="简单图床系统, 支持多存储策略"
-	local app_url="官网介绍: https://github.com/lsky-org/lsky-pro"
+	local app_text="绠€鍗曞浘搴婄郴缁? 鏀寔澶氬瓨鍌ㄧ瓥鐣?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/lsky-org/lsky-pro"
 	local app_size="1"
 	docker_app
 }
 
-# 禅道项目管理
+# 绂呴亾椤圭洰绠＄悊
 zentao_app(){
 	local app_id="101"
-	local app_name="禅道项目管理"
+	local app_name="绂呴亾椤圭洰绠＄悊"
 	local docker_name="zentao"
 	local docker_img="idoop/zentao:latest"
 	local docker_port=8157
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8157): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8157): " _user_port
 		_user_port=${_user_port:-8157}
 		docker_port=$_user_port
 
@@ -5286,27 +4776,26 @@ zentao_app(){
 			-v /home/docker/zentao:/www/zentaopms \
 			idoop/zentao:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的项目管理软件, 支持敏捷开发"
-	local app_url="官网介绍: https://www.zentao.net/"
+	local app_text="寮€婧愮殑椤圭洰绠＄悊杞欢, 鏀寔鏁忔嵎寮€鍙?
+	local app_url="瀹樼綉浠嬬粛: https://www.zentao.net/"
 	local app_size="2"
 	docker_app
 }
 
-# QD-Today定时任务
+# QD-Today瀹氭椂浠诲姟
 qdtoday_app(){
 	local app_id="102"
-	local app_name="QD-Today定时任务"
+	local app_name="QD-Today瀹氭椂浠诲姟"
 	local docker_name="qdtoday"
 	local docker_img="qdtoday/qd:latest"
 	local docker_port=8158
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8158): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8158): " _user_port
 		_user_port=${_user_port:-8158}
 		docker_port=$_user_port
 
@@ -5318,27 +4807,26 @@ qdtoday_app(){
 			-v /home/docker/qdtoday:/usr/src/app \
 			qdtoday/qd:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="HTTP请求定时任务框架, 自动签到"
-	local app_url="官网介绍: https://github.com/qd-today/qd"
+	local app_text="HTTP璇锋眰瀹氭椂浠诲姟妗嗘灦, 鑷姩绛惧埌"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/qd-today/qd"
 	local app_size="1"
 	docker_app
 }
 
-# 耗子管理面板
+# 鑰楀瓙绠＄悊闈㈡澘
 haizi_app(){
 	local app_id="103"
-	local app_name="耗子管理面板"
+	local app_name="鑰楀瓙绠＄悊闈㈡澘"
 	local docker_name="haizi"
 	local docker_img="haizi-panel:latest"
 	local docker_port=8159
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8159): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8159): " _user_port
 		_user_port=${_user_port:-8159}
 		docker_port=$_user_port
 
@@ -5350,27 +4838,26 @@ haizi_app(){
 			-v /home/docker/haizi:/data \
 			haizi-panel:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="耗子管理面板, 轻量级服务器管理"
-	local app_url="官网介绍: https://github.com/haizi-panel"
+	local app_text="鑰楀瓙绠＄悊闈㈡澘, 杞婚噺绾ф湇鍔″櫒绠＄悊"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/haizi-panel"
 	local app_size="1"
 	docker_app
 }
 
-# AMH建站面板
+# AMH寤虹珯闈㈡澘
 amh_app(){
 	local app_id="104"
-	local app_name="AMH建站面板"
+	local app_name="AMH寤虹珯闈㈡澘"
 	local docker_name="amh"
 	local docker_img="amh-panel:latest"
 	local docker_port=8160
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8160): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8160): " _user_port
 		_user_port=${_user_port:-8160}
 		docker_port=$_user_port
 
@@ -5382,27 +4869,25 @@ amh_app(){
 			-v /home/docker/amh:/data \
 			amh-panel:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="AMH云主机面板, 建站管理工具"
-	local app_url="官网介绍: https://amh.sh/"
+	local app_text="AMH浜戜富鏈洪潰鏉? 寤虹珯绠＄悊宸ュ叿"
+	local app_url="瀹樼綉浠嬬粛: https://amh.sh/"
 	local app_size="2"
 	docker_app
 }
 
-# 在线翻译服务器
-libretranslate_app(){
+# 鍦ㄧ嚎缈昏瘧鏈嶅姟鍣?libretranslate_app(){
 	local app_id="105"
-	local app_name="在线翻译服务器"
+	local app_name="鍦ㄧ嚎缈昏瘧鏈嶅姟鍣?
 	local docker_name="libretranslate"
 	local docker_img="libretranslate/libretranslate:latest"
 	local docker_port=8161
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8161): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8161): " _user_port
 		_user_port=${_user_port:-8161}
 		docker_port=$_user_port
 
@@ -5412,27 +4897,26 @@ libretranslate_app(){
 			-p ${docker_port}:5000 \
 			libretranslate/libretranslate:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的神经网络翻译API服务"
-	local app_url="官网介绍: https://github.com/LibreTranslate/LibreTranslate"
+	local app_text="寮€婧愮殑绁炵粡缃戠粶缈昏瘧API鏈嶅姟"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/LibreTranslate/LibreTranslate"
 	local app_size="2"
 	docker_app
 }
 
-# AI视频生成工具
+# AI瑙嗛鐢熸垚宸ュ叿
 videogen_app(){
 	local app_id="106"
-	local app_name="AI视频生成工具"
+	local app_name="AI瑙嗛鐢熸垚宸ュ叿"
 	local docker_name="videogen"
 	local docker_img="videogen-ai:latest"
 	local docker_port=8162
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8162): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8162): " _user_port
 		_user_port=${_user_port:-8162}
 		docker_port=$_user_port
 
@@ -5445,30 +4929,30 @@ videogen_app(){
 			--gpus all \
 			videogen-ai:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="AI视频生成工具, 文本生成视频"
-	local app_url="官网介绍: https://github.com/videogen-ai"
+	local app_text="AI瑙嗛鐢熸垚宸ュ叿, 鏂囨湰鐢熸垚瑙嗛"
+	local app_url="瀹樼綉浠嬬粛: https://github.com/videogen-ai"
 	local app_size="3"
 	docker_app
 }
 
-# RustDesk远程桌面
+# RustDesk杩滅▼妗岄潰
 rustdesk_server_app(){
 	local app_id="107"
-	local app_name="RustDesk远程桌面"
+	local app_name="RustDesk杩滅▼妗岄潰"
 	local docker_name="rustdesk-server"
 	local docker_img="rustdesk/rustdesk-server:latest"
-	local app_text="开源的远程桌面软件服务端"
-	local app_url="官网介绍: https://github.com/rustdesk/rustdesk"
+	local app_text="寮€婧愮殑杩滅▼妗岄潰杞欢鏈嶅姟绔?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/rustdesk/rustdesk"
 	local app_size="1"
 
 	docker_run() {
 		mkdir -p /home/docker/rustdesk-server
-		# 让用户输入 Web 客户端/API 端口 (默认 8163)
-		read -e -p "设置Web客户端/API端口 (默认8163): " web_port
+		# 璁╃敤鎴疯緭鍏?Web 瀹㈡埛绔?API 绔彛 (榛樿 8163)
+		read -e -p "璁剧疆Web瀹㈡埛绔?API绔彛 (榛樿8163): " web_port
 		web_port=${web_port:-8163}
 
 		docker run -d \
@@ -5482,29 +4966,27 @@ rustdesk_server_app(){
 			-v /home/docker/rustdesk-server:/data \
 			rustdesk/rustdesk-server:latest
 
-		# Web面板端口
-		add_app_port "Web客户端/API" "$web_port"
-		# TCP/UDP 服务端口保持硬编码 (暂不改)
-		add_app_port "中继服务 (TCP)" 21115
-		add_app_port "中继服务 (TCP+UDP)" 21116
-		add_app_port "心跳服务" 21117
-		add_app_port "服务端口" 21118
+		# Web闈㈡澘绔彛
+		add_app_port "Web瀹㈡埛绔?API" "$web_port"
+		# TCP/UDP 鏈嶅姟绔彛淇濇寔纭紪鐮?(鏆備笉鏀?
+		add_app_port "涓户鏈嶅姟 (TCP)" 21115
+		add_app_port "涓户鏈嶅姟 (TCP+UDP)" 21116
+		add_app_port "蹇冭烦鏈嶅姟" 21117
+		add_app_port "鏈嶅姟绔彛" 21118
 	}
 
 	docker_app
 }
 
-# Firefox浏览器
-firefox_app(){
+# Firefox娴忚鍣?firefox_app(){
 	local app_id="108"
-	local app_name="Firefox浏览器"
+	local app_name="Firefox娴忚鍣?
 	local docker_name="firefox"
 	local docker_img="jlesage/firefox:latest"
 	local docker_port=8164
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8164): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8164): " _user_port
 		_user_port=${_user_port:-8164}
 		docker_port=$_user_port
 
@@ -5516,27 +4998,26 @@ firefox_app(){
 			-v /home/docker/firefox:/config \
 			jlesage/firefox:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="在浏览器中运行的Firefox浏览器"
-	local app_url="官网介绍: https://github.com/jlesage/docker-firefox"
+	local app_text="鍦ㄦ祻瑙堝櫒涓繍琛岀殑Firefox娴忚鍣?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/jlesage/docker-firefox"
 	local app_size="2"
 	docker_app
 }
 
-# DPanel容器管理
+# DPanel瀹瑰櫒绠＄悊
 dpanel_app(){
 	local app_id="109"
-	local app_name="DPanel容器管理"
+	local app_name="DPanel瀹瑰櫒绠＄悊"
 	local docker_name="dpanel"
 	local docker_img="dpanel/dpanel:latest"
 	local docker_port=8165
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8165): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8165): " _user_port
 		_user_port=${_user_port:-8165}
 		docker_port=$_user_port
 
@@ -5549,27 +5030,25 @@ dpanel_app(){
 			-v /home/docker/dpanel:/dpanel \
 			dpanel/dpanel:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="Docker容器可视化管理面板"
-	local app_url="官网介绍: https://github.com/dpanel-io/dpanel"
+	local app_text="Docker瀹瑰櫒鍙鍖栫鐞嗛潰鏉?
+	local app_url="瀹樼綉浠嬬粛: https://github.com/dpanel-io/dpanel"
 	local app_size="1"
 	docker_app
 }
 
-# 普罗米修斯监控
-prometheus_app(){
+# 鏅綏绫充慨鏂洃鎺?prometheus_app(){
 	local app_id="110"
-	local app_name="普罗米修斯监控"
+	local app_name="鏅綏绫充慨鏂洃鎺?
 	local docker_name="prometheus"
 	local docker_img="prom/prometheus:latest"
 	local docker_port=8166
 
 	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8166): " _user_port
+		# app 鑷绔彛: 璁╃敤鎴疯緭鍏ュ疄闄呭澶栨湇鍔＄鍙?		read -e -p "鏈嶅姟绔彛 (榛樿 8166): " _user_port
 		_user_port=${_user_port:-8166}
 		docker_port=$_user_port
 
@@ -5590,12 +5069,12 @@ EOF
 			-v /home/docker/prometheus:/etc/prometheus \
 			prom/prometheus:latest
 
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+		# 娉ㄥ唽鍒板睍绀鸿〃 (app 鑷畾 label)
+		add_app_port "Web 绔彛" "$docker_port"
 	}
 
-	local app_text="开源的系统监控和报警工具"
-	local app_url="官网介绍: https://prometheus.io/"
+	local app_text="寮€婧愮殑绯荤粺鐩戞帶鍜屾姤璀﹀伐鍏?
+	local app_url="瀹樼綉浠嬬粛: https://prometheus.io/"
 	local app_size="2"
 	docker_app
 }
