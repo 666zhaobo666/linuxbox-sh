@@ -129,7 +129,8 @@ menu_line() {
 }
 
 # 渲染一行 N 个单元格 (虚拟表格, 不显示边框)
-# 内部委托给 lib/_render_grid.py (Python) 实现, 准确处理 CJK / ANSI 颜色码 / 超长切行
+# 内联 Python 渲染器 (unicodedata.east_asian_width 处理 CJK / 全角 / ANSI 颜色码 100% 准确)
+# cell 内超长自动换行, 列对齐, 无边框
 # 用法: render_grid_row col_width c1 c2 c3 ...
 render_grid_row() {
 	local col_width=$1
@@ -141,18 +142,72 @@ render_grid_row() {
 	for _c in "$@"; do
 		_input+="${_c}${SEP}"
 	done
-	# 优先用 LINUXBOX_LIB_DIR (LinuxBox.sh 主脚本设置, 指向生产环境安装根目录)
-	# 兜底用 BASH_SOURCE[0] 找 utils.sh 所在目录 (本地开发/单文件调用场景)
-	local _script_dir
-	if [ -n "${LINUXBOX_LIB_DIR:-}" ] && [ -f "${LINUXBOX_LIB_DIR}/lib/_render_grid.py" ]; then
-		_script_dir="${LINUXBOX_LIB_DIR}/lib"
-	elif [ -n "${BASH_SOURCE[0]:-}" ]; then
-		_script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-	else
-		echo "render_grid_row: 找不到 _render_grid.py 路径" >&2
-		return 1
-	fi
-	printf '%s' "$_input" | python3 "$_script_dir/_render_grid.py" "$col_width"
+	python3 "$col_width" <<< "$_input" <<'PYTHON_RENDER_EOF'
+import sys, re, unicodedata
+SEP = "\x1f"
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+def visible_width(s):
+    s2 = ANSI_RE.sub("", s)
+    w = 0
+    for c in s2:
+        w += 2 if unicodedata.east_asian_width(c) in ("F", "W") else 1
+    return w
+
+def wrap(text, col_width):
+    result = []
+    line = ""
+    line_w = 0
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        if ch == "\x1b":
+            m = ANSI_RE.match(text[i:])
+            if m:
+                line += m.group()
+                i += len(m.group())
+                continue
+        if ord(ch) >= 0x80:
+            j = i + 1
+            while j < n and 0x80 <= ord(text[j]) < 0xC0:
+                j += 1
+            ch = text[i:j]
+            i = j
+        else:
+            i += 1
+        cw = visible_width(ch)
+        if line_w + cw > col_width and line_w > 0:
+            result.append(line)
+            line = ch
+            line_w = cw
+        else:
+            line += ch
+            line_w += cw
+    if line:
+        result.append(line)
+    return result
+
+col_width = int(sys.argv[1])
+data = sys.stdin.read()
+cells = data.split(SEP)
+if cells and cells[-1] == "":
+    cells = cells[:-1]
+if not cells:
+    sys.exit(0)
+cell_lines = [wrap(c, col_width) for c in cells]
+max_lines = max(len(l) for l in cell_lines)
+for row in range(max_lines):
+    parts = []
+    for ci, lines in enumerate(cell_lines):
+        line = lines[row] if row < len(lines) else ""
+        w = visible_width(line)
+        pad = col_width - w
+        parts.append(line + " " * max(0, pad))
+        if ci < len(cell_lines) - 1:
+            parts.append(" ")
+    sys.stdout.write("".join(parts) + "\n")
+PYTHON_RENDER_EOF
 }
 
 ##  获取IP地址
