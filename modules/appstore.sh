@@ -2575,7 +2575,7 @@ linux_app() {
 		echo ""
 		docker_tato
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${cyan}1.  ${white}$(pad_right "1Panel面板 $(_dot 1)" 32) ${cyan}2.  ${white}$(pad_right "宝塔面板 $(_dot 2)" 32) ${cyan}3.  ${white}$(pad_right "aaPanel面板 $(_dot 3)" 32)"
+		echo -e "${cyan}1.  ${white}$(pad_right "1Panel面板 $(_dot 1)" 64) ${cyan}2.  ${white}$(pad_right "宝塔面板 $(_dot 2)" 64) ${cyan}3.  ${white}$(pad_right "aaPanel面板 $(_dot 3)" 64)"
 		echo -e "${cyan}4.  ${white}NginxProxyManager面板 $(_dot 4)  ${cyan}5.  ${white}OpenList面板 $(_dot 5)             ${cyan}6.  ${white}WebTop远程桌面网页版 $(_dot 6)"
 		echo -e "${cyan}7.  ${white}Komari监控 $(_dot 7)             ${cyan}8.  ${white}qbittorrent离线下载 $(_dot 8)      ${cyan}9.  ${white}Poste.io邮件服务器程序 $(_dot 9)"
 		echo -e "${cyan}10. ${white}青龙面板 $(_dot 10)               ${cyan}11. ${white}Code-Server(网页vscode) $(_dot 11)  ${cyan}12. ${white}Looking Glass(测速面板) $(_dot 12)"
