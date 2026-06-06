@@ -132,6 +132,8 @@ menu_line() {
 # 内联 Python 渲染器 (unicodedata.east_asian_width 处理 CJK / 全角 / ANSI 颜色码 100% 准确)
 # cell 内超长自动换行, 列对齐, 无边框
 # 用法: render_grid_row col_width c1 c2 c3 ...
+#
+# 实现细节: python3 -c "code" <args> <<< "data" — -c 传代码, <<< 传数据, 互不冲突
 render_grid_row() {
 	local col_width=$1
 	shift
@@ -142,7 +144,7 @@ render_grid_row() {
 	for _c in "$@"; do
 		_input+="${_c}${SEP}"
 	done
-	python3 "$col_width" <<< "$_input" <<'PYTHON_RENDER_EOF'
+	python3 -c '
 import sys, re, unicodedata
 SEP = "\x1f"
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
@@ -207,7 +209,7 @@ for row in range(max_lines):
         if ci < len(cell_lines) - 1:
             parts.append(" ")
     sys.stdout.write("".join(parts) + "\n")
-PYTHON_RENDER_EOF
+' "$col_width" <<< "$_input"
 }
 
 ##  获取IP地址
