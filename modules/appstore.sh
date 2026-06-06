@@ -2575,44 +2575,197 @@ linux_app() {
 		echo ""
 		docker_tato
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${cyan}1.   ${white}$(pad_right "1Panel面板 $(_dot 1)" 26) ${cyan}2.   ${white}$(pad_right "宝塔面板 $(_dot 2)" 26) ${cyan}3.   ${white}$(pad_right "aaPanel面板 $(_dot 3)" 26)"
-		echo -e "${cyan}4.   ${white}$(pad_right "NginxProxyManager面板 $(_dot 4)" 26) ${cyan}5.   ${white}$(pad_right "OpenList面板 $(_dot 5)" 26) ${cyan}6.   ${white}$(pad_right "WebTop远程桌面网页版 $(_dot 6)" 26)"
-		echo -e "${cyan}7.   ${white}$(pad_right "Komari监控 $(_dot 7)" 26) ${cyan}8.   ${white}$(pad_right "qbittorrent离线下载 $(_dot 8)" 26) ${cyan}9.   ${white}$(pad_right "Poste.io邮件服务器程序 $(_dot 9)" 26)"
-		echo -e "${cyan}10.  ${white}$(pad_right "青龙面板 $(_dot 10)" 26) ${cyan}11.  ${white}$(pad_right "Code-Server(网页vscode) $(_dot 11)" 26) ${cyan}12.  ${white}$(pad_right "Looking Glass(测速面板) $(_dot 12)" 26)"
-		echo -e "${cyan}13.  ${white}$(pad_right "雷池WAF防火墙面板 $(_dot 13)" 26) ${cyan}14.  ${white}$(pad_right "onlyoffice在线办公OFFICE $(_dot 14)" 26) ${cyan}15.  ${white}$(pad_right "UptimeKuma监控工具 $(_dot 15)" 26)"
-		echo -e "${cyan}16.  ${white}$(pad_right "Memos网页备忘录 $(_dot 16)" 26) ${cyan}17.  ${white}$(pad_right "drawio免费的在线图表软件 $(_dot 17)" 26) ${cyan}18.  ${white}$(pad_right "Sun-Panel导航面板 $(_dot 18)" 26)"
-		echo -e "${cyan}19.  ${white}$(pad_right "webssh网页版SSH连接工具 $(_dot 19)" 26) ${cyan}20.  ${white}$(pad_right "LobeChatAI聊天聚合网站 $(_dot 20)" 26) ${cyan}21.  ${white}$(pad_right "MyIP工具箱 $(_dot 21)" 26)"
-		echo -e "${cyan}22.  ${white}$(pad_right "ghproxy(GitHub加速站) $(_dot 22)" 26) ${cyan}23.  ${white}$(pad_right "AllinSSL证书管理平台 $(_dot 23)" 26) ${cyan}24.  ${white}$(pad_right "DDNS-GO $(_dot 24)" 26)"
-		echo -e "${cyan}25.  ${white}$(pad_right "Lucky $(_dot 25)" 26) ${cyan}26.  ${white}$(pad_right "LibreTV私有影视 $(_dot 26)" 26) ${cyan}27.  ${white}$(pad_right "MoonTV私有影视 $(_dot 27)" 26)"
-		echo -e "${cyan}28.  ${white}$(pad_right "Melody音乐精灵 $(_dot 28)" 26) ${cyan}29.  ${white}$(pad_right "Beszel服务器监控 $(_dot 29)" 26) ${cyan}30.  ${white}$(pad_right "SyncTV一起看片神器 $(_dot 30)" 26)"
-		echo -e "${cyan}31.  ${white}$(pad_right "X-UI面板 $(_dot 31)" 26) ${cyan}32.  ${white}$(pad_right "3X-UI面板 $(_dot 32)" 26) ${cyan}33.  ${white}$(pad_right "Microsoft 365 E5 Renew X $(_dot 33)" 26)"
-		echo -e "${cyan}34.  ${white}$(pad_right "DecoTV私有影视 $(_dot 34)" 26) ${cyan}35.  ${white}$(pad_right "Drawnix在线白板 $(_dot 35)" 26)"
+		
+		# 虚拟表格布局 - 列宽设置为最长应用名称宽度 + 5
+		local col_width=30
+		
+		# 使用虚拟表格输出应用列表
+		print_table_row "$col_width" \
+			"1|1Panel面板|$(_dot 1)" \
+			"2|宝塔面板|$(_dot 2)" \
+			"3|aaPanel面板|$(_dot 3)"
+		
+		print_table_row "$col_width" \
+			"4|NginxProxyManager面板|$(_dot 4)" \
+			"5|OpenList面板|$(_dot 5)" \
+			"6|WebTop远程桌面网页版|$(_dot 6)"
+		
+		print_table_row "$col_width" \
+			"7|Komari监控|$(_dot 7)" \
+			"8|qbittorrent离线下载|$(_dot 8)" \
+			"9|Poste.io邮件服务器程序|$(_dot 9)"
+		
+		print_table_row "$col_width" \
+			"10|青龙面板|$(_dot 10)" \
+			"11|Code-Server(网页vscode)|$(_dot 11)" \
+			"12|Looking Glass(测速面板)|$(_dot 12)"
+		
+		print_table_row "$col_width" \
+			"13|雷池WAF防火墙面板|$(_dot 13)" \
+			"14|onlyoffice在线办公OFFICE|$(_dot 14)" \
+			"15|UptimeKuma监控工具|$(_dot 15)"
+		
+		print_table_row "$col_width" \
+			"16|Memos网页备忘录|$(_dot 16)" \
+			"17|drawio免费的在线图表软件|$(_dot 17)" \
+			"18|Sun-Panel导航面板|$(_dot 18)"
+		
+		print_table_row "$col_width" \
+			"19|webssh网页版SSH连接工具|$(_dot 19)" \
+			"20|LobeChatAI聊天聚合网站|$(_dot 20)" \
+			"21|MyIP工具箱|$(_dot 21)"
+		
+		print_table_row "$col_width" \
+			"22|ghproxy(GitHub加速站)|$(_dot 22)" \
+			"23|AllinSSL证书管理平台|$(_dot 23)" \
+			"24|DDNS-GO|$(_dot 24)"
+		
+		print_table_row "$col_width" \
+			"25|Lucky|$(_dot 25)" \
+			"26|LibreTV私有影视|$(_dot 26)" \
+			"27|MoonTV私有影视|$(_dot 27)"
+		
+		print_table_row "$col_width" \
+			"28|Melody音乐精灵|$(_dot 28)" \
+			"29|Beszel服务器监控|$(_dot 29)" \
+			"30|SyncTV一起看片神器|$(_dot 30)"
+		
+		print_table_row "$col_width" \
+			"31|X-UI面板|$(_dot 31)" \
+			"32|3X-UI面板|$(_dot 32)" \
+			"33|Microsoft 365 E5 Renew X|$(_dot 33)"
+		
+		print_table_row "$col_width" \
+			"34|DecoTV私有影视|$(_dot 34)" \
+			"35|Drawnix在线白板|$(_dot 35)"
+		
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${cyan}36.  ${white}$(pad_right "Portainer容器管理 $(_dot 36)" 26) ${cyan}37.  ${white}$(pad_right "Cloudreve网盘 $(_dot 37)" 26) ${cyan}38.  ${white}$(pad_right "Nextcloud私有网盘 $(_dot 38)" 26)"
-		echo -e "${cyan}39.  ${white}$(pad_right "emby媒体管理 $(_dot 39)" 26) ${cyan}40.  ${white}$(pad_right "jellyfin媒体管理 $(_dot 40)" 26) ${cyan}41.  ${white}$(pad_right "AdGuardHome去广告 $(_dot 41)" 26)"
-		echo -e "${cyan}42.  ${white}$(pad_right "Navidrome音乐服务器 $(_dot 42)" 26) ${cyan}43.  ${white}$(pad_right "Vaultwarden密码管理 $(_dot 43)" 26) ${cyan}44.  ${white}$(pad_right "StirlingPDF工具大全 $(_dot 44)" 26)"
-		echo -e "${cyan}45.  ${white}$(pad_right "Speedtest测速面板 $(_dot 45)" 26) ${cyan}46.  ${white}$(pad_right "PhotoPrism私有相册 $(_dot 46)" 26) ${cyan}47.  ${white}$(pad_right "searxng聚合搜索 $(_dot 47)" 26)"
-		echo -e "${cyan}48.  ${white}$(pad_right "Pingvin-Share文件分享 $(_dot 48)" 26) ${cyan}49.  ${white}$(pad_right "Dockge容器管理 $(_dot 49)" 26) ${cyan}50.  ${white}$(pad_right "it-tools工具箱 $(_dot 50)" 26)"
-		echo -e "${cyan}51.  ${white}$(pad_right "n8n自动化工作流 $(_dot 51)" 26) ${cyan}52.  ${white}$(pad_right "OpenWebUI自托管AI $(_dot 52)" 26) ${cyan}53.  ${white}$(pad_right "Dify大模型知识库 $(_dot 53)" 26)"
-		echo -e "${cyan}54.  ${white}$(pad_right "gitea私有代码仓库 $(_dot 54)" 26) ${cyan}55.  ${white}$(pad_right "FileBrowser文件管理 $(_dot 55)" 26) ${cyan}56.  ${white}$(pad_right "FRP内网穿透(服务端) $(_dot 56)" 26)"
-		echo -e "${cyan}57.  ${white}$(pad_right "WireGuard组网(服务端) $(_dot 57)" 26) ${cyan}58.  ${white}$(pad_right "JumpServer堡垒机 $(_dot 58)" 26) ${cyan}59.  ${white}$(pad_right "immich图片视频管理 $(_dot 59)" 26)"
-		echo -e "${cyan}60.  ${white}$(pad_right "Syncthing文件同步 $(_dot 60)" 26) ${cyan}61.  ${white}$(pad_right "Umami网站统计 $(_dot 61)" 26) ${cyan}62.  ${white}$(pad_right "思源笔记 $(_dot 62)" 26)"
-		echo -e "${cyan}63.  ${white}$(pad_right "SFTPGo文件传输 $(_dot 63)" 26) ${cyan}64.  ${white}$(pad_right "Owncast自托管直播 $(_dot 64)" 26) ${cyan}65.  ${white}$(pad_right "Deepseek AI大模型 $(_dot 65)" 26)"
-		echo -e "${cyan}66.  ${white}$(pad_right "RocketChat聊天系统 $(_dot 66)" 26) ${cyan}67.  ${white}$(pad_right "Gopeed高速下载 $(_dot 67)" 26) ${cyan}68.  ${white}$(pad_right "2FAuth二步验证器 $(_dot 68)" 26)"
-		echo -e "${cyan}69.  ${white}$(pad_right "ZFile在线网盘 $(_dot 69)" 26) ${cyan}70.  ${white}$(pad_right "Nexterm远程连接 $(_dot 70)" 26) ${cyan}71.  ${white}$(pad_right "JitsiMeet视频会议 $(_dot 71)" 26)"
-		echo -e "${cyan}72.  ${white}$(pad_right "Stream四层代理转发 $(_dot 72)" 26) ${cyan}73.  ${white}$(pad_right "FileCodeBox文件快递 $(_dot 73)" 26) ${cyan}74.  ${white}$(pad_right "Matrix去中心化聊天 $(_dot 74)" 26)"
-		echo -e "${cyan}75.  ${white}$(pad_right "yt-dlp视频下载 $(_dot 75)" 26) ${cyan}76.  ${white}$(pad_right "paperless文档管理 $(_dot 76)" 26) ${cyan}77.  ${white}$(pad_right "Wallos财务管理 $(_dot 77)" 26)"
-		echo -e "${cyan}78.  ${white}$(pad_right "PairDrop文件传输 $(_dot 78)" 26) ${cyan}79.  ${white}$(pad_right "Dufs静态文件服务器 $(_dot 79)" 26) ${cyan}80.  ${white}$(pad_right "PandaWiki文档管理 $(_dot 80)" 26)"
-		echo -e "${cyan}81.  ${white}$(pad_right "linkwarden书签管理 $(_dot 81)" 26) ${cyan}82.  ${white}$(pad_right "VoceChat聊天系统 $(_dot 82)" 26) ${cyan}83.  ${white}$(pad_right "Karakeep书签管理 $(_dot 83)" 26)"
-		echo -e "${cyan}84.  ${white}$(pad_right "NewAPI大模型资产管理 $(_dot 84)" 26) ${cyan}85.  ${white}$(pad_right "RAGFlow知识库 $(_dot 85)" 26) ${cyan}86.  ${white}$(pad_right "AstrBot聊天机器人 $(_dot 86)" 26)"
-		echo -e "${cyan}87.  ${white}$(pad_right "LangBot聊天机器人 $(_dot 87)" 26) ${cyan}88.  ${white}$(pad_right "多格式文件转换 $(_dot 88)" 26) ${cyan}89.  ${white}$(pad_right "LibreSpeed测速 $(_dot 89)" 26)"
-		echo -e "${cyan}90.  ${white}$(pad_right "gpt-load AI透明代理 $(_dot 90)" 26) ${cyan}91.  ${white}$(pad_right "补货监控工具 $(_dot 91)" 26) ${cyan}92.  ${white}$(pad_right "PVE虚拟化管理 $(_dot 92)" 26)"
-		echo -e "${cyan}93.  ${white}$(pad_right "DSM群晖虚拟机 $(_dot 93)" 26) ${cyan}94.  ${white}$(pad_right "在线DOS老游戏 $(_dot 94)" 26) ${cyan}95.  ${white}$(pad_right "迅雷离线下载 $(_dot 95)" 26)"
-		echo -e "${cyan}96.  ${white}$(pad_right "小雅Alist全家桶 $(_dot 96)" 26) ${cyan}97.  ${white}$(pad_right "Bililive直播录制 $(_dot 97)" 26) ${cyan}98.  ${white}$(pad_right "极简朋友圈 $(_dot 98)" 26)"
-		echo -e "${cyan}99.  ${white}$(pad_right "PanSou网盘搜索 $(_dot 99)" 26) ${cyan}100. ${white}$(pad_right "简单图床lskypro $(_dot 100)" 26) ${cyan}101. ${white}$(pad_right "禅道项目管理 $(_dot 101)" 26)"
-		echo -e "${cyan}102. ${white}$(pad_right "QD-Today定时任务 $(_dot 102)" 26) ${cyan}103. ${white}$(pad_right "耗子管理面板 $(_dot 103)" 26) ${cyan}104. ${white}$(pad_right "AMH建站面板 $(_dot 104)" 26)"
-		echo -e "${cyan}105. ${white}$(pad_right "在线翻译服务器 $(_dot 105)" 26) ${cyan}106. ${white}$(pad_right "AI视频生成工具 $(_dot 106)" 26) ${cyan}107. ${white}$(pad_right "RustDesk远程桌面 $(_dot 107)" 26)"
-		echo -e "${cyan}108. ${white}$(pad_right "Firefox浏览器 $(_dot 108)" 26) ${cyan}109. ${white}$(pad_right "DPanel容器管理 $(_dot 109)" 26) ${cyan}110. ${white}$(pad_right "普罗米修斯监控 $(_dot 110)" 26)"
+		
+		print_table_row "$col_width" \
+			"36|Portainer容器管理|$(_dot 36)" \
+			"37|Cloudreve网盘|$(_dot 37)" \
+			"38|Nextcloud私有网盘|$(_dot 38)"
+		
+		print_table_row "$col_width" \
+			"39|emby媒体管理|$(_dot 39)" \
+			"40|jellyfin媒体管理|$(_dot 40)" \
+			"41|AdGuardHome去广告|$(_dot 41)"
+		
+		print_table_row "$col_width" \
+			"42|Navidrome音乐服务器|$(_dot 42)" \
+			"43|Vaultwarden密码管理|$(_dot 43)" \
+			"44|StirlingPDF工具大全|$(_dot 44)"
+		
+		print_table_row "$col_width" \
+			"45|Speedtest测速面板|$(_dot 45)" \
+			"46|PhotoPrism私有相册|$(_dot 46)" \
+			"47|searxng聚合搜索|$(_dot 47)"
+		
+		print_table_row "$col_width" \
+			"48|Pingvin-Share文件分享|$(_dot 48)" \
+			"49|Dockge容器管理|$(_dot 49)" \
+			"50|it-tools工具箱|$(_dot 50)"
+		
+		print_table_row "$col_width" \
+			"51|n8n自动化工作流|$(_dot 51)" \
+			"52|OpenWebUI自托管AI|$(_dot 52)" \
+			"53|Dify大模型知识库|$(_dot 53)"
+		
+		print_table_row "$col_width" \
+			"54|gitea私有代码仓库|$(_dot 54)" \
+			"55|FileBrowser文件管理|$(_dot 55)" \
+			"56|FRP内网穿透(服务端)|$(_dot 56)"
+		
+		print_table_row "$col_width" \
+			"57|WireGuard组网(服务端)|$(_dot 57)" \
+			"58|JumpServer堡垒机|$(_dot 58)" \
+			"59|immich图片视频管理|$(_dot 59)"
+		
+		print_table_row "$col_width" \
+			"60|Syncthing文件同步|$(_dot 60)" \
+			"61|Umami网站统计|$(_dot 61)" \
+			"62|思源笔记|$(_dot 62)"
+		
+		print_table_row "$col_width" \
+			"63|SFTPGo文件传输|$(_dot 63)" \
+			"64|Owncast自托管直播|$(_dot 64)" \
+			"65|Deepseek AI大模型|$(_dot 65)"
+		
+		print_table_row "$col_width" \
+			"66|RocketChat聊天系统|$(_dot 66)" \
+			"67|Gopeed高速下载|$(_dot 67)" \
+			"68|2FAuth二步验证器|$(_dot 68)"
+		
+		print_table_row "$col_width" \
+			"69|ZFile在线网盘|$(_dot 69)" \
+			"70|Nexterm远程连接|$(_dot 70)" \
+			"71|JitsiMeet视频会议|$(_dot 71)"
+		
+		print_table_row "$col_width" \
+			"72|Stream四层代理转发|$(_dot 72)" \
+			"73|FileCodeBox文件快递|$(_dot 73)" \
+			"74|Matrix去中心化聊天|$(_dot 74)"
+		
+		print_table_row "$col_width" \
+			"75|yt-dlp视频下载|$(_dot 75)" \
+			"76|paperless文档管理|$(_dot 76)" \
+			"77|Wallos财务管理|$(_dot 77)"
+		
+		print_table_row "$col_width" \
+			"78|PairDrop文件传输|$(_dot 78)" \
+			"79|Dufs静态文件服务器|$(_dot 79)" \
+			"80|PandaWiki文档管理|$(_dot 80)"
+		
+		print_table_row "$col_width" \
+			"81|linkwarden书签管理|$(_dot 81)" \
+			"82|VoceChat聊天系统|$(_dot 82)" \
+			"83|Karakeep书签管理|$(_dot 83)"
+		
+		print_table_row "$col_width" \
+			"84|NewAPI大模型资产管理|$(_dot 84)" \
+			"85|RAGFlow知识库|$(_dot 85)" \
+			"86|AstrBot聊天机器人|$(_dot 86)"
+		
+		print_table_row "$col_width" \
+			"87|LangBot聊天机器人|$(_dot 87)" \
+			"88|多格式文件转换|$(_dot 88)" \
+			"89|LibreSpeed测速|$(_dot 89)"
+		
+		print_table_row "$col_width" \
+			"90|gpt-load AI透明代理|$(_dot 90)" \
+			"91|补货监控工具|$(_dot 91)" \
+			"92|PVE虚拟化管理|$(_dot 92)"
+		
+		print_table_row "$col_width" \
+			"93|DSM群晖虚拟机|$(_dot 93)" \
+			"94|在线DOS老游戏|$(_dot 94)" \
+			"95|迅雷离线下载|$(_dot 95)"
+		
+		print_table_row "$col_width" \
+			"96|小雅Alist全家桶|$(_dot 96)" \
+			"97|Bililive直播录制|$(_dot 97)" \
+			"98|极简朋友圈|$(_dot 98)"
+		
+		print_table_row "$col_width" \
+			"99|PanSou网盘搜索|$(_dot 99)" \
+			"100|简单图床lskypro|$(_dot 100)" \
+			"101|禅道项目管理|$(_dot 101)"
+		
+		print_table_row "$col_width" \
+			"102|QD-Today定时任务|$(_dot 102)" \
+			"103|耗子管理面板|$(_dot 103)" \
+			"104|AMH建站面板|$(_dot 104)"
+		
+		print_table_row "$col_width" \
+			"105|在线翻译服务器|$(_dot 105)" \
+			"106|AI视频生成工具|$(_dot 106)" \
+			"107|RustDesk远程桌面|$(_dot 107)"
+		
+		print_table_row "$col_width" \
+			"108|Firefox浏览器|$(_dot 108)" \
+			"109|DPanel容器管理|$(_dot 109)" \
+			"110|普罗米修斯监控|$(_dot 110)"
+		
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${yellow}0.   ${white}返回主菜单"
 		echo -e "${green}666. ${white}查看已安装应用 (当前: ${#INSTALLED_IDS[@]} 个)"

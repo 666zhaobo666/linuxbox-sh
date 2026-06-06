@@ -64,11 +64,26 @@ str_width() {
 	while [ "$i" -lt "$len" ]; do
 		printf -v byte "%d" "'${s:$i:1}"
 		if [ "$byte" -ge 192 ] 2>/dev/null; then
-			w=$((w + 2))
+			# 检查是否是中文字符（GB2312范围的汉字，首字节 0xE4-0xE9）
+			# 中文字符占2列，圆点 ● (U+25CF) 等符号只占1列
+			if [ "$byte" -ge 228 ] && [ "$byte" -le 233 ]; then
+				w=$((w + 2))
+			else
+				w=$((w + 1))
+			fi
+			# 跳过剩余的多字节（UTF-8后续字节在 0x80-0xBF 范围内）
+			i=$((i + 1))
+			while [ "$i" -lt "$len" ]; do
+				printf -v byte "%d" "'${s:$i:1}"
+				if [ "$byte" -lt 128 ] || [ "$byte" -ge 192 ]; then
+					break
+				fi
+				i=$((i + 1))
+			done
 		else
 			w=$((w + 1))
+			i=$((i + 1))
 		fi
-		i=$((i + 1))
 	done
 	echo "$w"
 }
@@ -96,6 +111,102 @@ pad_left() {
 	else
 		printf "%s" "$s"
 	fi
+}
+
+# 按指定宽度切割字符串（考虑中文双字节）
+# 返回切割后的字符串（不超过指定宽度）
+cut_string() {
+	local s=$1 max_width=$2
+	local w=0 i=0 len=${#s} byte result=""
+	
+	while [ "$i" -lt "$len" ]; do
+		printf -v byte "%d" "'${s:$i:1}"
+		if [ "$byte" -ge 192 ] 2>/dev/null; then
+			# 多字节字符
+			local char_width=1
+			if [ "$byte" -ge 228 ] && [ "$byte" -le 233 ]; then
+				char_width=2
+			fi
+			if [ $((w + char_width)) -gt "$max_width" ] && [ "$w" -gt 0 ]; then
+				break
+			fi
+			# 获取完整的多字节字符
+			local char="${s:$i:1}"
+			i=$((i + 1))
+			while [ "$i" -lt "$len" ]; do
+				printf -v byte "%d" "'${s:$i:1}"
+				if [ "$byte" -lt 128 ] || [ "$byte" -ge 192 ]; then
+					break
+				fi
+				char="${char}${s:$i:1}"
+				i=$((i + 1))
+			done
+			result="${result}${char}"
+			w=$((w + char_width))
+		else
+			# ASCII字符
+			if [ $((w + 1)) -gt "$max_width" ] && [ "$w" -gt 0 ]; then
+				break
+			fi
+			result="${result}${s:$i:1}"
+			w=$((w + 1))
+			i=$((i + 1))
+		fi
+	done
+	echo "$result"
+}
+
+# 输出虚拟表格行（支持自动换行）
+# 参数: col_width列宽, items...（格式: "编号|名称|状态"）
+print_table_row() {
+	local col_width=$1
+	shift
+	local items=("$@")
+	local max_lines=1
+	
+	# 计算每列需要多少行
+	for item in "${items[@]}"; do
+		local idx="${item%%|*}"
+		local name="${item#*|}"
+		local status="${name#*|}"
+		name="${name%%|*}"
+		local full_content="${idx}. ${name} ${status}"
+		local full_width=$(str_width "$full_content")
+		local lines=$((full_width / col_width))
+		if [ $((full_width % col_width)) -ne 0 ]; then
+			lines=$((lines + 1))
+		fi
+		if [ "$lines" -gt "$max_lines" ]; then
+			max_lines="$lines"
+		fi
+	done
+	
+	# 逐行输出
+	for ((line_idx=0; line_idx<max_lines; line_idx++)); do
+		local line=""
+		for item in "${items[@]}"; do
+			local idx="${item%%|*}"
+			local name="${item#*|}"
+			local status="${name#*|}"
+			name="${name%%|*}"
+			local full_content="${idx}. ${name} ${status}"
+			
+			# 获取当前行应该显示的内容
+			local remaining="$full_content"
+			for ((i=0; i<line_idx; i++)); do
+				remaining=$(cut_string "$remaining" "$col_width")
+				remaining="${remaining:$(str_width "$remaining")}"
+			done
+			
+			if [ -n "$remaining" ]; then
+				local part=$(cut_string "$remaining" "$col_width")
+				line="${line}$(pad_right "$part" "$col_width") "
+			else
+				line="${line}$(printf '%*s' "$col_width" "") "
+			fi
+		done
+		echo "$line"
+	done
 }
 
 # 输出一段对齐的"编号 + 名称"菜单项
