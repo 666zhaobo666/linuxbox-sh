@@ -57,7 +57,10 @@ return_to_menu() {
 
 # 计算字符串的可见列数
 str_width() {
-	local s=$1 w=0 i=0 len=${#s} byte
+	# 先剥掉 ANSI 颜色码 (\033[...m), 这些是不可见字符不能算进列数
+	local s
+	s=$(printf '%s' "$1" | sed $'s/\033\\[[0-9;]*m//g')
+	local w=0 i=0 len=${#s} byte
 	while [ "$i" -lt "$len" ]; do
 		printf -v byte "%d" "'${s:$i:1}"
 		if [ "$byte" -ge 192 ] 2>/dev/null; then
