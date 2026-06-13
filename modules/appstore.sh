@@ -2529,9 +2529,9 @@ linux_app() {
 
 	_dot() {
 		if [ "${INSTALLED_MAP[$1]:-0}" = "1" ]; then
-			echo -n "${green}●${white}"
+			echo -ne "${green}●${white}"
 		else
-			echo -n "${red}●${white}"
+			echo -ne "${red}●${white}"
 		fi
 	}
 
@@ -2608,8 +2608,21 @@ linux_app() {
 			local meta="${APP_META[$i]:-}"
 			local name="${meta%%|*}"
 			local dot_str=$(_dot $i)
-			# 统一格式化为宽字符列
-			printf "${cyan}%-3s ${white}%-32s %s\t" "${i}." "${name}" "${dot_str}"
+			# 计算实际显示宽度实现中文对齐
+			local name_len=${#name}
+			local real_len=0
+			for ((j=0; j<name_len; j++)); do
+				local c="${name:$j:1}"
+				if [ $(printf "%d" "'$c" 2>/dev/null || echo 127) -le 127 ]; then
+					((real_len+=1))
+				else
+					((real_len+=2))
+				fi
+			done
+			local pad_len=$((36 - real_len))
+			[ $pad_len -lt 0 ] && pad_len=1
+			local padding=$(printf "%*s" $pad_len "")
+			printf "${cyan}%-4s${white}%s%s %b  " "${i}." "${name}" "${padding}" "${dot_str}"
 			if [ $((i % 3)) -eq 0 ]; then
 				echo ""
 			fi
