@@ -2622,7 +2622,7 @@ linux_app() {
 			local pad_len=$((36 - real_len))
 			[ $pad_len -lt 0 ] && pad_len=1
 			local padding=$(printf "%*s" $pad_len "")
-			printf "${cyan}%-4s${white}%s%s %b  " "${i}." "${name}" "${padding}" "${dot_str}"
+			printf "%b ${cyan}%-4s${white}%s%s" "${dot_str}" "${i}." "${name}" "${padding}"
 			if [ $((i % 3)) -eq 0 ]; then
 				echo ""
 			fi
