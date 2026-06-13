@@ -2584,7 +2584,7 @@ linux_app() {
 	_get_meta_var() {
 		local func_name="$1"
 		local var_name="$2"
-		declare -f "$func_name" 2>/dev/null | grep -E "^\s*(local\s+)?${var_name}=" | head -n 1 | sed -E "s/.*${var_name}=["']?([^"' 	;]+)["']?.*/\1/"
+		declare -f "$func_name" 2>/dev/null | grep -E "^\s*(local\s+)?${var_name}=" | head -n 1 | sed -E 's/.*'"${var_name}"'=["'"'"']?([^"'"'"' 	;]+)["'"'"']?.*/\1/' 
 	}
 
 	while true; do
