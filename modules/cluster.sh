@@ -252,7 +252,7 @@ linux_cluster() {
             12) cluster_update_all ;;
             13) cluster_install_docker ;;
             14) cluster_set_timezone ;;
-            0) return_to_menu ;;
+            0) return ;;
             *)
                 echo -e "${red}${LX_invalid}${white}"
                 sleep 1

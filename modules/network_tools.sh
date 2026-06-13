@@ -79,7 +79,7 @@ network_tools() {
 			12)
 				clear
 				## "mtr_trace三网回程线路测试"
-				curl ${url_proxy}raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh | bash
+				curl -sL ${url_proxy}raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh -o /tmp/mtr_trace.sh && bash /tmp/mtr_trace.sh || echo '下载失败'
 				read -p "按任意键继续..." -n 1 -s
 				echo
 				;;
@@ -93,7 +93,7 @@ network_tools() {
 			14)
 				clear
 				## "nxtrace快速回程测试脚本"
-				curl nxtrace.org/nt |bash
+				curl -sL https://nxtrace.org/nt -o /tmp/nt.sh && bash /tmp/nt.sh || echo '下载失败'
 				nexttrace --fast-trace --tcp
 				read -p "按任意键继续..." -n 1 -s
 				echo
@@ -121,7 +121,7 @@ network_tools() {
 				echo -e "${pink}------------------------${white}"
 
 				read -e -p "输入一个指定IP: " testip
-				curl nxtrace.org/nt |bash
+				curl -sL https://nxtrace.org/nt -o /tmp/nt.sh && bash /tmp/nt.sh || echo '下载失败'
 				nexttrace $testip
 				read -p "按任意键继续..." -n 1 -s
 				echo
@@ -155,7 +155,7 @@ network_tools() {
 				clear
 				## "yabs性能测试"
 				check_swap
-				curl -sL yabs.sh | bash -s -- -i -5
+				curl -sL https://yabs.sh -o /tmp/yabs.sh && bash /tmp/yabs.sh -i -5 || echo '下载失败'
 				read -p "按任意键继续..." -n 1 -s
 				echo
 				;;
@@ -171,7 +171,7 @@ network_tools() {
 			31)
 				clear
 				## "bench性能测试"
-				curl -Lso- bench.sh | bash
+				curl -sL https://bench.sh -o /tmp/bench.sh && bash /tmp/bench.sh || echo '下载失败'
 				read -p "按任意键继续..." -n 1 -s
 				echo
 				;;
@@ -184,7 +184,7 @@ network_tools() {
 				;;
 
 			0)
-				return_to_menu
+				return
 				;;
 			*)
 				echo -e "${red}无效选择, 请重新输入 !${white}"

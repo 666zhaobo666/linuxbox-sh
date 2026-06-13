@@ -1277,7 +1277,7 @@ web_optimization() {
 
 # 网页状态
 ldnmp_web_status() {
-	root_use
+	root_use || return 1
 	while true; do
 		local cert_count=$(ls /home/web/certs/*_cert.pem 2>/dev/null | wc -l)
 		local output="${green}${cert_count}${white}"
@@ -1502,7 +1502,7 @@ ldnmp_install_status_one() {
 ldnmp_install_all() {
 	cd ~
 	# "安装LDNMP环境"
-	root_use
+	root_use || return 1
 	clear
 	echo -e "${yellow}LDNMP环境未安装, 开始安装LDNMP环境...${white}"
 	check_disk_space 3
@@ -1518,7 +1518,7 @@ ldnmp_install_all() {
 nginx_install_all() {
 	cd ~
 	# "安装nginx环境"
-	root_use
+	root_use || return 1
 	clear
 	echo -e "${yellow}nginx未安装, 开始安装nginx环境...${white}"
 	check_disk_space 1
@@ -2450,7 +2450,7 @@ linux_ldnmp() {
 		;;
 
 		34)
-		root_use
+		root_use || return 1
 		#  "LDNMP环境还原"
 		echo "可用的站点备份"
 		echo "-------------------------"
@@ -2497,7 +2497,7 @@ linux_ldnmp() {
 
 
 		37)
-		root_use
+		root_use || return 1
 		while true; do
 			clear
 			#  "更新LDNMP环境"
@@ -2632,7 +2632,7 @@ linux_ldnmp() {
 			;;
 
 		38)
-			root_use
+			root_use || return 1
 			#  "卸载LDNMP环境"
 			read -e -p "$(echo -e "${red}强烈建议：${white}先备份全部网站数据, 再卸载LDNMP环境.确定删除所有网站数据吗？(Y/N): ")" choice
 			case "$choice" in
@@ -2654,7 +2654,7 @@ linux_ldnmp() {
 			;;
 
 		0)
-			return_to_menu
+			return
 		;;
 
 		*)

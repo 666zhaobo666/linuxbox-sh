@@ -50,6 +50,7 @@ get_remote_version() {
 
 ## 主升级函数
 update_script() {
+	ensure_proxy
 	echo "${LX_update_check}"
 
 	# 检查是否在模块化目录中运行
@@ -265,6 +266,7 @@ rollback_version() {
 
 ## 查看更新日志
 view_changelog() {
+	ensure_proxy
 	echo -e "${cyan}===== 更新日志 =====${white}"
 	local changelog_url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/CHANGELOG.md"
 	if curl -s --max-time 10 "$changelog_url" 2>/dev/null | head -n 50; then

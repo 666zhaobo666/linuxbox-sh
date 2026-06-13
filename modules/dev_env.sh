@@ -18,7 +18,7 @@ dev_env_management() {
 		case $choice in
 			1) python_management ;;
 			2) db_management ;;
-			0) return_to_menu ;;
+			0) return ;;
 			*) 
 				echo -e "${red}无效选择, 请重新输入 !${white}"
 				sleep 1
@@ -320,7 +320,7 @@ db_management() {
         case $choice in
             1) mysql_server_app ;;
             2) postgres_server_app ;;
-            0) return_to_menu ;;
+            0) return ;;
             *) 
 				echo -e "${red}无效选择, 请重新输入 !${white}"
 				sleep 1
@@ -371,14 +371,15 @@ mysql_server_app(){
             -v /home/docker/${docker_name}/data:/var/lib/mysql \
             -v /home/docker/${docker_name}/conf:/etc/mysql/conf.d \
             -v /home/docker/${docker_name}/logs:/var/log/mysql \
-            -e MYSQL_ROOT_PASSWORD=${mysql_root_password} \
+            -e MYSQL_ROOT_PASSWORD="${mysql_root_password}" \
             ${docker_img}:${version}
-		sed -i "s/PASSWORD=admin_password/PASSWORD=${admin_password}/g" /home/docker/moontv/docker-compose.yml
-		sed -i "s/shouquanma/${shouquanma}/g" /home/docker/moontv/docker-compose.yml
     }
 
 	# 提取所有mysql版本号并处理格式
-	local mysql_versions=$(grep -oE 'mysql.*' /home/docker/appno.txt | sed 's/mysql//' | tr '\n' ',' | sed 's/,$//')
+	local mysql_versions=""
+	if [ -f /home/docker/appno.txt ]; then
+		mysql_versions=$(grep -oE 'mysql.*' /home/docker/appno.txt | sed 's/mysql//' | tr '\n' ',' | sed 's/,$//')
+	fi
 	if [ -z "$mysql_versions" ]; then
 		echo -e "${red}未安装MySQL任何版本! 即将进入安装...${white}"
 		echo -e "${cyan}按回车键继续...${white}"
