@@ -370,7 +370,7 @@ firewalld_panel() {
                 return
                 ;;
 			0)  # 返回上一级
-				return
+				return 1
 				;;
                 
             *)
@@ -544,8 +544,8 @@ iptables_panel() {
                 ;;
                 
             0)  # 返回上一级
-                return
-                ;;
+				return 1
+				;;
                 
             *)
 				echo -e "${red}无效选择, 请重新输入 !${white}"
@@ -588,9 +588,9 @@ linux_firewall() {
         else
             # 根据检测到的防火墙类型进入相应的管理面板
             if [ "$firewall" = "firewalld" ]; then
-                firewalld_panel
+                firewalld_panel || break
             elif [ "$firewall" = "iptables" ]; then
-                iptables_panel
+                iptables_panel || break
             fi
         fi
     done
