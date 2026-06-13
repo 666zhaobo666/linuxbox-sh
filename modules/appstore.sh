@@ -59,7 +59,7 @@ panel_manage() {
 			3)
 				panel_app_uninstall
 
-				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+				remove_app_id
 				;;
 			*)
 				break
@@ -175,17 +175,20 @@ check_docker() {
 			1)
 				install_add_docker
 				break_end
+				return 0
 				;;
-			0)
-				return_to_menu
+			0|"")
+				return 1
 				;;
 			*)
 				echo -e "${red}无效选择, 请重新输入 !${white}"
 				sleep 1
+				return 1
 				;;
 		esac
-		return
+		return 1
 	fi
+	return 0
 }
 
 # 检查Docker应用是否安装
@@ -495,6 +498,22 @@ add_app_id() {
 	grep -qxF "${app_id}" /home/docker/appno.txt || echo "${app_id}" >> /home/docker/appno.txt
 }
 
+remove_app_id() {
+	[ -z "${app_id:-}" ] && return
+	[ -f /home/docker/appno.txt ] || return
+	sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+}
+
+app_unavailable() {
+	clear
+	local app_name="$1"
+	local reason="${2:-该应用条目尚未完成可用性验证}"
+	echo -e "${yellow}${app_name} 暂不可用${white}"
+	echo "$reason"
+	echo "为避免安装失败或拉取不存在的镜像, 当前版本暂时隐藏该安装入口。"
+	break_end
+}
+
 
 #############################################################################
 ####################### 多端口注册 + 状态查询框架 ############################
@@ -553,8 +572,12 @@ get_primary_port() {
 	fi
 }
 
-# (no-op) 框架不再自动注册, app 必须在 docker_run 里显式 add_app_port
-_auto_register_fallback_port() { :; }
+# 老应用未显式注册端口时, 用 docker_port 兜底生成一个入口
+_auto_register_fallback_port() {
+	if [ ${#APP_PORTS_NUMBERS[@]} -eq 0 ] && [ -n "${docker_port:-}" ]; then
+		add_app_port "${access_label:-Web 端口}" "$docker_port"
+	fi
+}
 
 # 全局 app 注册表 (供 666 已安装列表展示 app_name)
 APP_REGISTRY_IDS=()
@@ -959,7 +982,7 @@ docker_app() {
 					"$_uninstall_cmd"
 					rm -f /home/docker/${docker_name}_port.conf
 					rm -f /home/docker/${docker_name}_ports.txt
-					sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+					remove_app_id
 					echo "应用已卸载"
 					;;
 				5)  # 添加域名访问
@@ -1294,7 +1317,7 @@ komari_app(){
 				docker rm -f $docker_name 2>/dev/null
 				docker rmi -f $docker_img 2>/dev/null
 				rm -rf /home/docker/komari
-				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+				remove_app_id
 				clear
 				echo "Komari 已卸载"
 				break_end
@@ -1514,7 +1537,7 @@ poste_mail_app(){
 				rm /home/docker/mail.txt
 				rm -rf /home/docker/mail
 
-				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+				remove_app_id
 				echo "应用已卸载"
 				;;
 
@@ -1666,7 +1689,7 @@ safeline_app(){
 				cd /data/safeline
 				docker compose down --rmi all
 
-				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+				remove_app_id
 				echo "如果你是默认安装目录那现在项目已经卸载.如果你是自定义安装目录你需要到安装目录下自行执行:"
 				echo "docker compose down && docker compose down --rmi all"
 				;;
@@ -2390,17 +2413,128 @@ drawnix_app(){
 ######## 应用中心菜单 #########
 ##############################
 linux_app() {
+	# 新的数据驱动注册表: [id]="名字|调用函数|标志"
+	declare -A APP_META=(
+  [1]="1Panel面板|1panel_app|normal"
+  [2]="宝塔面板|bt_app|normal"
+  [3]="aaPanel面板|aapanel_app|normal"
+  [4]="NginxProxyManager面板|npm_app|normal"
+  [5]="OpenList面板|openlist_app|normal"
+  [6]="WebTop远程桌面网页版|webtop_app|normal"
+  [7]="Komari监控|komari_app|normal"
+  [8]="qbittorrent离线下载|qb_app|normal"
+  [9]="Poste.io邮件服务器程序|poste_mail_app|normal"
+  [10]="青龙面板|qinglong_app|normal"
+  [11]="Code-Server(网页vscode)|code_server_app|normal"
+  [12]="Looking Glass(测速面板)|looking_glass_app|normal"
+  [13]="雷池WAF防火墙面板|safeline_app|normal"
+  [14]="onlyoffice在线办公OFFICE|onlyoffice_app|normal"
+  [15]="UptimeKuma监控工具|uptimekuma_app|normal"
+  [16]="Memos网页备忘录|memos_app|normal"
+  [17]="drawio免费的在线图表软件|drawio_app|normal"
+  [18]="Sun-Panel导航面板|sun_panel_app|normal"
+  [19]="webssh网页版SSH连接工具|webssh_app|normal"
+  [20]="LobeChatAI聊天聚合网站|lobe_chat|normal"
+  [21]="MyIP工具箱|myip_app|normal"
+  [22]="ghproxy(GitHub加速站)|ghproxy_app|normal"
+  [23]="AllinSSL证书管理平台|allinssl_app|normal"
+  [24]="DDNS-GO|ddnsgo_app|normal"
+  [25]="Lucky|lucky_app|normal"
+  [26]="LibreTV私有影视|libretv_app|normal"
+  [27]="MoonTV私有影视|moontv_app|normal"
+  [28]="Melody音乐精灵|melody_app|normal"
+  [29]="Beszel服务器监控|beszel_app|normal"
+  [30]="SyncTV一起看片神器|synctv_app|normal"
+  [31]="X-UI面板|xui_app|normal"
+  [32]="3X-UI面板|3xui_app|normal"
+  [33]="Microsoft 365 E5 Renew X|e5_renew_x_app|normal"
+  [34]="DecoTV私有影视|decotv_app|normal"
+  [35]="Drawnix在线白板|drawnix_app|normal"
+  [36]="Portainer容器管理|portainer_app|normal"
+  [37]="Cloudreve网盘|cloudreve_app|normal"
+  [38]="Nextcloud私有网盘|nextcloud_app|normal"
+  [39]="emby媒体管理|emby_app|normal"
+  [40]="jellyfin媒体管理|jellyfin_app|normal"
+  [41]="AdGuardHome去广告|adguardhome_app|normal"
+  [42]="Navidrome音乐服务器|navidrome_app|normal"
+  [43]="Vaultwarden密码管理|bitwarden_app|normal"
+  [44]="StirlingPDF工具大全|stirlingpdf_app|normal"
+  [45]="Speedtest测速面板|speedtest_app|normal"
+  [46]="PhotoPrism私有相册|photoprism_app|normal"
+  [47]="searxng聚合搜索|searxng_app|normal"
+  [48]="Pingvin-Share文件分享|pingvinshare_app|normal"
+  [49]="Dockge容器管理|dockge_app|normal"
+  [50]="it-tools工具箱|ittools_app|normal"
+  [51]="n8n自动化工作流|n8n_app|normal"
+  [52]="OpenWebUI自托管AI|openwebui_app|normal"
+  [53]="Dify大模型知识库|dify_app|normal"
+  [54]="gitea私有代码仓库|gitea_app|normal"
+  [55]="FileBrowser文件管理|filebrowser_app|normal"
+  [56]="FRP内网穿透(服务端)|frp_server_app|normal"
+  [57]="WireGuard组网(服务端)|wireguard_server_app|normal"
+  [58]="JumpServer堡垒机|jumpserver_app|normal"
+  [59]="immich图片视频管理|immich_app|normal"
+  [60]="Syncthing文件同步|syncthing_app|normal"
+  [61]="Umami网站统计|umami_app|normal"
+  [62]="思源笔记|siyuan_app|normal"
+  [63]="SFTPGo文件传输|sftpgp_app|normal"
+  [64]="Owncast自托管直播|owncast_app|normal"
+  [65]="Deepseek AI大模型|deepseek_app|normal"
+  [66]="RocketChat聊天系统|rocketchat_app|normal"
+  [67]="Gopeed高速下载|gopeed_app|normal"
+  [68]="2FAuth二步验证器|twofauth_app|normal"
+  [69]="ZFile在线网盘|zfile_app|normal"
+  [70]="Nexterm远程连接|nexterm_app|normal"
+  [71]="JitsiMeet视频会议|jitsimeet_app|normal"
+  [72]="Stream四层代理转发|stream_app|normal"
+  [73]="FileCodeBox文件快递|filecodebox_app|normal"
+  [74]="Matrix去中心化聊天|matrix_app|normal"
+  [75]="yt-dlp视频下载|ytdlp_app|normal"
+  [76]="paperless文档管理|paperless_app|normal"
+  [77]="Wallos财务管理|wallos_app|normal"
+  [78]="PairDrop文件传输|pairdrop_app|normal"
+  [79]="Dufs静态文件服务器|dufs_app|normal"
+  [80]="PandaWiki文档管理|pandawiki_app|normal"
+  [81]="linkwarden书签管理|linkwarden_app|normal"
+  [82]="VoceChat聊天系统|vocechat_app|normal"
+  [83]="Karakeep书签管理|karakeep_app|normal"
+  [84]="NewAPI大模型资产管理|newapi_app|normal"
+  [85]="RAGFlow知识库|ragflow_app|normal"
+  [86]="AstrBot聊天机器人|astrbot_app|normal"
+  [87]="LangBot聊天机器人|langbot_app|normal"
+  [88]="多格式文件转换|gotenberg_app|normal"
+  [89]="LibreSpeed测速|librespeed_app|normal"
+  [90]="gpt-load AI透明代理|gptload_app|normal"
+  [91]="补货监控工具|app_unavailable \"补货监控工具\" \"镜像 stock-monitor:latest 缺少可验证的公开仓库命名空间。\"|disabled"
+  [92]="PVE虚拟化管理|app_unavailable \"PVE虚拟化管理\" \"镜像 pve-manager:latest 缺少可验证的公开仓库命名空间。\"|disabled"
+  [93]="DSM群晖虚拟机|dsm_app|normal"
+  [94]="在线DOS老游戏|dosgame_app|normal"
+  [95]="迅雷离线下载|xunlei_app|normal"
+  [96]="小雅Alist全家桶|xiaoya_app|normal"
+  [97]="Bililive直播录制|bililive_app|normal"
+  [98]="极简朋友圈|app_unavailable \"极简朋友圈\" \"镜像 moments-app:latest 缺少可验证的公开仓库命名空间。\"|disabled"
+  [99]="PanSou网盘搜索|app_unavailable \"PanSou网盘搜索\" \"镜像 pansou-search:latest 缺少可验证的公开仓库命名空间。\"|disabled"
+  [100]="简单图床lskypro|lskypro_app|normal"
+  [101]="禅道项目管理|zentao_app|normal"
+  [102]="QD-Today定时任务|qdtoday_app|normal"
+  [103]="耗子管理面板|app_unavailable \"耗子管理面板\" \"镜像 haizi-panel:latest 缺少可验证的公开仓库命名空间。\"|disabled"
+  [104]="AMH建站面板|app_unavailable \"AMH建站面板\" \"镜像 amh-panel:latest 缺少可验证的公开仓库命名空间。\"|disabled"
+  [105]="在线翻译服务器|libretranslate_app|normal"
+  [106]="AI视频生成工具|app_unavailable \"AI视频生成工具\" \"镜像 videogen-ai:latest 缺少可验证的公开仓库命名空间。\"|disabled"
+  [107]="RustDesk远程桌面|rustdesk_server_app|normal"
+  [108]="Firefox浏览器|firefox_app|normal"
+  [109]="DPanel容器管理|dpanel_app|normal"
+  [110]="普罗米修斯监控|prometheus_app|normal"
+	)
 
-	# 状态点 (单字符, 颜色根据安装状态)
 	_dot() {
 		if [ "${INSTALLED_MAP[$1]:-0}" = "1" ]; then
-			echo "${green}●${white}"
+			echo -n "${green}●${white}"
 		else
-			echo "${red}●${white}"
+			echo -n "${red}●${white}"
 		fi
 	}
 
-	# 渲染已安装应用列表 (666 入口)
 	_render_installed_list() {
 		clear
 		echo -e "${green}===== 已安装应用 =====${white}"
@@ -2410,12 +2544,13 @@ linux_app() {
 			break_end
 			return 1
 		fi
-		# 按 app_id 数字排序
 		local sorted
 		sorted=$(printf '%s\n' "${INSTALLED_IDS[@]}" | sort -n)
 		while read -r id; do
 			[ -n "$id" ] || continue
-			local name="${APP_DISPLAY_NAMES[$id]:-?未注册}"
+			local meta="${APP_META[$id]:-}"
+			local name="${meta%%|*}"
+			[ -z "$name" ] && name="?未注册"
 			echo -e "  ${cyan}$id. ${white}$name  ${green}●${white}"
 		done <<< "$sorted"
 		echo ""
@@ -2426,8 +2561,7 @@ linux_app() {
 		if [ "$jump_choice" = "0" ] || [ -z "$jump_choice" ]; then
 			return 1
 		fi
-		# 直接跳到该 sub_choice (复用主 case 调度)
-		if [ -n "${APP_DISPLAY_NAMES[$jump_choice]:-}" ]; then
+		if [ -n "${APP_META[$jump_choice]:-}" ]; then
 			_linux_app_dispatch "$jump_choice"
 		else
 			echo -e "${red}无效编号 $jump_choice${white}"
@@ -2436,129 +2570,22 @@ linux_app() {
 		fi
 	}
 
-	# sub_choice 调度 (主菜单 + 666 列表共用)
 	_linux_app_dispatch() {
 		local sub_choice="$1"
-		# 清理上一个 app 残留的内嵌函数定义
 		unset -f docker_app_install docker_app_update docker_app_uninstall app_post_install app_post_install_password 2>/dev/null
 		clear_app_ports
-
-		case $sub_choice in
-		1) 1panel_app ;;
-		2) bt_app ;;
-		3) aapanel_app ;;
-		4) npm_app ;;
-		5) openlist_app ;;
-		6) webtop_app ;;
-		7) komari_app ;;
-		8) qb_app ;;
-		9) poste_mail_app ;;
-		10) qinglong_app ;;
-		11) code_server_app ;;
-		12) looking_glass_app ;;
-		13) safeline_app ;;
-		14) onlyoffice_app ;;
-		15) uptimekuma_app ;;
-		16) memos_app ;;
-		17) drawio_app ;;
-		18) sun_panel_app ;;
-		19) webssh_app ;;
-		20) lobe_chat ;;
-		21) myip_app ;;
-		22) ghproxy_app ;;
-		23) allinssl_app ;;
-		24) ddnsgo_app ;;
-		25) lucky_app ;;
-		26) libretv_app ;;
-		27) moontv_app ;;
-		28) melody_app ;;
-		29) beszel_app ;;
-		30) synctv_app ;;
-		31) xui_app ;;
-		32) 3xui_app ;;
-		33) e5_renew_x_app ;;
-		34) decotv_app ;;
-		35) drawnix_app ;;
-		36) portainer_app ;;
-		37) cloudreve_app ;;
-		38) nextcloud_app ;;
-		39) emby_app ;;
-		40) jellyfin_app ;;
-		41) adguardhome_app ;;
-		42) navidrome_app ;;
-		43) bitwarden_app ;;
-		44) stirlingpdf_app ;;
-		45) speedtest_app ;;
-		46) photoprism_app ;;
-		47) searxng_app ;;
-		48) pingvinshare_app ;;
-		49) dockge_app ;;
-		50) ittools_app ;;
-		51) n8n_app ;;
-		52) openwebui_app ;;
-		53) dify_app ;;
-		54) gitea_app ;;
-		55) filebrowser_app ;;
-		56) frp_server_app ;;
-		57) wireguard_server_app ;;
-		58) jumpserver_app ;;
-		59) immich_app ;;
-		60) syncthing_app ;;
-		61) umami_app ;;
-		62) siyuan_app ;;
-		63) sftpgp_app ;;
-		64) owncast_app ;;
-		65) deepseek_app ;;
-		66) rocketchat_app ;;
-		67) gopeed_app ;;
-		68) twofauth_app ;;
-		69) zfile_app ;;
-		70) nexterm_app ;;
-		71) jitsimeet_app ;;
-		72) stream_app ;;
-		73) filecodebox_app ;;
-		74) matrix_app ;;
-		75) ytdlp_app ;;
-		76) paperless_app ;;
-		77) wallos_app ;;
-		78) pairdrop_app ;;
-		79) dufs_app ;;
-		80) pandawiki_app ;;
-		81) linkwarden_app ;;
-		82) vocechat_app ;;
-		83) karakeep_app ;;
-		84) newapi_app ;;
-		85) ragflow_app ;;
-		86) astrbot_app ;;
-		87) langbot_app ;;
-		88) gotenberg_app ;;
-		89) librespeed_app ;;
-		90) gptload_app ;;
-		91) stockmonitor_app ;;
-		92) pve_app ;;
-		93) dsm_app ;;
-		94) dosgame_app ;;
-		95) xunlei_app ;;
-		96) xiaoya_app ;;
-		97) bililive_app ;;
-		98) moments_app ;;
-		99) pansou_app ;;
-		100) lskypro_app ;;
-		101) zentao_app ;;
-		102) qdtoday_app ;;
-		103) haizi_app ;;
-		104) amh_app ;;
-		105) libretranslate_app ;;
-		106) videogen_app ;;
-		107) rustdesk_server_app ;;
-		108) firefox_app ;;
-		109) dpanel_app ;;
-		110) prometheus_app ;;
-		esac
+		
+		local meta="${APP_META[$sub_choice]:-}"
+		if [ -z "$meta" ]; then
+			return
+		fi
+		
+		local func_call=$(echo "$meta" | awk -F'|' '{print $2}')
+		# 直接执行函数
+		eval "$func_call"
 	}
 
 	while true; do
-		# 每次渲染菜单前刷新已安装状态（解决安装后主界面不刷新为绿色的问题）
 		declare -A INSTALLED_MAP=()
 		INSTALLED_IDS=()
 		if [ -f /home/docker/appno.txt ]; then
@@ -2575,65 +2602,36 @@ linux_app() {
 		echo ""
 		docker_tato
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${cyan}1.  ${white}1Panel面板 $(_dot 1)               ${cyan}2.  ${white}宝塔面板 $(_dot 2)                  ${cyan}3.  ${white}aaPanel面板 $(_dot 3)"
-		echo -e "${cyan}4.  ${white}NginxProxyManager面板 $(_dot 4)    ${cyan}5.  ${white}OpenList面板 $(_dot 5)              ${cyan}6.  ${white}WebTop远程桌面网页版 $(_dot 6)"
-		echo -e "${cyan}7.  ${white}Komari监控 $(_dot 7)               ${cyan}8.  ${white}qbittorrent离线下载 $(_dot 8)       ${cyan}9.  ${white}Poste.io邮件服务器程序 $(_dot 9)"
-		echo -e "${cyan}10. ${white}青龙面板 $(_dot 10)                 ${cyan}11. ${white}Code-Server(网页vscode) $(_dot 11)   ${cyan}12. ${white}Looking Glass(测速面板) $(_dot 12)"
-		echo -e "${cyan}13. ${white}雷池WAF防火墙面板 $(_dot 13)        ${cyan}14. ${white}onlyoffice在线办公OFFICE $(_dot 14)  ${cyan}15. ${white}UptimeKuma监控工具 $(_dot 15)"
-		echo -e "${cyan}16. ${white}Memos网页备忘录 $(_dot 16)          ${cyan}17. ${white}drawio免费的在线图表软件 $(_dot 17)  ${cyan}18. ${white}Sun-Panel导航面板 $(_dot 18)"
-		echo -e "${cyan}19. ${white}webssh网页版SSH连接工具 $(_dot 19)  ${cyan}20. ${white}LobeChatAI聊天聚合网站 $(_dot 20)    ${cyan}21. ${white}MyIP工具箱 $(_dot 21)"
-		echo -e "${cyan}22. ${white}ghproxy(GitHub加速站) $(_dot 22)    ${cyan}23. ${white}AllinSSL证书管理平台 $(_dot 23)      ${cyan}24. ${white}DDNS-GO $(_dot 24)"
-		echo -e "${cyan}25. ${white}Lucky $(_dot 25)                    ${cyan}26. ${white}LibreTV私有影视 $(_dot 26)           ${cyan}27. ${white}MoonTV私有影视 $(_dot 27)"
-		echo -e "${cyan}28. ${white}Melody音乐精灵 $(_dot 28)           ${cyan}29. ${white}Beszel服务器监控 $(_dot 29)          ${cyan}30. ${white}SyncTV一起看片神器 $(_dot 30)"
-		echo -e "${cyan}31. ${white}X-UI面板 $(_dot 31)                 ${cyan}32. ${white}3X-UI面板 $(_dot 32)                 ${cyan}33. ${white}Microsoft 365 E5 Renew X $(_dot 33)"
-		echo -e "${cyan}34. ${white}DecoTV私有影视 $(_dot 34)           ${cyan}35. ${white}Drawnix在线白板 $(_dot 35)"
-		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${cyan}36. ${white}Portainer容器管理 $(_dot 36)        ${cyan}37. ${white}Cloudreve网盘 $(_dot 37)             ${cyan}38. ${white}Nextcloud私有网盘 $(_dot 38)"
-		echo -e "${cyan}39. ${white}emby媒体管理 $(_dot 39)             ${cyan}40. ${white}jellyfin媒体管理 $(_dot 40)          ${cyan}41. ${white}AdGuardHome去广告 $(_dot 41)"
-		echo -e "${cyan}42. ${white}Navidrome音乐服务器 $(_dot 42)      ${cyan}43. ${white}Vaultwarden密码管理 $(_dot 43)       ${cyan}44. ${white}StirlingPDF工具大全 $(_dot 44)"
-		echo -e "${cyan}45. ${white}Speedtest测速面板 $(_dot 45)        ${cyan}46. ${white}PhotoPrism私有相册 $(_dot 46)        ${cyan}47. ${white}searxng聚合搜索 $(_dot 47)"
-		echo -e "${cyan}48. ${white}Pingvin-Share文件分享 $(_dot 48)    ${cyan}49. ${white}Dockge容器管理 $(_dot 49)            ${cyan}50. ${white}it-tools工具箱 $(_dot 50)"
-		echo -e "${cyan}51. ${white}n8n自动化工作流 $(_dot 51)          ${cyan}52. ${white}OpenWebUI自托管AI $(_dot 52)         ${cyan}53. ${white}Dify大模型知识库 $(_dot 53)"
-		echo -e "${cyan}54. ${white}gitea私有代码仓库 $(_dot 54)        ${cyan}55. ${white}FileBrowser文件管理 $(_dot 55)       ${cyan}56. ${white}FRP内网穿透(服务端) $(_dot 56)"
-		echo -e "${cyan}57. ${white}WireGuard组网(服务端) $(_dot 57)    ${cyan}58. ${white}JumpServer堡垒机 $(_dot 58)          ${cyan}59. ${white}immich图片视频管理 $(_dot 59)"
-		echo -e "${cyan}60. ${white}Syncthing文件同步 $(_dot 60)        ${cyan}61. ${white}Umami网站统计 $(_dot 61)             ${cyan}62. ${white}思源笔记 $(_dot 62)"
-		echo -e "${cyan}63. ${white}SFTPGo文件传输 $(_dot 63)           ${cyan}64. ${white}Owncast自托管直播 $(_dot 64)         ${cyan}65. ${white}Deepseek AI大模型 $(_dot 65)"
-		echo -e "${cyan}66. ${white}RocketChat聊天系统 $(_dot 66)       ${cyan}67. ${white}Gopeed高速下载 $(_dot 67)            ${cyan}68. ${white}2FAuth二步验证器 $(_dot 68)"
-		echo -e "${cyan}69. ${white}ZFile在线网盘 $(_dot 69)            ${cyan}70. ${white}Nexterm远程连接 $(_dot 70)           ${cyan}71. ${white}JitsiMeet视频会议 $(_dot 71)"
-		echo -e "${cyan}72. ${white}Stream四层代理转发 $(_dot 72)       ${cyan}73. ${white}FileCodeBox文件快递 $(_dot 73)       ${cyan}74. ${white}Matrix去中心化聊天 $(_dot 74)"
-		echo -e "${cyan}75. ${white}yt-dlp视频下载 $(_dot 75)           ${cyan}76. ${white}paperless文档管理 $(_dot 76)         ${cyan}77. ${white}Wallos财务管理 $(_dot 77)"
-		echo -e "${cyan}78. ${white}PairDrop文件传输 $(_dot 78)         ${cyan}79. ${white}Dufs静态文件服务器 $(_dot 79)        ${cyan}80. ${white}PandaWiki文档管理 $(_dot 80)"
-		echo -e "${cyan}81. ${white}linkwarden书签管理 $(_dot 81)       ${cyan}82. ${white}VoceChat聊天系统 $(_dot 82)          ${cyan}83. ${white}Karakeep书签管理 $(_dot 83)"
-		echo -e "${cyan}84. ${white}NewAPI大模型资产管理 $(_dot 84)     ${cyan}85. ${white}RAGFlow知识库 $(_dot 85)             ${cyan}86. ${white}AstrBot聊天机器人 $(_dot 86)"
-		echo -e "${cyan}87. ${white}LangBot聊天机器人 $(_dot 87)        ${cyan}88. ${white}多格式文件转换 $(_dot 88)            ${cyan}89. ${white}LibreSpeed测速 $(_dot 89)"
-		echo -e "${cyan}90. ${white}gpt-load AI透明代理 $(_dot 90)      ${cyan}91. ${white}补货监控工具 $(_dot 91)              ${cyan}92. ${white}PVE虚拟化管理 $(_dot 92)"
-		echo -e "${cyan}93. ${white}DSM群晖虚拟机 $(_dot 93)            ${cyan}94. ${white}在线DOS老游戏 $(_dot 94)             ${cyan}95. ${white}迅雷离线下载 $(_dot 95)"
-		echo -e "${cyan}96. ${white}小雅Alist全家桶 $(_dot 96)          ${cyan}97. ${white}Bililive直播录制 $(_dot 97)          ${cyan}98. ${white}极简朋友圈 $(_dot 98)"
-		echo -e "${cyan}99. ${white}PanSou网盘搜索 $(_dot 99)           ${cyan}100.${white}简单图床lskypro $(_dot 100)           ${cyan}101.${white}禅道项目管理 $(_dot 101)"
-		echo -e "${cyan}102.${white}QD-Today定时任务 $(_dot 102)         ${cyan}103.${white}耗子管理面板 $(_dot 103)              ${cyan}104.${white}AMH建站面板 $(_dot 104)"
-		echo -e "${cyan}105.${white}在线翻译服务器 $(_dot 105)           ${cyan}106.${white}AI视频生成工具 $(_dot 106)            ${cyan}107.${white}RustDesk远程桌面 $(_dot 107)"
-		echo -e "${cyan}108.${white}Firefox浏览器 $(_dot 108)            ${cyan}109.${white}DPanel容器管理 $(_dot 109)            ${cyan}110.${white}普罗米修斯监控 $(_dot 110)"
-		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${yellow}0.   ${white}返回主菜单"
-		echo -e "${green}666. ${white}查看已安装应用 (当前: ${#INSTALLED_IDS[@]} 个)"
-		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		read -e -p "请输入你的选择: " sub_choice
+		
+		# 自动排版打印 110 个应用
+		for i in {1..110}; do
+			local meta="${APP_META[$i]:-}"
+			local name="${meta%%|*}"
+			local dot_str=$(_dot $i)
+			# 统一格式化为宽字符列
+			printf "${cyan}%-3s ${white}%-32s %s\t" "${i}." "${name}" "${dot_str}"
+			if [ $((i % 3)) -eq 0 ]; then
+				echo ""
+			fi
+		done
+		echo ""
 
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
+		echo -e "${yellow}0.   ${white}返回主菜单                                       ${cyan}666. ${white}查看已安装应用"
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
+		
+		read -e -p "输入应用编号进行操作: " sub_choice
 		case $sub_choice in
-			0)
-				break
-				;;
-			666)
-				_render_installed_list
-				;;
-			*)
-				if [ -n "${APP_DISPLAY_NAMES[$sub_choice]:-}" ]; then
-					_linux_app_dispatch "$sub_choice"
-				else
-					echo -e "${red}无效选择, 请重新输入 !${white}"
-					sleep 1
-				fi
-				;;
+		0|"") return ;;
+		666) _render_installed_list ;;
+		*)
+			if [[ "$sub_choice" =~ ^[0-9]+$ ]] && [ "$sub_choice" -ge 1 ] && [ "$sub_choice" -le 110 ]; then
+				_linux_app_dispatch "$sub_choice"
+			else
+				echo -e "${red}无效的选择!${white}"
+				sleep 1
+			fi
+			;;
 		esac
 	done
 }

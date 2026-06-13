@@ -6,7 +6,7 @@
 
 # WARP 安装
 warp_install() {
-    root_use
+    root_use || return 1
     clear
     echo -e "${cyan}正在安装 Cloudflare WARP...${white}"
 
@@ -92,7 +92,7 @@ warp_cli_register() {
 
 # WARP 卸载
 warp_uninstall() {
-    root_use
+    root_use || return 1
     clear
     echo -e "${red}警告: 即将卸载 Cloudflare WARP!${white}"
     read -r -p "是否确认卸载？(y/n): " confirm
@@ -281,7 +281,7 @@ linux_warp() {
             5) warp_disconnect ;;
             6) warp_change_mode ;;
             7) warp_dns_settings ;;
-            0) return_to_menu ;;
+            0) return ;;
             *)
                 echo -e "${red}${LX_invalid}${white}"
                 sleep 1

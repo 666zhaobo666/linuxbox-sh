@@ -4,7 +4,7 @@
 # 1. 设置本脚本启动快捷键
 set_script_shortcut() {
 	clear
-	root_use
+	root_use || return 1
 	
 	# 检查原脚本文件是否存在
 	if [ ! -f "/usr/local/bin/$key" ]; then
@@ -79,9 +79,40 @@ change_root_password() {
     break_end
 }
 
+current_timezone() {
+	if command -v timedatectl >/dev/null 2>&1; then
+		timedatectl show -p Timezone --value 2>/dev/null || date +%Z
+	else
+		readlink /etc/localtime 2>/dev/null | sed 's#^/usr/share/zoneinfo/##' || date +%Z
+	fi
+}
+
+correct_ssh_config() {
+	if command -v sshd >/dev/null 2>&1; then
+		sshd -t 2>/tmp/linuxbox_sshd_check.err && return 0
+		echo -e "${red}SSH 配置校验失败, 已恢复备份配置${white}"
+		cat /tmp/linuxbox_sshd_check.err 2>/dev/null
+		if [ -f /etc/ssh/sshd_config.bak ]; then
+			cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config
+		fi
+		return 1
+	fi
+	return 0
+}
+
+restart_ssh() {
+	if command -v systemctl >/dev/null 2>&1; then
+		systemctl restart sshd 2>/dev/null || systemctl restart ssh 2>/dev/null
+	elif command -v service >/dev/null 2>&1; then
+		service sshd restart 2>/dev/null || service ssh restart 2>/dev/null
+	else
+		return 1
+	fi
+}
+
 # 4. 修改ssh连接端口
 change_ssh_port() {
-	root_use
+	root_use || return 1
 	clear
 	sed -i 's/#Port/Port/' /etc/ssh/sshd_config
 
@@ -106,10 +137,9 @@ change_ssh_port() {
 			sed -i 's/^\s*#\?\s*Port/Port/' /etc/ssh/sshd_config
 			sed -i "s/Port [0-9]\+/Port $new_port/g" /etc/ssh/sshd_config
 
-			correct_ssh_config
-			rm -rf /etc/ssh/sshd_config.d/* /etc/ssh/ssh_config.d/*
+			correct_ssh_config || { break_end; return 1; }
 
-			restart_ssh
+			restart_ssh || echo -e "${yellow}提示: SSH 服务重启失败, 请手动检查服务名称${white}"
 			open_port $new_port
 			remove iptables-persistent ufw firewalld iptables-services > /dev/null 2>&1
 
@@ -132,7 +162,7 @@ change_ssh_port() {
 
 # 5. 打开/关闭ssh密码登录
 ssh_password_login() {
-	root_use
+	root_use || return 1
     clear
     echo -e "${blue}SSH密码登录开关${white}"
     current_status=$(sudo grep -i "PasswordAuthentication" /etc/ssh/sshd_config | grep -v ^# | awk '{print $2}')
@@ -159,7 +189,7 @@ ssh_password_login() {
 
 # 6. 打开/关闭ssh root登录
 ssh_root_login() {
-	root_use
+	root_use || return 1
     clear
     echo -e "${blue}SSH root登录开关${white}"
     current_status=$(sudo grep -i "PermitRootLogin" /etc/ssh/sshd_config | grep -v ^# | awk '{print $2}')
@@ -187,7 +217,7 @@ ssh_root_login() {
 
 # 7. 优化DNS地址
 optimize_dns() {
-	root_use
+	root_use || return 1
 	while true; do
 		clear
 		echo "优化DNS地址"
@@ -242,7 +272,7 @@ optimize_dns() {
 
 # 8. 切换优先ipv4/ipv6
 change_ip_priority() {
-	root_use
+	root_use || return 1
 	while true; do
 		clear
 		echo "设置v4/v6优先级"
@@ -344,7 +374,7 @@ add_swap() {
 	echo -e "虚拟内存大小已调整为${yellow}${new_swap}${white}M"
 }
 modify_swap_size() {
-	root_use
+	root_use || return 1
 	## "设置虚拟内存"
 	while true; do
 		clear
@@ -397,7 +427,7 @@ modify_swap_size() {
 # 11. 用户管理
 user_management() {
 	while true; do
-	root_use
+	root_use || return 1
 	echo "用户列表"
 	echo -e "${pink}----------------------------------------------------------------------------${white}"
 	printf "%-24s %-34s %-20s %-10s\n" "用户名" "用户权限" "用户组" "sudo权限"
@@ -487,7 +517,7 @@ set_timedate() {
 	fi
 }
 adjust_timezone() {
-	root_use
+	root_use || return 1
 	while true; do
 		clear
 		echo "系统时间信息"
@@ -565,7 +595,7 @@ adjust_timezone() {
 
 # 13. 修改主机名
 modify_hostname() {
-	root_use
+	root_use || return 1
 
 	while true; do
 		clear
@@ -610,7 +640,7 @@ modify_hostname() {
 # 14. 切换系统更新源
 switch_update_source() {
 	while true; do
-		root_use
+		root_use || return 1
 		clear
 		echo "选择更新源区域"
 		echo "接入LinuxMirrors切换系统更新源"
@@ -1024,7 +1054,7 @@ update_locale() {
 }
 # 切换系统语言
 switch_system_language() {
-	root_use
+	root_use || return 1
 	while true; do
 		clear
 		echo "当前系统语言: $LANG"
@@ -1054,7 +1084,7 @@ switch_system_language() {
 
 # 18. 设置系统回收站
 linux_trash() {
-	root_use
+	root_use || return 1
 
 	local bashrc_profile="/root/.bashrc"
 	local TRASH_DIR="$HOME/.local/share/Trash/files"
@@ -1367,7 +1397,7 @@ break_end
 
 }
 cmd_line_beautify_tool() {
-	root_use
+	root_use || return 1
 	while true; do
 		clear
 		echo "命令行美化工具"

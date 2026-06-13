@@ -143,7 +143,7 @@ manage_country_rules() {
             if [ "$firewall" = "firewalld" ]; then
                 sudo firewall-cmd --permanent --set-default-zone=drop
                 sudo firewall-cmd --permanent --add-rich-rule="rule family=ipv4 source ipset=$ipset_name accept"
-                sudo firewall-cmd --permanent --add-port=22/tcp  # 保留SSH端口
+                local ssh_port=$(grep -E "^Port " /etc/ssh/sshd_config | awk \'{print $2}\'); ssh_port=${ssh_port:-22}; sudo firewall-cmd --permanent --add-port=${ssh_port}/tcp  # 保留SSH端口
                 sudo firewall-cmd --reload
             elif [ "$firewall" = "iptables" ]; then
                 sudo iptables -P INPUT DROP
@@ -367,10 +367,10 @@ firewalld_panel() {
                 
             99)  # 卸载防火墙
                 uninstall_firewall "firewalld"
-                return_to_menu
+                return
                 ;;
 			0)  # 返回上一级
-				return_to_menu
+				return
 				;;
                 
             *)
@@ -540,11 +540,11 @@ iptables_panel() {
                 ;;
 			99)  # 卸载防火墙
                 uninstall_firewall "iptables"
-                return_to_menu
+                return
                 ;;
                 
             0)  # 返回上一级
-                return_to_menu
+                return
                 ;;
                 
             *)

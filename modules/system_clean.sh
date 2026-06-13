@@ -5,7 +5,8 @@
 
 # 修复被锁定的 dpkg (来自 kejilion-sh fix_dpkg)
 fix_dpkg() {
-	pkill -9 -f 'apt|dpkg'
+	# Safer: wait or carefully remove lock
+	# pkill -9 -f 'apt|dpkg' (removed for safety)
 	rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock
 	DEBIAN_FRONTEND=noninteractive dpkg --configure -a
 }
@@ -45,7 +46,7 @@ linux_system_clean() {
 		echo "清理包管理器缓存..."
 		apk cache clean
 		echo "删除系统日志..."
-		rm -rf /var/log/*
+		find /var/log -type f -name \"*.log\" -delete || true
 		echo "删除APK缓存..."
 		rm -rf /var/cache/apk/*
 		echo "删除临时文件..."
@@ -67,7 +68,7 @@ linux_system_clean() {
 
 	elif command -v opkg &>/dev/null; then
 		echo "删除系统日志..."
-		rm -rf /var/log/*
+		find /var/log -type f -name \"*.log\" -delete || true
 		echo "删除临时文件..."
 		rm -rf /tmp/*
 
@@ -77,7 +78,7 @@ linux_system_clean() {
 		echo "清理包管理器缓存..."
 		pkg clean -y
 		echo "删除系统日志..."
-		rm -rf /var/log/*
+		find /var/log -type f -name \"*.log\" -delete || true
 		echo "删除临时文件..."
 		rm -rf /tmp/*
 

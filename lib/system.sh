@@ -17,7 +17,12 @@ detect_os() {
 ##  检查root权限
 root_use() {
 	clear
-	[ "$EUID" -ne 0 ] && echo -e "${yellow}提示: ${white}该功能需要root用户才能运行!" && break_end && return_to_menu
+	if [ "$EUID" -ne 0 ]; then
+		echo -e "${yellow}提示: ${white}该功能需要root用户才能运行!"
+		break_end
+		return 1
+	fi
+	return 0
 }
 
 linuxbox_require_root() {
@@ -39,7 +44,7 @@ check_disk_space() {
 		echo "最小需求空间: ${required_gb}G"
 		echo "无法继续安装, 请清理磁盘空间后重试."
 		break_end
-		return_to_menu
+		return 1
 	fi
 }
 

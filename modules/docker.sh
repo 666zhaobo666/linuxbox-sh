@@ -208,7 +208,7 @@ done
 
 ## 3. 打开Docker IPv6
 docker_ipv6_on() {
-	root_use
+	root_use || return 1
 	install jq
 
 	local CONFIG_FILE="/etc/docker/daemon.json"
@@ -246,7 +246,7 @@ docker_ipv6_on() {
 
 ## 4. 关闭Docker IPv6
 docker_ipv6_off() {
-	root_use
+	root_use || return 1
 	install jq
 
 	local CONFIG_FILE="/etc/docker/daemon.json"
@@ -280,15 +280,15 @@ docker_ipv6_off() {
 install_add_docker_cn() {
     local country=$(curl -s ipinfo.io/country 2>/dev/null)
     if [ "$country" = "CN" ]; then
-        cat > /etc/docker/daemon.json << EOF
-{
-    "registry-mirrors": [
-        "https://docker.mirrors.ustc.edu.cn",
-        "https://hub-mirror.c.163.com",
-        "https://mirror.baidubce.com"
-    ]
-}
-EOF
+        # Safe merge to daemon.json
+        mkdir -p /etc/docker
+        if [ ! -f /etc/docker/daemon.json ]; then
+            echo '{}' > /etc/docker/daemon.json
+        fi
+        local tmp_json=$(mktemp)
+        # Use jq to merge the mirrors list safely without wiping out other settings
+        jq '. + {"registry-mirrors": ["https://docker.mirrors.ustc.edu.cn", "https://hub-mirror.c.163.com", "https://mirror.baidubce.com"]}' /etc/docker/daemon.json > "$tmp_json"
+        mv "$tmp_json" /etc/docker/daemon.json
     fi
     sudo systemctl daemon-reload
     sudo systemctl enable docker --now
@@ -380,7 +380,7 @@ linux_docker() {
 
 	while true; do
 		clear
-		check_docker
+		check_docker || return
 		echo -e "${green}===== Docker管理菜单 =====${white}"
 		docker_tato
 		echo -e "${pink}---------------------------------------------${white}"
@@ -632,7 +632,7 @@ linux_docker() {
 				;;
 
 			0)
-				return_to_menu
+				return
 				;;
 			*)
 				echo -e "${red}无效选择, 请重新输入 !${white}"

@@ -8,7 +8,7 @@ GAME_DIR="/home/game"
 # ========== Minecraft 服务器管理 ==========
 
 mc_install() {
-    root_use
+    root_use || return 1
     clear
     echo -e "${cyan}===== 安装 Minecraft 服务器 =====${white}"
 
@@ -179,7 +179,7 @@ mc_set_cron_backup() {
 }
 
 mc_uninstall() {
-    root_use
+    root_use || return 1
     echo -e "${red}警告: 即将卸载 Minecraft 服务器 (包括存档)!${white}"
     read -r -p "是否确认？(y/n): " confirm
     if [[ "$confirm" =~ ^[Yy]$ ]]; then
@@ -247,7 +247,7 @@ mc_status_short() {
 # ========== 幻兽帕鲁服务器管理 ==========
 
 pal_install() {
-    root_use
+    root_use || return 1
     clear
     echo -e "${cyan}===== 安装 幻兽帕鲁 服务器 =====${white}"
 
@@ -407,7 +407,7 @@ pal_set_cron_backup() {
 }
 
 pal_uninstall() {
-    root_use
+    root_use || return 1
     echo -e "${red}警告: 即将卸载幻兽帕鲁服务器 (包括存档)!${white}"
     read -r -p "是否确认？(y/n): " confirm
     if [[ "$confirm" =~ ^[Yy]$ ]]; then
@@ -487,7 +487,7 @@ linux_game_server() {
         case $choice in
             1) mc_manage ;;
             2) pal_manage ;;
-            0) return_to_menu ;;
+            0) return ;;
             *)
                 echo -e "${red}${LX_invalid}${white}"
                 sleep 1
