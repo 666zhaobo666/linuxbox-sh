@@ -2505,22 +2505,17 @@ linux_app() {
   [88]="多格式文件转换|gotenberg_app|normal"
   [89]="LibreSpeed测速|librespeed_app|normal"
   [90]="gpt-load AI透明代理|gptload_app|normal"
-  [91]="补货监控工具|app_unavailable \"补货监控工具\" \"镜像 stock-monitor:latest 缺少可验证的公开仓库命名空间。\"|disabled"
-  [92]="PVE虚拟化管理|app_unavailable \"PVE虚拟化管理\" \"镜像 pve-manager:latest 缺少可验证的公开仓库命名空间。\"|disabled"
   [93]="DSM群晖虚拟机|dsm_app|normal"
   [94]="在线DOS老游戏|dosgame_app|normal"
   [95]="迅雷离线下载|xunlei_app|normal"
   [96]="小雅Alist全家桶|xiaoya_app|normal"
   [97]="Bililive直播录制|bililive_app|normal"
-  [98]="极简朋友圈|app_unavailable \"极简朋友圈\" \"镜像 moments-app:latest 缺少可验证的公开仓库命名空间。\"|disabled"
-  [99]="PanSou网盘搜索|app_unavailable \"PanSou网盘搜索\" \"镜像 pansou-search:latest 缺少可验证的公开仓库命名空间。\"|disabled"
+  [98]="极简朋友圈|moments_app|normal"
+  [99]="PanSou网盘搜索|pansou_app|normal"
   [100]="简单图床lskypro|lskypro_app|normal"
   [101]="禅道项目管理|zentao_app|normal"
   [102]="QD-Today定时任务|qdtoday_app|normal"
-  [103]="耗子管理面板|app_unavailable \"耗子管理面板\" \"镜像 haizi-panel:latest 缺少可验证的公开仓库命名空间。\"|disabled"
-  [104]="AMH建站面板|app_unavailable \"AMH建站面板\" \"镜像 amh-panel:latest 缺少可验证的公开仓库命名空间。\"|disabled"
   [105]="在线翻译服务器|libretranslate_app|normal"
-  [106]="AI视频生成工具|app_unavailable \"AI视频生成工具\" \"镜像 videogen-ai:latest 缺少可验证的公开仓库命名空间。\"|disabled"
   [107]="RustDesk远程桌面|rustdesk_server_app|normal"
   [108]="Firefox浏览器|firefox_app|normal"
   [109]="DPanel容器管理|dpanel_app|normal"
@@ -5328,5 +5323,39 @@ EOF
 	local app_text="开源的系统监控和报警工具"
 	local app_url="官网介绍: https://prometheus.io/"
 	local app_size="2"
+	docker_app
+}
+
+moments_app() {
+	local app_name="极简朋友圈"
+	local app_text="极简朋友圈 Moments 是一款极简的朋友圈展示程序。"
+	local app_url="开源项目: https://github.com/kingwrcy/moments"
+	local docker_name="moments"
+	local docker_port=80
+	
+	docker_app_install() {
+		read -e -p "请输入要暴露的端口 (默认 3000): " port
+		port=${port:-3000}
+		docker run -d --name $docker_name --restart=always -p $port:80 kingwrcy/moments:latest
+		add_app_port "Web 端口" $port
+	}
+
+	docker_app
+}
+
+pansou_app() {
+	local app_name="PanSou网盘搜索"
+	local app_text="PanSou 是一款基于 Docker 的聚合网盘搜索引擎。"
+	local app_url="说明: 聚合搜索网盘资源。"
+	local docker_name="pansou"
+	local docker_port=8080
+	
+	docker_app_install() {
+		read -e -p "请输入要暴露的端口 (默认 8080): " port
+		port=${port:-8080}
+		docker run -d --name $docker_name --restart=always -p $port:80 systemsome/pansou:latest
+		add_app_port "Web 端口" $port
+	}
+
 	docker_app
 }
