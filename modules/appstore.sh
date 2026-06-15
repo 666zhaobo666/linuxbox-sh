@@ -616,7 +616,7 @@ declare -A APP_DISPLAY_NAMES=(
 	[81]="linkwarden书签管理"   [82]="VoceChat聊天系统"     [83]="Karakeep书签管理"
 	[84]="NewAPI大模型资产管理" [85]="RAGFlow知识库"        [86]="AstrBot聊天机器人"
 	[87]="LangBot聊天机器人"    [88]="多格式文件转换"       [89]="LibreSpeed测速"
-	[90]="gpt-load AI透明代理"  [91]="补货监控工具"         [92]="PVE虚拟化管理"
+	[90]="gpt-load AI透明代理"  [91]="TG下载归档Bot"        [92]="PVE虚拟化管理"
 	[93]="DSM群晖虚拟机"        [94]="在线DOS老游戏"        [95]="迅雷离线下载"
 	[96]="小雅Alist全家桶"      [97]="Bililive直播录制"     [98]="极简朋友圈"
 	[99]="PanSou网盘搜索"       [100]="简单图床lskypro"     [101]="禅道项目管理"
@@ -2505,6 +2505,8 @@ linux_app() {
   [88]="多格式文件转换|gotenberg_app|normal"
   [89]="LibreSpeed测速|librespeed_app|normal"
   [90]="gpt-load AI透明代理|gptload_app|normal"
+  [91]="TG下载归档Bot|tg_download_bot_app|normal"
+  [92]="PVE虚拟化管理|pve_app|normal"
   [93]="DSM群晖虚拟机|dsm_app|normal"
   [94]="在线DOS老游戏|dosgame_app|normal"
   [95]="迅雷离线下载|xunlei_app|normal"
@@ -4715,36 +4717,113 @@ gptload_app(){
 	docker_app
 }
 
-# 补货监控工具
-stockmonitor_app(){
+# TG下载归档Bot
+tg_download_bot_app(){
 	local app_id="91"
-	local app_name="补货监控工具"
-	local docker_name="stockmonitor"
-	local docker_img="stock-monitor:latest"
-	local docker_port=8147
+	local app_name="TG下载归档Bot"
+	local app_text="Telegram 消息/媒体归档 Bot，支持频道历史消息、单条消息与评论区下载归档"
+	local app_url="官网介绍: https://github.com/666zhaobo666/TG_dowload_bot"
+	local install_script="/tmp/TG_dowload.sh"
+	local service_name="tg-download-bot"
 
-	docker_run() {
-		# app 自管端口: 让用户输入实际对外服务端口
-		read -e -p "服务端口 (默认 8147): " _user_port
-		_user_port=${_user_port:-8147}
-		docker_port=$_user_port
-
-		mkdir -p /home/docker/stockmonitor
-		docker run -d \
-			--name stockmonitor \
-			--restart=always \
-			-p ${docker_port}:8080 \
-			-v /home/docker/stockmonitor:/data \
-			stock-monitor:latest
-
-		# 注册到展示表 (app 自定 label)
-		add_app_port "Web 端口" "$docker_port"
+	check_tg_download_bot() {
+		if command -v tgd >/dev/null 2>&1 || systemctl list-unit-files 2>/dev/null | grep -q "^${service_name}\\.service"; then
+			check_panel="${green}已安装${white}"
+		else
+			check_panel="${white}未安装${white}"
+		fi
 	}
 
-	local app_text="商品库存监控和补货提醒工具"
-	local app_url="官网介绍: https://github.com/stock-monitor"
-	local app_size="1"
-	docker_app
+	tg_download_bot_install() {
+		install curl
+		install wget
+		install sudo
+		install git
+		install python3
+		install python3-venv
+
+		rm -f "${install_script}"
+		if [ "$country" = "CN" ]; then
+			curl -fsSL "https://proxy.cccg.top/raw.githubusercontent.com/666zhaobo666/TG_dowload_bot/master/TG_dowload.sh" -o "${install_script}"
+		else
+			curl -fsSL "https://raw.githubusercontent.com/666zhaobo666/TG_dowload_bot/master/TG_dowload.sh" -o "${install_script}"
+		fi
+		chmod +x "${install_script}"
+		bash "${install_script}"
+	}
+
+	tg_download_bot_manage() {
+		if command -v tgd >/dev/null 2>&1; then
+			tgd
+		elif [ -x /usr/local/bin/tgd ]; then
+			/usr/local/bin/tgd
+		else
+			echo -e "${red}未找到 tgd 管理命令，请先重新安装应用${white}"
+		fi
+	}
+
+	tg_download_bot_uninstall() {
+		if command -v tgd >/dev/null 2>&1; then
+			tgd
+		elif [ -x /usr/local/bin/tgd ]; then
+			/usr/local/bin/tgd
+		elif systemctl list-unit-files 2>/dev/null | grep -q "^${service_name}\\.service"; then
+			systemctl disable --now ${service_name}.service >/dev/null 2>&1 || true
+			rm -f /etc/systemd/system/${service_name}.service
+			rm -f /etc/${service_name}.conf
+			rm -f /usr/local/bin/tgd
+			systemctl daemon-reload >/dev/null 2>&1 || true
+			echo -e "${yellow}已移除 systemd 服务和 tgd 命令，如需彻底删除数据目录，请按 /etc/${service_name}.conf 中 INSTALL_DIR 手动清理${white}"
+		else
+			echo -e "${yellow}未检测到 TG下载归档Bot 安装${white}"
+		fi
+	}
+
+	while true; do
+		clear
+		check_tg_download_bot
+		echo -e "$app_name $check_panel"
+		echo "$app_text"
+		echo "$app_url"
+		echo ""
+		echo -e "${pink}------------------------${white}"
+		echo "1. 安装            2. 管理            3. 卸载"
+		echo -e "${pink}------------------------${white}"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${pink}------------------------${white}"
+		read -e -p "请输入你的选择: " choice
+		case $choice in
+			1)
+				check_disk_space 1
+				tg_download_bot_install
+				check_tg_download_bot
+				if [ "$check_panel" = "${green}已安装${white}" ]; then
+					add_app_id
+				fi
+				;;
+			2)
+				check_tg_download_bot
+				if [ "$check_panel" = "${green}已安装${white}" ]; then
+					tg_download_bot_manage
+					add_app_id
+				else
+					echo -e "${red}应用未安装，请先安装${white}"
+					sleep 1
+				fi
+				;;
+			3)
+				tg_download_bot_uninstall
+				check_tg_download_bot
+				if [ "$check_panel" != "${green}已安装${white}" ]; then
+					remove_app_id
+				fi
+				;;
+			*)
+				break
+				;;
+		esac
+		break_end
+	done
 }
 
 # PVE虚拟化管理
