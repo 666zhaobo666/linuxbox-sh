@@ -1166,9 +1166,21 @@ openlist_app(){
 			_user_port=${_user_port:-5244}
 			docker_port=$_user_port
 
+			# 可选: 挂载本机目录到容器 /mnt, 供 OpenList 本地存储驱动读取 (留空跳过)
+			local _mount_opt=""
+			read -e -p "挂载本机目录到容器 /mnt (可选, 留空跳过, 填绝对路径如 /opt/downloads): " _host_path
+			if [ -n "$_host_path" ]; then
+				if [ "${_host_path:0:1}" = "/" ]; then
+					_mount_opt="-v ${_host_path}:/mnt"
+				else
+					echo -e "${red}路径不是绝对路径, 已跳过该挂载${white}"
+				fi
+			fi
+
 			docker run -d \
 				--restart=always \
 				-v /home/docker/openlist:/opt/openlist/data \
+				$_mount_opt \
 				-p ${docker_port}:5244 \
 				-e PUID=0 \
 				-e PGID=0 \
@@ -1180,6 +1192,39 @@ openlist_app(){
 
 			# 注册到展示表 (app 自定 label)
 			add_app_port "Web 端口" "$docker_port"
+		}
+
+		# 安装/更新后: 从容器日志提取 OpenList 首次启动生成的初始管理员账号密码并打印.
+		# OpenList 仅在首次创建 admin 时于日志(stdout)打印一次密码, 之后仅存哈希, 无法反查.
+		app_post_install() {
+			local _log _pwd
+			echo -e "${cyan}正在获取 OpenList 初始管理员账号信息...${white}"
+			for _ in $(seq 1 30); do
+				_log=$(docker logs "$docker_name" 2>&1)
+				_pwd=$(printf '%s\n' "$_log" | tr -d '\r' | grep "initial password is:" | tail -1 | awk '{print $NF}')
+				if [ -n "$_pwd" ] || printf '%s\n' "$_log" | grep -q "start HTTP server"; then
+					break
+				fi
+				# 容器已退出(启动失败)则不再等待
+				if [ "$(docker inspect -f '{{.State.Running}}' "$docker_name" 2>/dev/null)" = "false" ]; then
+					break
+				fi
+				sleep 1
+			done
+
+			echo ""
+			if [ -n "$_pwd" ]; then
+				echo -e "${green}OpenList 初始管理员账号:${white}"
+				echo -e "  ${cyan}用户名${white}: admin"
+				echo -e "  ${cyan}密码${white}:   ${_pwd}"
+				echo ""
+				echo -e "${yellow}密码仅在首次启动时显示一次, 请立即登录并在面板中修改!${white}"
+			else
+				echo -e "${yellow}本次未打印初始密码 (仅首次安装会显示, 升级/重装保留数据时不会再次出现).${white}"
+				echo -e "${yellow}如忘记密码可随机重置: docker exec $docker_name openlist admin random${white}"
+				echo -e "${yellow}或手动查看日志: docker logs $docker_name${white}"
+			fi
+			echo ""
 		}
 
 		local app_text="一个支持多种存储, 支持网页浏览和 WebDAV 的文件列表程序, 由 gin 和 Solidjs 驱动"
