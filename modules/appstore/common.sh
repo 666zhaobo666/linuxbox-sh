@@ -368,8 +368,7 @@ render_666_installed_view() {
 	echo -e "${pink}------------------------------------------------------------------------------------${white}"
 
 	local sorted
-	sorted=$(printf %s
- "${INSTALLED_IDS[@]}" | sort -n)
+	sorted=$(printf "%s\n" "${INSTALLED_IDS[@]}" | sort -n)
 	while read -r id; do
 		[ -n "$id" ] || continue
 		local name="${APP_META_NAME[$id]:-未知应用}"
