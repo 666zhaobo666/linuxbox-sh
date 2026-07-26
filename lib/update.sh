@@ -150,8 +150,7 @@ update_script() {
 				FAILED_FILES+=("${path}")
 			fi
 		else
-			file="${path##*/}"
-			url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/${subdir}/${file}"
+			url="${url_proxy}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/${path}"
 			target="${LINUXBOX_LIB_DIR}/${path}"
 			mkdir -p "$(dirname "$target")"
 			if download_file "$url" "$target"; then
