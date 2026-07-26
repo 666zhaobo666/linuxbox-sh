@@ -1,35 +1,5 @@
 #!/usr/bin/env bash
-
-#############################################################################
-########################### 八、应用市场 (AppStore) ###########################
-#############################################################################
-
-# 定位 appstore 子目录路径
-APPSTORE_MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -d "${APPSTORE_MODULE_DIR}/appstore" ]; then
-	APPSTORE_CORE_DIR="${APPSTORE_MODULE_DIR}/appstore"
-elif [ -d "${LINUXBOX_LIB_DIR:-/usr/local/bin/linuxbox}/modules/appstore" ]; then
-	APPSTORE_CORE_DIR="${LINUXBOX_LIB_DIR:-/usr/local/bin/linuxbox}/modules/appstore"
-else
-	APPSTORE_CORE_DIR="${APPSTORE_MODULE_DIR}"
-fi
-
-# 1. 加载元数据
-if [ -f "${APPSTORE_CORE_DIR}/apps.sh" ]; then
-	. "${APPSTORE_CORE_DIR}/apps.sh"
-fi
-
-# 2. 加载核心公共库与生命周期框架
-if [ -f "${APPSTORE_CORE_DIR}/common.sh" ]; then
-	. "${APPSTORE_CORE_DIR}/common.sh"
-fi
-
-# 3. 加载各分类逻辑模块
-for _mod in panel media ai tools storage network; do
-	if [ -f "${APPSTORE_CORE_DIR}/${_mod}.sh" ]; then
-		. "${APPSTORE_CORE_DIR}/${_mod}.sh"
-	fi
-done
+# LinuxBox AppStore Common Framework & Helpers
 
 # 分类显示名称
 declare -g -A CAT_NAMES 2>/dev/null || declare -A CAT_NAMES
@@ -603,4 +573,443 @@ dispatch_app_execution() {
 
 _linux_app_dispatch() {
 	dispatch_app_execution "$1"
+}
+
+
+# ----------------------------------------------------------------------------
+# 多端口注册与恢复机制 (兼容多端口 App 表格渲染)
+# ----------------------------------------------------------------------------
+APP_PORTS_LABELS=()
+APP_PORTS_NUMBERS=()
+
+add_app_port() {
+	APP_PORTS_LABELS+=("$1")
+	APP_PORTS_NUMBERS+=("$2")
+}
+
+clear_app_ports() {
+	APP_PORTS_LABELS=()
+	APP_PORTS_NUMBERS=()
+}
+
+save_app_ports() {
+	[ -z "${docker_name:-}" ] && return
+	mkdir -p /home/docker 2>/dev/null || true
+	> "/home/docker/${docker_name}_ports.txt" 2>/dev/null || true
+	for i in "${!APP_PORTS_LABELS[@]}"; do
+		echo "${APP_PORTS_LABELS[$i]}|${APP_PORTS_NUMBERS[$i]}" >> "/home/docker/${docker_name}_ports.txt" 2>/dev/null || true
+	done
+}
+
+load_app_ports() {
+	[ -z "${docker_name:-}" ] && return
+	local port_file="/home/docker/${docker_name}_ports.txt"
+	[ ! -f "$port_file" ] && return
+
+	APP_PORTS_LABELS=()
+	APP_PORTS_NUMBERS=()
+	while IFS="|" read -r label port; do
+		[ -n "$label" ] && [ -n "$port" ] && {
+			APP_PORTS_LABELS+=("$label")
+			APP_PORTS_NUMBERS+=("$port")
+		}
+	done < "$port_file"
+}
+
+get_primary_port() {
+	if [ ${#APP_PORTS_NUMBERS[@]} -gt 0 ]; then
+		echo "${APP_PORTS_NUMBERS[0]}"
+	elif [ -n "${docker_port:-}" ]; then
+		echo "$docker_port"
+	fi
+}
+
+_auto_register_fallback_port() {
+	if [ ${#APP_PORTS_NUMBERS[@]} -eq 0 ] && [ -n "${docker_port:-}" ]; then
+		add_app_port "${access_label:-Web 端口}" "$docker_port"
+	fi
+}
+
+
+# 输出: "not_installed" | "running <started_iso>" | "<state>" (exited/paused/...)
+get_docker_app_status() {
+	if ! docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${docker_name}$"; then
+		echo "not_installed"
+		return
+	fi
+	local state started
+	state=$(docker inspect --format='{{.State.Status}}' "$docker_name" 2>/dev/null)
+	started=$(docker inspect --format='{{.State.StartedAt}}' "$docker_name" 2>/dev/null)
+	if [ "$state" = "running" ] && [ -n "$started" ]; then
+		echo "running $started"
+	else
+		echo "$state"
+	fi
+}
+
+# 把秒数格式化成 "X天Y小时Z分" / "X小时Y分" / "X分Y秒"
+format_uptime() {
+	local secs=$1
+	if [ -z "$secs" ] || ! [[ "$secs" =~ ^[0-9]+$ ]]; then
+		echo ""
+		return
+	fi
+	local d=$((secs/86400))
+	local h=$(((secs%86400)/3600))
+	local m=$(((secs%3600)/60))
+	local s=$((secs%60))
+	if [ "$d" -gt 0 ]; then
+		# 天+小时+分 (分可选, 不显示秒)
+		if [ "$m" -gt 0 ]; then
+			echo "${d}天${h}小时${m}分"
+		elif [ "$h" -gt 0 ]; then
+			echo "${d}天${h}小时"
+		else
+			echo "${d}天"
+		fi
+	elif [ "$h" -gt 0 ]; then
+		echo "${h}小时${m}分"
+	elif [ "$m" -gt 0 ]; then
+		echo "${m}分${s}秒"
+	else
+		echo "${s}秒"
+	fi
+}
+
+# 计算两个 ISO 时间戳之间的秒数
+_secs_between() {
+	local from="$1" to="$2"
+	local from_ts to_ts
+	from_ts=$(date -d "$from" +%s 2>/dev/null)
+	to_ts=$(date -d "$to" +%s 2>/dev/null)
+	if [ -z "$from_ts" ] || [ -z "$to_ts" ]; then
+		echo "0"
+	else
+		echo $((to_ts - from_ts))
+	fi
+}
+
+# 渲染端口表格 (边框 + 多行单元格: 同一端口 v4 / v6 各占一行)
+render_app_ports_table() {
+	_auto_register_fallback_port
+	if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
+		load_app_ports
+	fi
+	if [ ${#APP_PORTS_LABELS[@]} -eq 0 ]; then
+		return
+	fi
+
+	ip_address
+	local ipv4="${ipv4_address:-}"
+	local ipv6="${ipv6_address:-}"
+
+	# 列宽
+	local LBL_W=22
+	local PORT_W=6
+	local URL_W=44
+
+	# 绘制表格顶/中/底分隔线
+	_hline() {
+		printf "${cyan}+%*s+%*s+%*s+${white}\n" \
+			$((LBL_W + 2)) '' $((PORT_W + 2)) '' $((URL_W + 2)) '' | tr ' ' '-'
+	}
+
+	# 绘制单行
+	_row() {
+		printf "${cyan}|${white} %-${LBL_W}s ${cyan}|${white} %-${PORT_W}s ${cyan}|${white} %-${URL_W}s ${cyan}|${white}\n" "$1" "$2" "$3"
+	}
+
+	_hline
+	_row "标签" "端口" "访问地址"
+	_hline
+
+	local i label port v4 v6
+	for i in "${!APP_PORTS_LABELS[@]}"; do
+		label="${APP_PORTS_LABELS[$i]}"
+		port="${APP_PORTS_NUMBERS[$i]}"
+		v4=""
+		v6=""
+		[ -n "$ipv4" ] && v4="http://$ipv4:$port"
+		[ -n "$ipv6" ] && v6="http://[$ipv6]:$port"
+		# 第一行带 label/port
+		if [ -n "$v4" ]; then
+			_row "$label" "$port" "$v4"
+			# v6 单独占一行 (空 label/port)
+			[ -n "$v6" ] && _row "" "" "$v6"
+		elif [ -n "$v6" ]; then
+			_row "$label" "$port" "$v6"
+		else
+			_row "$label" "$port" "(本机无可用 IP)"
+		fi
+		_hline
+	done
+}
+
+# 渲染应用运行状态行 (详情页用)
+# 输出: "Docker 状态: running (已运行 3天 4小时)" / "Docker 状态: exited" / ...
+render_app_status_line() {
+	local status
+	status=$(get_docker_app_status)
+	case "$status" in
+		not_installed)
+			echo -e "${red}未安装${white}"
+			;;
+		running\ *)
+			local started="${status#running }"
+			local secs
+			secs=$(_secs_between "$started" "$(date -Iseconds)")
+			local uptime
+			uptime=$(format_uptime "$secs")
+			echo -e "${green}运行中${white} (已运行 ${uptime})"
+			;;
+		exited)
+			echo -e "${yellow}已停止${white}"
+			;;
+		paused)
+			echo -e "${yellow}已暂停${white}"
+			;;
+		*)
+			echo -e "${yellow}${status}${white}"
+			;;
+	esac
+}
+
+# 检查 /home/web/conf.d/ 下哪些域名 conf 引用了此端口, 输出 https://<domain>
+_render_domain_access() {
+	local port="$1"
+	if [ -z "$port" ]; then return; fi
+	ip_address
+	local search1="$ipv4_address:$port"
+	local search2="127.0.0.1:$port"
+	local f
+	for f in /home/web/conf.d/*; do
+		[ -f "$f" ] || continue
+		if grep -q "$search1" "$f" 2>/dev/null || grep -q "$search2" "$f" 2>/dev/null; then
+			echo "https://$(basename "$f" | sed 's/\.conf$//')"
+		fi
+	done
+}
+
+
+# Docker 应用管理 (合并版)
+# ----------------------------------------------------------------------------
+# 兼容两种应用风格, 通过 compose 标志自动选择路径:
+#   1) 单容器风格 (94 个老 app): 调用方定义 docker_run, 框架用默认实现
+#      app_id / docker_name / docker_img / docker_port / docker_describe
+#      docker_url / docker_use / docker_passwd / app_size
+#   2) compose 风格 (8 个老 app): 调用方定义 docker_app_install/update/uninstall
+#      app_id / app_name / app_text / app_url / docker_name / docker_port / app_size
+# 旧版变量名 (docker_name/docker_describe/docker_url) 与新版 (app_name/app_text/app_url)
+# 通过 ${var:-fallback} 兼容, 老的 xxx_app 不用改一行.
+# ----------------------------------------------------------------------------
+
+# 单容器风格: 默认安装 (外层已 read app_port → docker_port)
+_docker_app_default_install() {
+	install jq
+	install_docker
+	docker_run
+	setup_docker_dir
+	echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
+}
+
+# 单容器风格: 默认更新 (删容器+删镜像+重跑 docker_run)
+_docker_app_default_update() {
+	docker rm -f "$docker_name"
+	docker rmi -f "$docker_img"
+	docker_run
+}
+
+# 单容器风格: 默认卸载 (删容器+删镜像+清数据目录)
+_docker_app_default_uninstall() {
+	docker rm -f "$docker_name"
+	docker rmi -f "$docker_img"
+	rm -rf "/home/docker/$docker_name"
+}
+
+# 安装/更新后处理: 优先新式钩子 app_post_install / app_post_install_password,
+# 兜底走老式 $docker_use / $docker_passwd (eval 执行)
+_docker_app_post_install() {
+	if declare -F app_post_install >/dev/null 2>&1; then
+		app_post_install
+	elif [ -n "${docker_use:-}" ]; then
+		eval "$docker_use"
+	fi
+	if declare -F app_post_install_password >/dev/null 2>&1; then
+		app_post_install_password
+	elif [ -n "${docker_passwd:-}" ]; then
+		eval "$docker_passwd"
+	fi
+}
+
+# 统一入口
+# 调用方需在调用前定义好变量, 可选定义 docker_app_install/update/uninstall (compose)
+# 或 docker_run (单容器). 由 declare -F 自动检测.
+# 显示标题用变量: 优先 app_* 新名, 兼容老 docker_* 命名.
+docker_app() {
+	# 选路径: 优先 compose 三函数, 否则用单容器默认实现
+	local _install_cmd
+	if declare -F docker_app_install >/dev/null 2>&1; then
+		_install_cmd="docker_app_install"
+	else
+		_install_cmd="_docker_app_default_install"
+	fi
+	local _update_cmd
+	if declare -F docker_app_update >/dev/null 2>&1; then
+		_update_cmd="docker_app_update"
+	else
+		_update_cmd="_docker_app_default_update"
+	fi
+	local _uninstall_cmd
+	if declare -F docker_app_uninstall >/dev/null 2>&1; then
+		_uninstall_cmd="docker_app_uninstall"
+	else
+		_uninstall_cmd="_docker_app_default_uninstall"
+	fi
+
+	# 显示标题用变量: 兼容老 (docker_*) 与新 (app_*) 两种命名
+	local _title="${app_name:-$docker_name}"
+	local _text="${app_text:-$docker_describe}"
+	local _url="${app_url:-$docker_url}"
+
+	while true; do
+		clear
+		# 先执行检查函数, 确定容器状态
+		check_docker_app
+		check_docker_image_update "$docker_name"
+
+		# 标题行 + 状态
+		echo -e "$_title  $check_docker  $update_status"
+		echo "$_text"
+		echo "$_url"
+
+		# 已安装时: 状态行 + 访问入口表
+		if check_docker_app; then
+			# 容器运行状态 (running/exited/...)
+			local _status
+			_status=$(get_docker_app_status)
+			if [ "$_status" != "not_installed" ]; then
+				local _line
+				_line=$(render_app_status_line)
+				echo ""
+				echo -e "${cyan}应用状态${white}:  $_line"
+			fi
+
+			# 域名访问 (扫 /home/web/conf.d/)
+			local _primary
+			_primary=$(get_primary_port)
+			local _domain
+			_domain=$(_render_domain_access "$_primary")
+			if [ -n "$_domain" ]; then
+				echo -e "${cyan}域名访问${white}:  ${green}$_domain${white}"
+			fi
+
+			# 端口表 (支持多端口)
+			render_app_ports_table
+		fi
+
+		echo ""
+		echo -e "${cyan}------------------------------------------------------${white}"
+
+		# 根据容器是否存在显示不同菜单
+		if check_docker_app; then  # 容器存在 (返回0)
+			echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
+		else  # 容器不存在 (返回非0)
+			echo -e "${green}1. 安装${white}"
+		fi
+
+		echo -e "${pink}------------------------------------------------------${white}"
+
+		# 仅当容器存在时显示域名和端口相关操作
+		if check_docker_app; then
+			echo -e "5. 添加域名访问      6. 删除域名访问"
+			echo -e "7. 允许IP+端口访问   8. 阻止IP+端口访问"
+			echo -e "${pink}------------------------------------------------------${white}"
+		fi
+
+		echo -e "${yellow}0. 返回上一级菜单${white}"
+		echo -e "${pink}------------------------------------------------------${white}"
+
+		read -e -p "请输入你的选择: " choice
+
+		# 解析主端口 (供 ldnmp_Proxy 等使用)
+		local _primary_port
+		_primary_port=$(get_primary_port)
+
+		# 根据容器状态限制可执行的选项
+		if check_docker_app; then
+			# 容器存在时允许的操作
+			case $choice in
+				1)  # 更新
+					"$_update_cmd"
+					if check_docker_app; then
+						add_app_id
+						save_app_ports
+					fi
+
+					clear
+					echo "$docker_name 已经更新完成"
+					render_app_ports_table
+					echo ""
+					_docker_app_post_install
+					;;
+				2)  # 卸载
+					"$_uninstall_cmd"
+					rm -f /home/docker/${docker_name}_port.conf
+					rm -f /home/docker/${docker_name}_ports.txt
+					remove_app_id
+					echo "应用已卸载"
+					;;
+				5)  # 添加域名访问
+					echo "${docker_name}域名访问设置"
+					add_yuming
+					ldnmp_Proxy "${yuming}" 127.0.0.1 "${_primary_port}"
+					block_container_port "$docker_name" "$ipv4_address"
+					;;
+				6)  # 删除域名访问
+					echo "域名格式 example.com 不带https://"
+					web_del
+					;;
+				7)  # 允许IP+端口访问
+					clear_container_rules "$docker_name" "$ipv4_address"
+					;;
+				8)  # 阻止IP+端口访问
+					block_container_port "$docker_name" "$ipv4_address"
+					;;
+				0)  # 返回上一级
+					break
+					;;
+				*)  # 无效选项
+					echo -e "${red}无效选择, 请重新输入 !${white}"
+					sleep 1
+					;;
+			esac
+		else
+			# 容器不存在时仅允许安装和返回操作
+			case $choice in
+				1)  # 全新安装
+					check_disk_space "$app_size"
+
+					"$_install_cmd"
+					if check_docker_app; then
+						add_app_id
+						save_app_ports
+					fi
+
+					clear
+					echo "$docker_name 已经安装完成"
+					render_app_ports_table
+					echo ""
+					_docker_app_post_install
+					;;
+				0)  # 返回上一级
+					break
+					;;
+				*)  # 无效选项
+					echo -e "${red}无效选择, 当前只能选择安装或返回 !${white}"
+					sleep 1
+					;;
+			esac
+		fi
+		break_end
+	done
 }
