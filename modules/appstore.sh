@@ -17,6 +17,7 @@ fi
 # 1. 加载元数据
 if [ -f "${APPSTORE_CORE_DIR}/apps.sh" ]; then
 	. "${APPSTORE_CORE_DIR}/apps.sh"
+	init_appstore_registry 2>/dev/null || true
 fi
 
 # 2. 加载核心公共库与生命周期框架
