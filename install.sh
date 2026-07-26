@@ -62,7 +62,7 @@ show_progress() {
 
 # 文件列表 (与 lib/constants.sh 保持一致, 单一来源在那边, 这里独立硬编码一份)
 LIB_FILES=(constants.sh config.sh i18n.sh region.sh install.sh update.sh service.sh utils.sh package.sh system.sh dispatch.sh)
-MOD_FILES=(system_info.sh system_tools.sh system_clean.sh basic_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh caddy.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh)
+MOD_FILES=(system_info.sh system_tools.sh system_clean.sh basic_tools.sh network_tools.sh docker.sh ldnmp.sh firewall.sh caddy.sh bbr.sh appstore.sh warp.sh cluster.sh game_server.sh dev_env.sh appstore/apps.json appstore/apps.sh appstore/common.sh appstore/panel.sh appstore/media.sh appstore/ai.sh appstore/tools.sh appstore/storage.sh appstore/network.sh)
 
 echo -e "${cyan}正在安装 LinuxBox 脚本工具箱...${white}"
 echo ""
@@ -100,6 +100,7 @@ done
 for file in "${MOD_FILES[@]}"; do
 	CURRENT=$((CURRENT + 1))
 	show_progress $CURRENT $TOTAL
+	mkdir -p "$(dirname "${INSTALL_DIR}/modules/${file}")"
 	if download_file "${URL_PROXY}raw.githubusercontent.com/${SCRIPT_REPO_OWNER}/${SCRIPT_REPO_NAME}/${SCRIPT_BRANCH}/modules/${file}" "${INSTALL_DIR}/modules/${file}"; then
 		chmod +x "${INSTALL_DIR}/modules/${file}" 2>/dev/null || true
 	else
