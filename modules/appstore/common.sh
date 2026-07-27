@@ -1137,14 +1137,16 @@ docker_app() {
 						if check_docker_app; then
 							add_app_id
 							save_app_ports
+							clear
+							echo "$docker_name 已经更新完成"
+							render_app_ports_table
+							echo ""
+							_docker_app_post_install
+						else
+							echo -e "${red}${docker_name} 更新失败，请检查相关日志${white}"
+							sleep 2
 						fi
 					fi
-
-					clear
-					echo "$docker_name 已经更新完成"
-					render_app_ports_table
-					echo ""
-					_docker_app_post_install
 					;;
 				2)  # 卸载
 					"$_uninstall_cmd"
@@ -1187,13 +1189,16 @@ docker_app() {
 					if check_docker_app; then
 						add_app_id
 						save_app_ports
+						clear
+						echo "$docker_name 已经安装完成"
+						render_app_ports_table
+						echo ""
+						_docker_app_post_install
+						break_end
+					else
+						echo -e "${red}${docker_name} 安装失败，请检查报错信息${white}"
+						sleep 2
 					fi
-
-					clear
-					echo "$docker_name 已经安装完成"
-					render_app_ports_table
-					echo ""
-					_docker_app_post_install
 					;;
 				0)  # 返回上一级
 					break

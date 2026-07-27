@@ -113,16 +113,20 @@ komari_app(){
 				docker_port=$_user_port
 
 				mkdir -p /home/docker/komari
-				docker run -d \
+				if docker run -d \
 					--name komari \
 					--restart=unless-stopped \
 					-v /home/docker/komari:/app/data \
 					-p ${docker_port}:25774 \
-					ghcr.io/komari-monitor/komari:latest
-				add_app_id
-				clear
-				echo "Komari 已安装完成"
-				echo "可在状态栏查看访问地址"
+					ghcr.io/komari-monitor/komari:latest; then
+					add_app_id
+					clear
+					echo "Komari 已安装完成"
+					echo "可在状态栏查看访问地址"
+				else
+					echo -e "${red}Komari 安装失败，请检查报错信息${white}"
+					sleep 2
+				fi
 				break_end
 				;;
 			2)  # 卸载
