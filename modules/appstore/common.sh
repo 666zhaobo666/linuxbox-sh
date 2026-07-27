@@ -452,13 +452,14 @@ dynamic_scan_installed_apps() {
 	fi
 
 	local id d_name p_path is_inst
+	local nl=$'\n'
 	for id in {1..110}; do
 		d_name="${APP_META_DOCKER[$id]:-}"
 		p_path="${APP_META_PANEL_PATH[$id]:-}"
 		is_inst=0
 
 		if [ -n "$d_name" ]; then
-			if [[ "$docker_ps_names" == *"$'\n'${d_name}$'\n'"* ]]; then
+			if [[ "$docker_ps_names" == *"${nl}${d_name}${nl}"* ]]; then
 				is_inst=1
 			fi
 		fi
