@@ -364,7 +364,7 @@ linux_app() {
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${cyan}【快捷视图与检索】${white}"
 		echo -e "  7. 搜索应用 (支持名称模糊搜索)"
-		echo -e "  8. 全量浏览模式 (传统平铺视图 1~110)"
+		echo -e "  8. 全量浏览模式"
 		echo -e "  666. 查看已安装应用列表"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${yellow}0. 返回主菜单${white}"
@@ -445,9 +445,10 @@ INSTALLED_IDS=()
 dynamic_scan_installed_apps() {
 	INSTALLED_MAP=()
 	INSTALLED_IDS=()
-	local docker_ps_names=""
+	local docker_ps_names=$'\n'
 	if command -v docker >/dev/null 2>&1; then
-		docker_ps_names=$(docker ps -a --format {{.Names}} 2>/dev/null || echo "")
+		# Put all names inside newlines for exact matching without grep
+		docker_ps_names=$'\n'$(docker ps -a --format '{{.Names}}' 2>/dev/null)$'\n'
 	fi
 
 	local id d_name p_path is_inst
@@ -457,7 +458,7 @@ dynamic_scan_installed_apps() {
 		is_inst=0
 
 		if [ -n "$d_name" ]; then
-			if echo "$docker_ps_names" | grep -q "^${d_name}$"; then
+			if [[ "$docker_ps_names" == *"$'\n'${d_name}$'\n'"* ]]; then
 				is_inst=1
 			fi
 		fi
@@ -466,10 +467,6 @@ dynamic_scan_installed_apps() {
 			if eval "$p_path >/dev/null 2>&1" || [ -e "$p_path" ]; then
 				is_inst=1
 			fi
-		fi
-
-		if [ $is_inst -eq 0 ] && [ -n "$d_name" ] && [ -d "/home/docker/${d_name}" ]; then
-			is_inst=1
 		fi
 
 		if [ $is_inst -eq 1 ]; then
@@ -488,79 +485,104 @@ dynamic_scan_installed_apps() {
 }
 
 # ----------------------------------------------------------------------------
-# 666 已安装视图
-# ----------------------------------------------------------------------------
+_pad_string() {
+	local str="$1"
+	local target="$2"
+	local w=0
+	for ((i=0; i<${#str}; i++)); do
+		[[ "${str:i:1}" =~ [a-zA-Z0-9_\.\-\ ] ]] && ((w+=1)) || ((w+=2))
+	done
+	local p=$((target - w))
+	local s="$str"
+	for ((i=0; i<p; i++)); do s="$s "; done
+	echo -n "$s"
+}
+
 render_666_installed_view() {
-	dynamic_scan_installed_apps
-	clear
-	echo -e "${green}====================================================================================${white}"
-	echo -e "${cyan}                        LinuxBox 已安装应用中心 (视图 666)${white}"
-	echo -e "${green}====================================================================================${white}"
-	echo ""
-
-	if [ ${#INSTALLED_IDS[@]} -eq 0 ]; then
-		echo -e "${yellow}目前未检测到任何已安装的应用或容器。${white}"
-		echo -e "${cyan}提示: 本系统会自动联动 Docker 容器扫描与面板路径检测，安装后将实时显示在这里。${white}"
+	while true; do
+		dynamic_scan_installed_apps
+		clear
+		echo -e "${green}====================================================================================${white}"
+		echo -e "${cyan}                        LinuxBox 已安装应用中心 (视图 666)${white}"
+		echo -e "${green}====================================================================================${white}"
 		echo ""
-		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		echo -e "${yellow}0.   ${white}返回应用市场"
-		echo -e "${pink}------------------------------------------------------------------------------------${white}"
-		read -e -p "输入 0 返回应用市场: " _null_choice
-		return
-	fi
-	echo -e "${white}共检测到 ${green}${#INSTALLED_IDS[@]}${white} 个已安装应用："
-	echo -e "${pink}------------------------------------------------------------------------------------${white}"
-	printf "${cyan}%-6s %-25s %-16s %-18s %-15s${white}\n" "ID" "应用名称" "分类" "运行状态" "默认端口"
-	echo -e "${pink}------------------------------------------------------------------------------------${white}"
 
-	local sorted
-	sorted=$(printf "%s\n" "${INSTALLED_IDS[@]}" | sort -n)
-	while read -r id; do
-		[ -n "$id" ] || continue
-		local name="${APP_META_NAME[$id]:-未知应用}"
-		local cat="${APP_META_CAT[$id]:-other}"
-		local d_name="${APP_META_DOCKER[$id]:-}"
-		local port="${APP_META_PORT[$id]:-}"
-		local status_str="${red}● 停止${white}"
-
-		if [ -n "$d_name" ] && command -v docker >/dev/null 2>&1; then
-			local d_state
-			d_state=$(docker inspect --format={{.State.Status}} "$d_name" 2>/dev/null)
-			if [ "$d_state" = "running" ]; then
-				status_str="${green}● 运行中${white}"
-			elif [ -n "$d_state" ]; then
-				status_str="${yellow}● ${d_state}${white}"
-			fi
-		else
-			status_str="${green}● 已就绪${white}"
+		if [ ${#INSTALLED_IDS[@]} -eq 0 ]; then
+			echo -e "${yellow}目前未检测到任何已安装的应用或容器。${white}"
+			echo -e "${cyan}提示: 本系统会自动联动 Docker 容器扫描与面板路径检测，安装后将实时显示在这里。${white}"
+			echo ""
+			echo -e "${pink}------------------------------------------------------------------------------------${white}"
+			echo -e "${yellow}0.   ${white}返回应用市场"
+			echo -e "${pink}------------------------------------------------------------------------------------${white}"
+			read -e -p "输入 0 返回应用市场: " _null_choice
+			return
 		fi
+		echo -e "${white}共检测到 ${green}${#INSTALLED_IDS[@]}${white} 个已安装应用："
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
+		echo -e "${cyan}ID    | 应用名称                   | 分类             | 运行状态         | 默认端口${white}"
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 
-		local cat_cn="实用工具"
-		case "$cat" in
-			panel) cat_cn="运维面板" ;;
-			media) cat_cn="媒体娱乐" ;;
-			ai) cat_cn="AI大模型" ;;
-			tools) cat_cn="实用工具" ;;
-			storage) cat_cn="存储网盘" ;;
-			network) cat_cn="网络安全" ;;
-		esac
+		local sorted
+		sorted=$(printf "%s\n" "${INSTALLED_IDS[@]}" | sort -n)
+		while read -r id; do
+			[ -n "$id" ] || continue
+			local name="${APP_META_NAME[$id]:-未知应用}"
+			local cat="${APP_META_CAT[$id]:-other}"
+			local d_name="${APP_META_DOCKER[$id]:-}"
+			local port="${APP_META_PORT[$id]:-}"
+			local status_str="${red}● 停止${white}"
+			local status_len=6
 
-		printf "${cyan}%-6s${white} %-25s %-16s %-26b %-15s\n" "$id" "$name" "$cat_cn" "$status_str" "${port:--}"
-	done <<< "$sorted"
+			if [ -n "$d_name" ] && command -v docker >/dev/null 2>&1; then
+				local d_state
+				d_state=$(docker inspect --format={{.State.Status}} "$d_name" 2>/dev/null)
+				if [ "$d_state" = "running" ]; then
+					status_str="${green}● 运行中${white}"
+					status_len=8
+				elif [ -n "$d_state" ]; then
+					status_str="${yellow}● ${d_state}${white}"
+					status_len=$((2 + ${#d_state}))
+				fi
+			else
+				status_str="${green}● 已就绪${white}"
+				status_len=8
+			fi
 
-	echo -e "${pink}------------------------------------------------------------------------------------${white}"
-	echo -e "${yellow}0.   ${white}返回上一级"
-	echo -e "${pink}------------------------------------------------------------------------------------${white}"
-	read -e -p "输入应用编号进入对应详情管理 (0 返回): " jump_choice
-	if [ "$jump_choice" = "0" ] || [ -z "$jump_choice" ]; then
-		return
-	fi
-	if [ -n "${APP_META_NAME[$jump_choice]:-}" ]; then
-		dispatch_app_execution "$jump_choice"
-	else
-		echo -e "${red}无效编号 $jump_choice${white}"
-		sleep 1
-	fi
+			local cat_cn="实用工具"
+			case "$cat" in
+				panel) cat_cn="运维面板" ;;
+				media) cat_cn="媒体娱乐" ;;
+				ai) cat_cn="AI大模型" ;;
+				tools) cat_cn="实用工具" ;;
+				storage) cat_cn="存储网盘" ;;
+				network) cat_cn="网络安全" ;;
+			esac
+
+			local id_pad=$(_pad_string "$id" 5)
+			local name_pad=$(_pad_string "$name" 26)
+			local cat_pad=$(_pad_string "$cat_cn" 16)
+			
+			local stat_pad_len=$((16 - status_len))
+			local stat_pad=""
+			for ((i=0; i<stat_pad_len; i++)); do stat_pad="$stat_pad "; done
+
+			echo -e "${cyan}${id_pad}${white} | ${name_pad} | ${cat_pad} | ${status_str}${stat_pad} | ${port:--}"
+		done <<< "$sorted"
+
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
+		echo -e "${yellow}0.   ${white}返回上一级"
+		echo -e "${pink}------------------------------------------------------------------------------------${white}"
+		read -e -p "输入应用编号进入对应详情管理 (0 返回): " jump_choice
+		if [ "$jump_choice" = "0" ] || [ -z "$jump_choice" ]; then
+			return
+		fi
+		if [ -n "${APP_META_NAME[$jump_choice]:-}" ]; then
+			dispatch_app_execution "$jump_choice"
+		else
+			echo -e "${red}无效编号 $jump_choice${white}"
+			sleep 1
+		fi
+	done
 }
 
 _render_installed_list() {
