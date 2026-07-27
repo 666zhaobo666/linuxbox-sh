@@ -82,6 +82,71 @@ check_docker_image_update() {
 	fi
 }
 
+# 检查panel是否安装
+check_panel_app() {
+	if $panel_path > /dev/null 2>&1; then
+		check_panel="${green}已安装${white}"
+	else
+		check_panel="${grey}未安装${white}"
+	fi
+}
+
+# 面板管理
+panel_manage() {
+	while true; do
+		clear
+		check_panel_app
+		echo -e "$panelname $check_panel"
+		echo "${panelname}是一款时下流行且强大的运维管理面板."
+		echo "官网介绍: $panelurl "
+
+		# 面板应用: 不走端口表, 只展示官网作为参考入口
+		echo ""
+		echo -e "${cyan}参考入口${white}:  ${green}$panelurl${white}"
+
+		echo ""
+		echo -e "${pink}------------------------${white}"
+		echo "1. 安装            2. 管理            3. 卸载"
+		echo -e "${pink}------------------------${white}"
+		echo -e "${yellow}0.     ${white}返回上一级菜单"
+		echo -e "${pink}------------------------${white}"
+		read -e -p "请输入你的选择: " choice
+		case $choice in
+			1)
+				check_disk_space 1
+				install wget
+				iptables_open
+				panel_app_install
+
+				check_panel_app
+				if [ "$check_panel" = "${green}已安装${white}" ]; then
+					add_app_id
+				fi
+				;;
+			2)
+				# 修复检测 bug: 未装就管理会误标为已装
+				check_panel_app
+				if [ "$check_panel" = "${green}已安装${white}" ]; then
+					panel_app_manage
+					add_app_id
+				else
+					echo -e "${red}面板未安装, 请先安装${white}"
+					sleep 1
+				fi
+				;;
+			3)
+				panel_app_uninstall
+
+				remove_app_id
+				;;
+			*)
+				break
+				;;
+		esac
+		break_end
+	done
+}
+
 # 分类显示名称
 declare -g -A CAT_NAMES 2>/dev/null || declare -A CAT_NAMES
 CAT_NAMES=(
@@ -634,15 +699,30 @@ dispatch_app_execution() {
 	local status="${APP_META_STATUS[$app_id]:-normal}"
 
 	if [ "$status" = "offline" ]; then
-		clear
-		echo -e "${yellow}================================================================${white}"
-		echo -e "${red}[已下线] ${APP_META_NAME[$app_id]:-未知应用}${white}"
-		echo -e "${yellow}================================================================${white}"
-		echo -e "说明: ${APP_META_DESC[$app_id]:-该应用目前缺少公开维护的镜像或脚本。}"
-		echo "为保障系统稳定与安全，该应用已隐藏自动安装脚本。"
-		echo ""
-		break_end
-		return
+		# Check if installed
+		local is_installed=0
+		for id in "${INSTALLED_IDS[@]}"; do
+			if [ "$id" = "$app_id" ]; then
+				is_installed=1
+				break
+			fi
+		done
+
+		if [ $is_installed -eq 0 ]; then
+			clear
+			echo -e "${yellow}================================================================${white}"
+			echo -e "${red}[已下线] ${APP_META_NAME[$app_id]:-未知应用}${white}"
+			echo -e "${yellow}================================================================${white}"
+			echo -e "说明: ${APP_META_DESC[$app_id]:-该应用目前缺少公开维护的镜像或脚本。}"
+			echo "为保障系统稳定与安全，该应用已隐藏自动安装脚本。"
+			echo ""
+			break_end
+			return
+		else
+			APP_OFFLINE=1
+		fi
+	else
+		APP_OFFLINE=0
 	fi
 
 	if [ -n "$func_name" ] && declare -F "$func_name" >/dev/null 2>&1; then
@@ -994,7 +1074,11 @@ docker_app() {
 
 		# 根据容器是否存在显示不同菜单
 		if check_docker_app; then  # 容器存在 (返回0)
-			echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
+			if [ "${APP_OFFLINE:-0}" -eq 1 ]; then
+				echo -e "${red}2. 卸载${white} (已下线应用不支持更新)"
+			else
+				echo -e "${green}1. 更新${white}              ${red}2. 卸载${white}"
+			fi
 		else  # 容器不存在 (返回非0)
 			echo -e "${green}1. 安装${white}"
 		fi
@@ -1022,10 +1106,15 @@ docker_app() {
 			# 容器存在时允许的操作
 			case $choice in
 				1)  # 更新
-					"$_update_cmd"
-					if check_docker_app; then
-						add_app_id
-						save_app_ports
+					if [ "${APP_OFFLINE:-0}" -eq 1 ]; then
+						echo -e "${red}该应用已下线，不支持更新!${white}"
+						sleep 1.5
+					else
+						"$_update_cmd"
+						if check_docker_app; then
+							add_app_id
+							save_app_ports
+						fi
 					fi
 
 					clear
