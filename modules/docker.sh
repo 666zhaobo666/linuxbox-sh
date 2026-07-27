@@ -1,5 +1,45 @@
 #############################################################################
 ########################### 四、Docker管理模块 ###############################
+## 0. 公共辅助函数
+check_docker() {
+	if ! command -v docker &>/dev/null; then
+		echo -e "${red}未检测到Docker环境${white}"
+		echo -e "${cyan}------------------------"
+		echo -e "${cyan}1.   ${white}安装Docker环境"
+		echo -e "${cyan}0.   ${white}返回主菜单"
+		echo -e "${cyan}------------------------${white}"
+		read -e -p "请输入你的选择: " docker_choice
+		case $docker_choice in
+			1)
+				install_add_docker
+				break_end
+				return 0
+				;;
+			0|"")
+				return 1
+				;;
+			*)
+				echo -e "${red}无效选择, 请重新输入 !${white}"
+				sleep 1
+				return 1
+				;;
+		esac
+		return 1
+	fi
+	return 0
+}
+
+docker_tato() {
+	local container_count=$(docker ps -a -q 2>/dev/null | wc -l)
+	local image_count=$(docker images -q 2>/dev/null | wc -l)
+	local network_count=$(docker network ls -q 2>/dev/null | wc -l)
+	local volume_count=$(docker volume ls -q 2>/dev/null | wc -l)
+
+	if command -v docker &> /dev/null; then
+		echo -e "${green}环境已经安装${white}  容器: ${green}$container_count${white}  镜像: ${green}$image_count${white}  网络: ${green}$network_count${white}  卷: ${green}$volume_count${white}"
+	fi
+}
+
 ## 1. Docker容器管理
 docker_ps() {
 while true; do
