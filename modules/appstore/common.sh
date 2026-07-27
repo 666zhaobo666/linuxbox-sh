@@ -1,6 +1,87 @@
 #!/usr/bin/env bash
 # LinuxBox AppStore Common Framework & Helpers
 
+# 检查Docker应用是否安装
+check_docker_app() {
+	if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${docker_name}$" ; then
+		check_docker="${green}已安装${white}"
+		return 0
+	else
+		check_docker="${grey}未安装${white}"
+		return 1
+	fi
+}
+
+# 检查Docker应用的访问地址
+check_docker_app_ip() {
+	echo -e "${pink}------------------------${white}"
+	echo "访问地址:"
+	ip_address
+
+	if [ -n "$ipv4_address" ]; then
+		echo "http://$ipv4_address:${docker_port}"
+	fi
+
+	if [ -n "$ipv6_address" ]; then
+		echo "http://[$ipv6_address]:${docker_port}"
+	fi
+
+	local search_pattern1="$ipv4_address:${docker_port}"
+	local search_pattern2="127.0.0.1:${docker_port}"
+
+	for file in /home/web/conf.d/*; do
+		if [ -f "$file" ]; then
+			if grep -q "$search_pattern1" "$file" 2>/dev/null || grep -q "$search_pattern2" "$file" 2>/dev/null; then
+				echo "https://$(basename "$file" | sed 's/\.conf$//')"
+			fi
+		fi
+	done
+}
+
+# 检查Docker镜像更新
+check_docker_image_update() {
+	local container_name=$1
+	local country=$(curl -s --max-time 2 ipinfo.io/country || echo "")
+	if [[ "$country" == "CN" ]]; then
+		update_status=""
+		return
+	fi
+
+	# 获取容器的创建时间和镜像名称
+	local container_info=$(docker inspect --format='{{.Created}},{{.Config.Image}}' "$container_name" 2>/dev/null)
+	local container_created=$(echo "$container_info" | cut -d',' -f1)
+	local image_name=$(echo "$container_info" | cut -d',' -f2)
+
+	# 提取镜像仓库和标签
+	local image_repo=${image_name%%:*}
+	local image_tag=${image_name##*:}
+
+	# 默认标签为 latest
+	[[ "$image_repo" == "$image_tag" ]] && image_tag="latest"
+
+	# 添加对官方镜像的支持
+	[[ "$image_repo" != */* ]] && image_repo="library/$image_repo"
+
+	# 从 Docker Hub API 获取镜像发布时间
+	local hub_info=$(curl -s --max-time 3 "https://hub.docker.com/v2/repositories/$image_repo/tags/$image_tag")
+	local last_updated=$(echo "$hub_info" | jq -r '.last_updated' 2>/dev/null)
+
+	# 验证获取的时间
+	if [[ -n "$last_updated" && "$last_updated" != "null" ]]; then
+		local container_created_ts=$(date -d "$container_created" +%s 2>/dev/null)
+		local last_updated_ts=$(date -d "$last_updated" +%s 2>/dev/null)
+
+		# 比较时间戳
+		if [[ $container_created_ts -lt $last_updated_ts ]]; then
+			update_status="${gl_huang}发现新版本!${white}"
+		else
+			update_status=""
+		fi
+	else
+		update_status=""
+	fi
+}
+
 # 分类显示名称
 declare -g -A CAT_NAMES 2>/dev/null || declare -A CAT_NAMES
 CAT_NAMES=(
@@ -209,17 +290,17 @@ linux_app() {
 		echo -e "已动态检测到 ${green}${#INSTALLED_IDS[@]}${white} 个已安装应用  |  输入 ${cyan}666${white} 可直接进入【已安装管理中心】"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${cyan}【分类导航】${white}"
-		echo -e "  1. 🛠️  运维面板 (1Panel/宝塔/NPM/青龙/雷池/DPanel...)"
-		echo -e "  2. 🎬  媒体娱乐 (Emby/Jellyfin/Navidrome/PhotoPrism/Immich...)"
-		echo -e "  3. 🤖  AI大模型 (OpenWebUI/Dify/Deepseek/LobeChat/NewAPI...)"
-		echo -e "  4. 🧰  实用工具 (WebTop/CodeServer/OnlyOffice/UptimeKuma/StirlingPDF...)"
-		echo -e "  5. 💾  存储网盘 (qBittorrent/Cloudreve/Nextcloud/Syncthing/SFTPGo...)"
-		echo -e "  6. 🌐  网络安全 (DDNS-GO/Lucky/AdGuardHome/FRP/WireGuard/RustDesk...)"
+		echo -e "  1. 运维面板"
+		echo -e "  2. 媒体娱乐"
+		echo -e "  3. AI大模型"
+		echo -e "  4. 实用工具"
+		echo -e "  5. 存储网盘"
+		echo -e "  6. 网络安全"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${cyan}【快捷视图与检索】${white}"
-		echo -e "  7. 🔍  搜索应用 (支持名称模糊搜索)"
-		echo -e "  8. 📋  全量浏览模式 (传统平铺视图 1~110)"
-		echo -e "  666. ⭐ 查看已安装应用列表"
+		echo -e "  7. 搜索应用 (支持名称模糊搜索)"
+		echo -e "  8. 全量浏览模式 (传统平铺视图 1~110)"
+		echo -e "  666. 查看已安装应用列表"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		echo -e "${yellow}0. 返回主菜单${white}"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
