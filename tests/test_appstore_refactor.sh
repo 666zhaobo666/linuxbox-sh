@@ -18,13 +18,21 @@ version="3.3.0"
 . lib/i18n.sh
 . lib/region.sh
 . lib/system.sh
+. lib/utils.sh
 . modules/appstore.sh
+
 
 clear() { :; }
 break_end() { :; }
 curl() { return 1; }
 ip_address() { ipv4_address="127.0.0.1"; ipv6_address="::1"; }
-read() { return 0; }
+read() {
+	local last_arg="${!#:-}"
+	if [ -n "$last_arg" ] && [[ "$last_arg" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+		eval "$last_arg=0" 2>/dev/null || true
+	fi
+	return 0
+}
 
 echo "[Test 1] Checking metadata initialization..."
 if [ "${#APP_META_NAME[@]}" -lt 110 ]; then
@@ -45,7 +53,7 @@ for cat in panel media ai tools storage network; do
 		echo "FAIL: Category $cat has 0 apps"
 		exit 1
 	fi
-	echo "  ✓ Category : $count apps"
+	echo "  ✓ Category $cat: $count apps"
 done
 
 echo "[Test 3] Checking offline audit status..."
@@ -84,11 +92,12 @@ check_port_in_use 8080 || true
 echo "  ✓ Port check function executed without error"
 
 echo "[Test 6] Testing dispatcher for offline app..."
-output=$(dispatch_app_execution 91 2>&1 || true)
+output=$(dispatch_app_execution 92 2>&1 || true)
 if ! echo "$output" | grep -q "已下线"; then
-	echo "FAIL: Expected offline warning for app 91, got: $output"
+	echo "FAIL: Expected offline warning for app 92, got: $output"
 	exit 1
 fi
 echo "  ✓ Offline app dispatcher blocked execution cleanly"
 
 echo "ALL APPSTORE REFACTOR TESTS PASSED!"
+

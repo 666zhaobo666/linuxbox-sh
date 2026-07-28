@@ -63,6 +63,7 @@ date() {
 . lib/i18n.sh
 . lib/region.sh
 . lib/system.sh
+. lib/utils.sh
 . modules/appstore.sh
 
 assert_eq() {
@@ -114,4 +115,10 @@ DOCKER_NPM_STATE=exited
 docker_name="npm"
 assert_eq "exited" "$(get_docker_app_status)" "exited container status"
 
+echo "Executing sub-test suites..."
+bash tests/framework_smoke.sh
+bash tests/test_appstore_refactor.sh
+bash tests/test_audit_fixes.sh
+
 echo "LinuxBox full verification passed."
+

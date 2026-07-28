@@ -296,8 +296,9 @@ linux_basic_tools() {
 			  clear
 			  remove htop iftop tmux ffmpeg btop ranger ncdu fzf cmatrix sl bastet nsnake ninvaders vim nano git
 			  opencode uninstall
-			  rm -rf ~/.opencode
+			  [ -n "${HOME:-}" ] && rm -rf "${HOME}/.opencode"
 			  ;;
+
 
 		  41)
 			  clear

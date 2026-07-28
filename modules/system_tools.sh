@@ -808,9 +808,10 @@ file_manager() {
                 if [ -d "$current_dir/$delname" ]; then
                     read -p "确认删除目录 $delname（含所有内容）？(y/n): " confirm
                     if [ "$confirm" = "y" ]; then
-                        rm -rf "$current_dir/$delname"
+                        [ -n "${current_dir:-}" ] && [ -n "${delname:-}" ] && rm -rf "$current_dir/$delname"
                         echo -e "${green}目录删除成功${white}"
                     fi
+
                 else
                     echo -e "${red}目录不存在${white}"
                 fi
@@ -1633,8 +1634,9 @@ clean_old_backups() {
 
     local delete_count=0
     ls -t "${SCRIPT_HOME}/backup/" | tail -n +$((keep_count + 1)) | while read -r old_backup; do
-        rm -rf "${SCRIPT_HOME}/backup/${old_backup}"
+        [ -n "${SCRIPT_HOME:-}" ] && [ -n "${old_backup:-}" ] && rm -rf "${SCRIPT_HOME}/backup/${old_backup}"
         echo -e "${grey}已删除: ${old_backup}${white}"
+
         delete_count=$((delete_count + 1))
     done
 

@@ -99,7 +99,7 @@ CheckFirstRun() {
 			UserLicenseAgreement
 		else
 			echo -e "${red}安装过程中部分文件下载失败，请检查网络后重试${white}"
-			rm -rf "${LINUXBOX_INSTALL_DIR}"
+			[ -n "${LINUXBOX_INSTALL_DIR:-}" ] && rm -rf "${LINUXBOX_INSTALL_DIR}"
 			exit 1
 		fi
 	else
@@ -110,6 +110,7 @@ CheckFirstRun() {
 
 # 提示用户同意条款
 UserLicenseAgreement() {
+	local user_input
 	clear
 	echo -e "${cyan}欢迎使用LinuxBox脚本工具箱${white}"
 	echo -e "命令行输入${yellow} ${key} ${cyan}可快速启动脚本${white}"
@@ -135,12 +136,13 @@ UserLicenseAgreement() {
 
 ## 卸载脚本
 uninstall_script() {
+	local confirm
 	clear
 	echo -e "${red}警告: 你即将卸载LinuxBox脚本工具箱!${white}"
 	read -r -p "是否确认卸载？(y/n): " confirm
 	if [[ "$confirm" =~ ^[Yy]$ ]]; then
 		# 删除安装目录
-		rm -rf "${LINUXBOX_INSTALL_DIR}"
+		[ -n "${LINUXBOX_INSTALL_DIR:-}" ] && rm -rf "${LINUXBOX_INSTALL_DIR}"
 		# 删除符号链接
 		rm -f "/usr/local/bin/${key}"
 		
@@ -161,3 +163,4 @@ uninstall_script() {
 		sleep 1
 	fi
 }
+
