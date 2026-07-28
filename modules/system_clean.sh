@@ -46,11 +46,11 @@ linux_system_clean() {
 		echo "清理包管理器缓存..."
 		apk cache clean
 		echo "删除系统日志..."
-		find /var/log -type f -name \"*.log\" -delete || true
+		find /var/log -type f -name "*.log" -delete || true
 		echo "删除APK缓存..."
-		rm -rf /var/cache/apk/*
+		[ -d /var/cache/apk ] && rm -rf /var/cache/apk/*
 		echo "删除临时文件..."
-		rm -rf /tmp/*
+		[ -d /tmp ] && rm -rf /tmp/*
 
 	elif command -v pacman &>/dev/null; then
 		pacman -Rns $(pacman -Qdtq) --noconfirm
@@ -68,9 +68,9 @@ linux_system_clean() {
 
 	elif command -v opkg &>/dev/null; then
 		echo "删除系统日志..."
-		find /var/log -type f -name \"*.log\" -delete || true
+		find /var/log -type f -name "*.log" -delete || true
 		echo "删除临时文件..."
-		rm -rf /tmp/*
+		[ -d /tmp ] && rm -rf /tmp/*
 
 	elif command -v pkg &>/dev/null; then
 		echo "清理未使用的依赖..."
@@ -78,9 +78,10 @@ linux_system_clean() {
 		echo "清理包管理器缓存..."
 		pkg clean -y
 		echo "删除系统日志..."
-		find /var/log -type f -name \"*.log\" -delete || true
+		find /var/log -type f -name "*.log" -delete || true
 		echo "删除临时文件..."
-		rm -rf /tmp/*
+		[ -d /tmp ] && rm -rf /tmp/*
+
 
 	else
 		echo "未知的包管理器!"

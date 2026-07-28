@@ -112,29 +112,39 @@ menu_line() {
 
 ##  获取IP地址
 ip_address() {
-get_public_ip() {
-	curl -s https://ipinfo.io/ip && echo
+	local public_ip isp_info
+	get_public_ip() {
+		curl -s https://ipinfo.io/ip && echo
+	}
+	get_local_ip() {
+		ip route get 8.8.8.8 2>/dev/null | grep -oP 'src \K[^ ]+' || \
+		hostname -I 2>/dev/null | awk '{print $1}' || \
+		ifconfig 2>/dev/null | grep -E 'inet [0-9]' | grep -v '127.0.0.1' | awk '{print $2}' | head -n1
+	}
+
+	public_ip=$(get_public_ip)
+	isp_info=$(curl -s --max-time 3 http://ipinfo.io/org)
+
+	if echo "$isp_info" | grep -Eiq 'china|mobile|unicom|telecom'; then
+	    ipv4_address=$(get_local_ip)
+	else
+	    ipv4_address="$public_ip"
+	fi
+
+	ipv6_address=$(curl -s --max-time 1 https://v6.ipinfo.io/ip && echo)
 }
-get_local_ip() {
-	ip route get 8.8.8.8 2>/dev/null | grep -oP 'src \K[^ ]+' || \
-	hostname -I 2>/dev/null | awk '{print $1}' || \
-	ifconfig 2>/dev/null | grep -E 'inet [0-9]' | grep -v '127.0.0.1' | awk '{print $2}' | head -n1
+
+## 安全检测函数与命令/路径
+is_function() {
+	[ -n "${1:-}" ] && declare -F "$1" >/dev/null 2>&1
 }
 
-public_ip=$(get_public_ip)
-isp_info=$(curl -s --max-time 3 http://ipinfo.io/org)
-
-if echo "$isp_info" | grep -Eiq 'china|mobile|unicom|telecom'; then
-    ipv4_address=$(get_local_ip)
-else
-    ipv4_address="$public_ip"
-fi
-
-# ipv4_address=$(curl -s https://ipinfo.io/ip && echo)
-ipv6_address=$(curl -s --max-time 1 https://v6.ipinfo.io/ip && echo)
-
-# 注意: download_file / show_progress 不在本文件, 而是内联在
-#   lib/update.sh (j update 用)  和  install.sh (一键安装用)
-# 之所以不放在这里统一: utils.sh 在 update.sh 之后被 source, 让 update 调本文件
-# 的 download_file 会找不到; 各自内联更稳, 也避免模块间加载顺序的隐式依赖.
+check_cmd_or_path() {
+	local target="${1:-}"
+	[ -z "$target" ] && return 1
+	[ -e "$target" ] && return 0
+	command -v "$target" >/dev/null 2>&1 && return 0
+	declare -F "$target" >/dev/null 2>&1 && return 0
+	return 1
 }
+

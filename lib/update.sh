@@ -67,9 +67,10 @@ update_script() {
 	local stale
 	for stale in "${stale_paths[@]}"; do
 		if [ -d "${LINUXBOX_LIB_DIR}/${stale}" ]; then
-			rm -rf "${LINUXBOX_LIB_DIR}/${stale}"
+			[ -n "${LINUXBOX_LIB_DIR:-}" ] && [ -n "${stale:-}" ] && rm -rf "${LINUXBOX_LIB_DIR}/${stale}"
 			echo -e "${yellow}清理已废弃目录: ${stale}/${white}"
 		fi
+
 	done
 
 	# 获取远程版本
@@ -180,7 +181,7 @@ update_script() {
 
 		# 清理旧备份 (保留最近 5 个)
 		ls -t "${SCRIPT_HOME}/backup/" 2>/dev/null | tail -n +6 | while read -r old_backup; do
-			rm -rf "${SCRIPT_HOME}/backup/${old_backup}"
+			[ -n "${SCRIPT_HOME:-}" ] && [ -n "${old_backup:-}" ] && rm -rf "${SCRIPT_HOME}/backup/${old_backup}"
 		done
 
 		break_end
@@ -252,10 +253,11 @@ rollback_version() {
 		cp -r "${LINUXBOX_LIB_DIR}/modules" "$current_backup/" 2>/dev/null
 		cp "${LINUXBOX_LIB_DIR}/${SCRIPT_FILE}" "$current_backup/" 2>/dev/null
 
-		rm -rf "${LINUXBOX_LIB_DIR}/lib" "${LINUXBOX_LIB_DIR}/modules"
+		[ -n "${LINUXBOX_LIB_DIR:-}" ] && rm -rf "${LINUXBOX_LIB_DIR}/lib" "${LINUXBOX_LIB_DIR}/modules"
 		cp -r "${backup_path}/lib" "${LINUXBOX_LIB_DIR}/" 2>/dev/null
 		cp -r "${backup_path}/modules" "${LINUXBOX_LIB_DIR}/" 2>/dev/null
 		cp "${backup_path}/${SCRIPT_FILE}" "${LINUXBOX_LIB_DIR}/" 2>/dev/null
+
 
 		echo -e "${green}✓ 回滚完成，请重新运行脚本${white}"
 		break_end

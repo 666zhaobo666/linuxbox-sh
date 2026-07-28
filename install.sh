@@ -115,13 +115,12 @@ echo ""
 # 检查结果
 if [ ${#FAILED_FILES[@]} -gt 0 ]; then
 	echo -e "${red}✗ 安装未完成, ${#FAILED_FILES[@]}/${TOTAL} 个文件下载失败:${white}"
-	local f
 	for f in "${FAILED_FILES[@]}"; do
 		echo -e "  ${red}✗${white} $f"
 	done
 	echo ""
 	echo -e "${yellow}请检查网络后重试${white}"
-	rm -rf "${INSTALL_DIR}"
+	[ -n "${INSTALL_DIR:-}" ] && rm -rf "${INSTALL_DIR}"
 	exit 1
 fi
 
@@ -157,10 +156,11 @@ if [ "$user_input" = "y" ] || [ "$user_input" = "Y" ]; then
 	sed -i 's/^user_authorization="false"/user_authorization="true"/' "${INSTALL_DIR}/${SCRIPT_FILE}" 2>/dev/null || true
 else
 	echo "已拒绝"
-	rm -rf "${INSTALL_DIR}"
+	[ -n "${INSTALL_DIR:-}" ] && rm -rf "${INSTALL_DIR}"
 	rm -f "/usr/local/bin/${KEY}"
 	exit 1
 fi
+
 
 echo ""
 echo -e "${green}安装完成！输入 ${KEY} 启动脚本${white}"

@@ -205,7 +205,10 @@ install_python_version() {
         
         # 清理缓存
         rm -rf /tmp/python-build.*
-        rm -rf "$(pyenv root)/cache/"*
+        local py_root
+        py_root="$(pyenv root 2>/dev/null)"
+        [ -n "$py_root" ] && rm -rf "${py_root}/cache/"*
+
         
         # 显示当前版本
         local VERSION=$(python -V 2>&1 | awk '{print $2}')

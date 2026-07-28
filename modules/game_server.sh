@@ -122,7 +122,7 @@ mc_backup() {
     echo -e "${cyan}正在备份 Minecraft 存档...${white}"
     docker cp mcserver:/data "$GAME_DIR/mc_backup/mc_data"
     cd "$GAME_DIR/mc_backup" && tar czf "$backup_name" mc_data
-    rm -rf "$GAME_DIR/mc_backup/mc_data"
+    [ -n "${GAME_DIR:-}" ] && rm -rf "$GAME_DIR/mc_backup/mc_data"
     echo -e "${green}存档已备份到: $GAME_DIR/mc_backup/$backup_name${white}"
     break_end
 }
@@ -135,7 +135,7 @@ mc_restore() {
         docker stop mcserver 2>/dev/null
         cd "$GAME_DIR/mc_backup" && tar xzf "$backup_file"
         docker cp "$GAME_DIR/mc_backup/mc_data/." mcserver:/data/
-        rm -rf "$GAME_DIR/mc_backup/mc_data"
+        [ -n "${GAME_DIR:-}" ] && rm -rf "$GAME_DIR/mc_backup/mc_data"
         docker start mcserver
         echo -e "${green}存档已恢复!${white}"
     else
@@ -188,9 +188,10 @@ mc_uninstall() {
         docker rmi -f itzg/minecraft-server 2>/dev/null
         read -r -p "是否删除存档数据？(y/n): " del_data
         if [[ "$del_data" =~ ^[Yy]$ ]]; then
-            rm -rf "$GAME_DIR/minecraft"
-            rm -rf "$GAME_DIR/mc_backup"
+            [ -n "${GAME_DIR:-}" ] && rm -rf "$GAME_DIR/minecraft"
+            [ -n "${GAME_DIR:-}" ] && rm -rf "$GAME_DIR/mc_backup"
         fi
+
         echo -e "${green}Minecraft 服务器已卸载${white}"
     fi
     break_end
@@ -355,7 +356,7 @@ pal_backup() {
     echo -e "${cyan}正在备份幻兽帕鲁存档...${white}"
     docker cp palworld:/home/steam/Steam/steamapps/common/PalServer/Pal/Saved "$GAME_DIR/pal_backup/pal_saved"
     cd "$GAME_DIR/pal_backup" && tar czf "$backup_name" pal_saved
-    rm -rf "$GAME_DIR/pal_backup/pal_saved"
+    [ -n "${GAME_DIR:-}" ] && rm -rf "$GAME_DIR/pal_backup/pal_saved"
     echo -e "${green}存档已备份到: $GAME_DIR/pal_backup/$backup_name${white}"
     break_end
 }
@@ -368,7 +369,7 @@ pal_restore() {
         docker stop palworld 2>/dev/null
         cd "$GAME_DIR/pal_backup" && tar xzf "$backup_file"
         docker cp "$GAME_DIR/pal_backup/pal_saved/." palworld:/home/steam/Steam/steamapps/common/PalServer/Pal/Saved/
-        rm -rf "$GAME_DIR/pal_backup/pal_saved"
+        [ -n "${GAME_DIR:-}" ] && rm -rf "$GAME_DIR/pal_backup/pal_saved"
         docker start palworld
         echo -e "${green}存档已恢复!${white}"
     else
@@ -416,9 +417,10 @@ pal_uninstall() {
         docker rmi -f jammsen/palworld-dedicated-server 2>/dev/null
         read -r -p "是否删除存档数据？(y/n): " del_data
         if [[ "$del_data" =~ ^[Yy]$ ]]; then
-            rm -rf "$GAME_DIR/palworld"
-            rm -rf "$GAME_DIR/pal_backup"
+            [ -n "${GAME_DIR:-}" ] && rm -rf "$GAME_DIR/palworld"
+            [ -n "${GAME_DIR:-}" ] && rm -rf "$GAME_DIR/pal_backup"
         fi
+
         echo -e "${green}幻兽帕鲁服务器已卸载${white}"
     fi
     break_end

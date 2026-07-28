@@ -92,7 +92,9 @@ check_panel_app() {
 }
 
 # 面板管理
+# 面板管理
 panel_manage() {
+	local choice
 	while true; do
 		clear
 		check_panel_app
@@ -162,6 +164,7 @@ CAT_NAMES=(
 render_category_apps_menu() {
 	local cat_key="$1"
 	local cat_title="${CAT_NAMES[$cat_key]:-$cat_key}"
+	local choice j
 
 	while true; do
 		dynamic_scan_installed_apps
@@ -242,6 +245,7 @@ render_category_apps_menu() {
 
 # 模糊搜索应用
 render_app_search_menu() {
+	local kw choice matched_ids id name
 	clear
 	echo -e "${green}===== 应用搜索 =====${white}"
 	read -e -p "请输入应用名称关键字: " kw
@@ -250,8 +254,7 @@ render_app_search_menu() {
 	fi
 
 	dynamic_scan_installed_apps
-	local matched_ids=()
-	local id name
+	matched_ids=()
 	for id in {1..110}; do
 		name="${APP_META_NAME[$id]:-}"
 		if echo "$name" | grep -qi "$kw"; then
@@ -282,6 +285,7 @@ render_app_search_menu() {
 
 # 传统全量展现视图 (1..110 传统三列打印)
 render_full_grid_menu() {
+	local i j choice
 	while true; do
 		dynamic_scan_installed_apps
 		clear
@@ -346,7 +350,9 @@ render_full_grid_menu() {
 # 应用市场主入口
 # ----------------------------------------------------------------------------
 linux_app() {
+	local main_choice
 	while true; do
+
 		dynamic_scan_installed_apps
 		clear
 		echo -e "${green}====================================================================================${white}"
@@ -465,10 +471,11 @@ dynamic_scan_installed_apps() {
 		fi
 
 		if [ $is_inst -eq 0 ] && [ -n "$p_path" ]; then
-			if eval "$p_path >/dev/null 2>&1" || [ -e "$p_path" ]; then
+			if check_cmd_or_path "$p_path"; then
 				is_inst=1
 			fi
 		fi
+
 
 		if [ $is_inst -eq 1 ]; then
 			INSTALLED_MAP["$id"]=1
@@ -489,7 +496,7 @@ dynamic_scan_installed_apps() {
 _pad_string() {
 	local str="$1"
 	local target="$2"
-	local w=0
+	local w=0 i
 	for ((i=0; i<${#str}; i++)); do
 		[[ "${str:i:1}" =~ [a-zA-Z0-9_\.\-\ ] ]] && ((w+=1)) || ((w+=2))
 	done
@@ -500,6 +507,7 @@ _pad_string() {
 }
 
 render_666_installed_view() {
+	local _null_choice jump_choice i
 	while true; do
 		dynamic_scan_installed_apps
 		clear
@@ -574,6 +582,7 @@ render_666_installed_view() {
 		echo -e "${yellow}0.   ${white}返回上一级"
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 		read -e -p "输入应用编号进入对应详情管理 (0 返回): " jump_choice
+
 		if [ "$jump_choice" = "0" ] || [ -z "$jump_choice" ]; then
 			return
 		fi
@@ -683,7 +692,7 @@ app_lifecycle_uninstall() {
 	fi
 
 	if [ -n "$default_uninstall_cmd" ] && declare -F "$default_uninstall_cmd" >/dev/null 2>&1; then
-		eval "$default_uninstall_cmd"
+		"$default_uninstall_cmd"
 	elif [ -n "$d_name" ] && command -v docker >/dev/null 2>&1; then
 		echo -e "${yellow}正在停止并移除容器 ${d_name}...${white}"
 		docker rm -f "$d_name" 2>/dev/null || true
@@ -697,9 +706,10 @@ app_lifecycle_uninstall() {
 	if [ -n "$d_name" ] && [ -d "/home/docker/${d_name}" ]; then
 		echo ""
 		echo -e "${yellow}[!] 检测到持久化数据目录: /home/docker/${d_name}${white}"
+		local clean_data
 		read -e -p "是否彻底清理该数据目录? (保留数据请输入 N) [y/N]: " clean_data
 		if [[ "$clean_data" =~ ^[Yy]$ ]]; then
-			rm -rf "/home/docker/${d_name}"
+			[ -n "${d_name:-}" ] && rm -rf "/home/docker/${d_name}"
 			echo -e "${green}数据目录已被彻底清理。${white}"
 		else
 			echo -e "${cyan}已保留数据目录: /home/docker/${d_name}${white}"
@@ -723,7 +733,7 @@ dispatch_app_execution() {
 
 	if [ "$status" = "offline" ]; then
 		# Check if installed
-		local is_installed=0
+		local is_installed=0 id
 		for id in "${INSTALLED_IDS[@]}"; do
 			if [ "$id" = "$app_id" ]; then
 				is_installed=1
@@ -749,7 +759,8 @@ dispatch_app_execution() {
 	fi
 
 	if [ -n "$func_name" ] && declare -F "$func_name" >/dev/null 2>&1; then
-		eval "$func_name"
+		"$func_name"
+
 	else
 		echo -e "${red}错误: 无法找到应用入口函数 $func_name${white}"
 		sleep 1.5
@@ -1006,33 +1017,44 @@ _docker_app_default_update() {
 
 # 单容器风格: 默认卸载 (删容器+删镜像+清数据目录)
 _docker_app_default_uninstall() {
-	docker rm -f "$docker_name"
-	docker rmi -f "$docker_img"
-	rm -rf "/home/docker/$docker_name"
+	[ -n "${docker_name:-}" ] && docker rm -f "$docker_name" 2>/dev/null || true
+	[ -n "${docker_img:-}" ] && docker rmi -f "$docker_img" 2>/dev/null || true
+	[ -n "${docker_name:-}" ] && rm -rf "/home/docker/$docker_name"
 }
 
 # 安装/更新后处理: 优先新式钩子 app_post_install / app_post_install_password,
-# 兜底走老式 $docker_use / $docker_passwd (eval 执行)
+# 兜底走老式 $docker_use / $docker_passwd
 _docker_app_post_install() {
 	if declare -F app_post_install >/dev/null 2>&1; then
 		app_post_install
 	elif [ -n "${docker_use:-}" ]; then
-		eval "$docker_use"
+		if declare -F "$docker_use" >/dev/null 2>&1; then
+			"$docker_use"
+		else
+			eval "$docker_use"
+		fi
 	fi
 	if declare -F app_post_install_password >/dev/null 2>&1; then
 		app_post_install_password
 	elif [ -n "${docker_passwd:-}" ]; then
-		eval "$docker_passwd"
+		if declare -F "$docker_passwd" >/dev/null 2>&1; then
+			"$docker_passwd"
+		else
+			eval "$docker_passwd"
+		fi
 	fi
 }
+
 
 # 统一入口
 # 调用方需在调用前定义好变量, 可选定义 docker_app_install/update/uninstall (compose)
 # 或 docker_run (单容器). 由 declare -F 自动检测.
 # 显示标题用变量: 优先 app_* 新名, 兼容老 docker_* 命名.
 docker_app() {
+	local choice _primary_port
 	# 选路径: 优先 compose 三函数, 否则用单容器默认实现
 	local _install_cmd
+
 	if declare -F docker_app_install >/dev/null 2>&1; then
 		_install_cmd="docker_app_install"
 	else
