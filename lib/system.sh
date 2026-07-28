@@ -53,3 +53,25 @@ error_exit() {
 	echo -e "${red}[错误]${white} $1"
     exit 1
 }
+
+## 检查写权限与 sudo 自动提升
+check_write_permission() {
+	local action="${1:-update}"
+	local target_dir="${LINUXBOX_LIB_DIR:-.}"
+	local target_file="${target_dir}/${SCRIPT_FILE:-LinuxBox.sh}"
+
+	if [ ! -w "$target_dir" ] || { [ -e "$target_file" ] && [ ! -w "$target_file" ]; }; then
+		if [ "${EUID:-$(id -u)}" -ne 0 ]; then
+			if command -v sudo &>/dev/null; then
+				echo -e "${yellow}提示: 当前用户无写权限，尝试使用 sudo 自动提升权限重新执行...${white}"
+				if sudo bash "$target_file" "$action"; then
+					return 2
+				fi
+			fi
+		fi
+		echo -e "${red}错误: 当前用户无权修改 ${target_dir} 目录！请使用 'sudo j update' 或切换 root 用户后重新执行。${white}"
+		return 1
+	fi
+	return 0
+}
+

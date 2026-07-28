@@ -10,6 +10,10 @@ linuxbox_dispatch() {
 			dependency_check
 			update_script
 			;;
+		rollback|回滚)
+			dependency_check
+			rollback_version
+			;;
 		install|add|安装)
 			install "$@"
 			;;
