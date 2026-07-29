@@ -69,34 +69,41 @@ while true; do
 			## "新建容器"
 			read -e -p "请输入创建命令: " dockername
 			$dockername
+			break_end
 			;;
 		2)
 			## "启动指定容器"
 			read -e -p "请输入容器名（多个容器名请用空格分隔）: " dockername
 			docker start $dockername
+			break_end
 			;;
 		3)
 			## "停止指定容器"
 			read -e -p "请输入容器名（多个容器名请用空格分隔）: " dockername
 			docker stop $dockername
+			break_end
 			;;
 		4)
 			## "删除指定容器"
 			read -e -p "请输入容器名（多个容器名请用空格分隔）: " dockername
 			docker rm -f $dockername
+			break_end
 			;;
 		5)
 			## "重启指定容器"
 			read -e -p "请输入容器名（多个容器名请用空格分隔）: " dockername
 			docker restart $dockername
+			break_end
 			;;
 		6)
 			## "启动所有容器"
 			docker start $(docker ps -a -q)
+			break_end
 			;;
 		7)
 			## "停止所有容器"
 			docker stop $(docker ps -q)
+			break_end
 			;;
 		8)
 			## "删除所有容器"
@@ -104,6 +111,7 @@ while true; do
 			case "$choice" in
 			[Yy])
 				docker rm -f $(docker ps -a -q)
+				break_end
 				;;
 			[Nn])
 				;;
@@ -116,6 +124,7 @@ while true; do
 		9)
 			## "重启所有容器"
 			docker restart $(docker ps -q)
+			break_end
 			;;
 		11)
 			## "进入容器"
@@ -205,6 +214,7 @@ while true; do
 				echo -e "${yellow}正在获取镜像: $name${white}"
 				docker pull $name
 			done
+			break_end
 			;;
 		2)
 			## "更新镜像"
@@ -213,6 +223,7 @@ while true; do
 				echo -e "${yellow}正在更新镜像: $name${white}"
 				docker pull $name
 			done
+			break_end
 			;;
 		3)
 			## "删除镜像"
@@ -220,6 +231,7 @@ while true; do
 			for name in $imagenames; do
 				docker rmi -f $name
 			done
+			break_end
 			;;
 		4)
 			## "删除所有镜像"
@@ -227,6 +239,7 @@ while true; do
 			case "$choice" in
 				[Yy])
 				docker rmi -f $(docker images -q)
+				break_end
 				;;
 				[Nn])
 				;;
@@ -367,6 +380,7 @@ install_docker() {
         install_add_docker
     else
         echo -e "${yellow}Docker 已安装, 跳过安装流程${white}"
+        break_end
     fi
 }
 
@@ -405,9 +419,11 @@ uninstall_docker() {
             hash -r
 
             echo -e "${red}Docker 环境已卸载完成${white}"
+            break_end
             ;;
         [Nn])
             echo -e "${white}已取消 Docker 卸载操作${white}"
+            break_end
             ;;
         *)
             echo -e "${red}无效的选择, 请输入 Y 或 N${white}"
@@ -478,7 +494,7 @@ linux_docker() {
 				echo -e "Docker网络: ${green}$network_count${white}"
 				docker network ls
 				echo ""
-
+				break_end
 				;;
 			3)
 				docker_ps
@@ -530,6 +546,7 @@ linux_docker() {
 							## "创建网络"
 							read -e -p "设置新网络名: " dockernetwork
 							docker network create $dockernetwork
+							break_end
 							;;
 						2)
 							## "加入网络"
@@ -539,6 +556,7 @@ linux_docker() {
 							for dockername in $dockernames; do
 								docker network connect $dockernetwork $dockername
 							done
+							break_end
 							;;
 						3)
 							## "加入网络"
@@ -548,13 +566,14 @@ linux_docker() {
 							for dockername in $dockernames; do
 								docker network disconnect $dockernetwork $dockername
 							done
-
+							break_end
 							;;
 
 						4)
 							## "删除网络"
 							read -e -p "请输入要删除的网络名: " dockernetwork
 							docker network rm $dockernetwork
+							break_end
 							;;
 
 						0)
@@ -590,7 +609,7 @@ linux_docker() {
 							## "新建卷"
 							read -e -p "设置新卷名: " dockerjuan
 							docker volume create $dockerjuan
-
+							break_end
 							;;
 						2)
 							read -e -p "输入删除卷名（多个卷名请用空格分隔）: " dockerjuans
@@ -598,7 +617,7 @@ linux_docker() {
 							for dockerjuan in $dockerjuans; do
 								docker volume rm $dockerjuan
 							done
-
+							break_end
 							;;
 
 						3)
@@ -607,6 +626,7 @@ linux_docker() {
 							case "$choice" in
 							[Yy])
 								docker volume prune -f
+								break_end
 								;;
 							[Nn])
 								;;
@@ -633,6 +653,7 @@ linux_docker() {
 				case "$choice" in
 				[Yy])
 					docker system prune -af --volumes
+					break_end
 					;;
 				[Nn])
 					;;
@@ -646,6 +667,7 @@ linux_docker() {
 				clear
 				## "Docker源"
 				bash <(curl -sSL https://linuxmirrors.cn/docker.sh)
+				break_end
 				;;
 
 			9)
@@ -653,22 +675,26 @@ linux_docker() {
 				install vim
 				mkdir -p /etc/docker && sudo vim /etc/docker/daemon.json
 				sudo systemctl restart docker
+				break_end
 				;;
 
 			11)
 				clear
 				## "Docker v6 开"
 				docker_ipv6_on
+				break_end
 				;;
 
 			12)
 				clear
 				## "Docker v6 关"
 				docker_ipv6_off
+				break_end
 				;;
 
 			20)
 				uninstall_docker
+				break_end
 				;;
 
 			0)
