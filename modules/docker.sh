@@ -419,7 +419,6 @@ install_docker() {
         install_add_docker
     else
         echo -e "${yellow}Docker 已安装, 跳过安装流程${white}"
-        break_end
     fi
 }
 
