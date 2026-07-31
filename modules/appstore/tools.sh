@@ -1331,7 +1331,9 @@ watchtower_app(){
 			--restart=always \
 			-e DOCKER_API_VERSION=1.41 \
 			-v /var/run/docker.sock:/var/run/docker.sock \
-			containrrr/watchtower:latest
+			containrrr/watchtower:latest \
+			--cleanup \
+			--interval 3600
 	}
 
 	local app_text="Watchtower - 自动化更新 Docker 容器镜像的工具"

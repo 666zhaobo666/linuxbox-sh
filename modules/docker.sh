@@ -56,9 +56,9 @@ run_watchtower_update() {
 	fi
 	echo -e "${yellow}正在使用 Watchtower 更新...${white}"
 	if command -v watchtower &>/dev/null; then
-		watchtower --run-once $container_name
+		watchtower --run-once --cleanup $container_name
 	else
-		docker run --rm -e DOCKER_API_VERSION=1.41 -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower:latest --run-once $container_name
+		docker run --rm -e DOCKER_API_VERSION=1.41 -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower:latest --run-once --cleanup $container_name
 	fi
 }
 
