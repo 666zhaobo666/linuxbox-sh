@@ -1325,6 +1325,39 @@ watchtower_app(){
 	local docker_port=""
 
 	docker_run() {
+		clear
+		echo -e "${cyan}===== Watchtower 自动更新设置 =====${white}"
+		echo "您是否希望 Watchtower 在后台【自动监控并更新】所有容器？"
+		echo -e "如果不开启，后台将完全静默，只允许您在应用市场手动点击更新指定容器。"
+		read -e -p "$(echo -e "${green}开启全自动更新？(Y/N, 默认N): ${white}")" enable_auto
+		enable_auto=${enable_auto:-N}
+
+		local extra_args=""
+		if [[ "$enable_auto" =~ ^[Yy]$ ]]; then
+			echo -e "${cyan}---------------------------------${white}"
+			echo "请输入自动检查频率 (支持 1h, 1d, 1w, 1m)"
+			echo "h=小时, d=天, w=周, m=月"
+			read -e -p "$(echo -e "${green}请输入频率 (默认 1d): ${white}")" freq_input
+			freq_input=${freq_input:-1d}
+
+			local seconds=86400
+			if [[ "$freq_input" =~ ^([0-9]+)h$ ]]; then
+				seconds=$((${BASH_REMATCH[1]} * 3600))
+			elif [[ "$freq_input" =~ ^([0-9]+)d$ ]]; then
+				seconds=$((${BASH_REMATCH[1]} * 86400))
+			elif [[ "$freq_input" =~ ^([0-9]+)w$ ]]; then
+				seconds=$((${BASH_REMATCH[1]} * 604800))
+			elif [[ "$freq_input" =~ ^([0-9]+)m$ ]]; then
+				seconds=$((${BASH_REMATCH[1]} * 2592000))
+			else
+				echo -e "${yellow}输入格式有误，将使用默认值 1d (86400秒)${white}"
+			fi
+			extra_args="--interval $seconds"
+		else
+			# 不开启自动更新：启用白名单模式(无人符合)+极长休眠，实现完全挂起静默
+			extra_args="--label-enable --interval 31536000"
+		fi
+
 		docker pull containrrr/watchtower:latest
 		docker run -d \
 			--name watchtower \
@@ -1333,7 +1366,7 @@ watchtower_app(){
 			-v /var/run/docker.sock:/var/run/docker.sock \
 			containrrr/watchtower:latest \
 			--cleanup \
-			--interval 86400
+			$extra_args
 	}
 
 	local app_text="Watchtower - 自动化更新 Docker 容器镜像的工具"
