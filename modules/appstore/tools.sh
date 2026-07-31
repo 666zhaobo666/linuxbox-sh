@@ -1321,17 +1321,17 @@ watchtower_app(){
 	local app_id="111"
 	local app_name="Watchtower容器更新工具"
 	local docker_name="watchtower"
-	local docker_img="containrrr/watchtower:1.7.1"
+	local docker_img="containrrr/watchtower:latest"
 	local docker_port=""
 
 	docker_run() {
-		docker pull containrrr/watchtower:1.7.1
+		docker pull containrrr/watchtower:latest
 		docker run -d \
 			--name watchtower \
 			--restart=always \
 			-e DOCKER_API_VERSION=1.41 \
 			-v /var/run/docker.sock:/var/run/docker.sock \
-			containrrr/watchtower:1.7.1
+			containrrr/watchtower:latest
 	}
 
 	local app_text="Watchtower - 自动化更新 Docker 容器镜像的工具"

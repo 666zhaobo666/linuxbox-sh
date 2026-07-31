@@ -58,7 +58,7 @@ run_watchtower_update() {
 	if command -v watchtower &>/dev/null; then
 		watchtower --run-once $container_name
 	else
-		docker run --rm -e DOCKER_API_VERSION=1.41 -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower:1.7.1 --run-once $container_name
+		docker run --rm -e DOCKER_API_VERSION=1.41 -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower:latest --run-once $container_name
 	fi
 }
 
