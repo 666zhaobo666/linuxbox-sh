@@ -1316,3 +1316,26 @@ EOF
 	docker_app
 }
 
+# [111] Watchtower容器更新工具
+watchtower_app(){
+	local app_id="111"
+	local app_name="Watchtower容器更新工具"
+	local docker_name="watchtower"
+	local docker_img="containrrr/watchtower:latest"
+	local docker_port=""
+
+	docker_run() {
+		docker run -d \
+			--name watchtower \
+			--restart=always \
+			-v /var/run/docker.sock:/var/run/docker.sock \
+			containrrr/watchtower:latest
+	}
+
+	local app_text="Watchtower - 自动化更新 Docker 容器镜像的工具"
+	local app_url="官网介绍: https://containrrr.dev/watchtower/"
+	local app_size="1"
+	docker_app
+}
+
+

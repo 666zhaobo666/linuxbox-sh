@@ -88,26 +88,20 @@ poste_mail_app(){
 				;;
 
 			2)
-				docker rm -f mailserver
-				docker rmi -f analogic/poste.i
-				yuming=$(cat /home/docker/mail.txt)
-				docker run \
-					--net=host \
-					-e TZ=Europe/Prague \
-					-v /home/docker/mail:/data \
-					--name "mailserver" \
-					-h "$yuming" \
-					--restart=always \
-					-d analogic/poste.i
-
-				add_app_id
-
-				clear
-				echo "poste.io已经安装完成"
-				echo -e "${pink}------------------------${white}"
-				echo "您可以使用以下地址访问poste.io:"
-				echo "https://$yuming"
-				echo ""
+				if ! check_watchtower_installed; then
+					echo -e "${red}未安装 Watchtower，请先安装${white}"
+					sleep 1.5
+				else
+					run_watchtower_update "mailserver"
+					yuming=$(cat /home/docker/mail.txt 2>/dev/null || echo "")
+					add_app_id
+					clear
+					echo "poste.io已经更新完成"
+					echo -e "${pink}------------------------${white}"
+					echo "您可以使用以下地址访问poste.io:"
+					echo "https://$yuming"
+					echo ""
+				fi
 				;;
 			3)
 				docker rm -f mailserver
@@ -428,8 +422,7 @@ EOF
 	}
 
 	docker_app_update() {
-		cd /home/docker/rocketchat && docker compose down --rmi all
-		cd /home/docker/rocketchat && docker compose up -d
+		run_watchtower_update "$docker_name"
 	}
 
 	docker_app_uninstall() {

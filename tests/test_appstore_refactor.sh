@@ -43,7 +43,7 @@ echo "  ✓ Total registered apps: ${#APP_META_NAME[@]}"
 
 echo "[Test 2] Checking Category distribution..."
 declare -A CAT_COUNTS=()
-for id in {1..110}; do
+for id in {1..111}; do
 	cat="${APP_META_CAT[$id]:-unknown}"
 	CAT_COUNTS["$cat"]=$(( ${CAT_COUNTS["$cat"]:-0} + 1 ))
 done
@@ -58,7 +58,7 @@ done
 
 echo "[Test 3] Checking offline audit status..."
 offline_count=0
-for id in {1..110}; do
+for id in {1..111}; do
 	if [ "${APP_META_STATUS[$id]:-}" = "offline" ]; then
 		offline_count=$((offline_count + 1))
 	fi

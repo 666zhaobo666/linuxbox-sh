@@ -86,7 +86,7 @@ dify_app(){
 	}
 
 	docker_app_update() {
-		cd /home/docker/dify && docker compose pull && docker compose up -d
+		run_watchtower_update "$docker_name"
 	}
 
 	docker_app_uninstall() {

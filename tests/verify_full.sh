@@ -120,6 +120,7 @@ bash tests/framework_smoke.sh
 bash tests/test_appstore_refactor.sh
 bash tests/test_audit_fixes.sh
 bash tests/test_update_permissions.sh
+bash tests/test_watchtower.sh
 
 echo "LinuxBox full verification passed."
 

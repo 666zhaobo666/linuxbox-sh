@@ -177,7 +177,7 @@ render_category_apps_menu() {
 
 		local app_ids=()
 		local id
-		for id in {1..110}; do
+		for id in {1..111}; do
 			if [ "${APP_META_CAT[$id]:-}" = "$cat_key" ]; then
 				app_ids+=("$id")
 			fi
@@ -255,7 +255,7 @@ render_app_search_menu() {
 
 	dynamic_scan_installed_apps
 	matched_ids=()
-	for id in {1..110}; do
+	for id in {1..111}; do
 		name="${APP_META_NAME[$id]:-}"
 		if echo "$name" | grep -qi "$kw"; then
 			matched_ids+=("$id")
@@ -295,7 +295,7 @@ render_full_grid_menu() {
 		docker_tato 2>/dev/null || true
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 
-		for i in {1..110}; do
+		for i in {1..111}; do
 			local name="${APP_META_NAME[$i]:-}"
 			[ -z "$name" ] && continue
 			local dot_str="${red}●${white}"
@@ -459,7 +459,7 @@ dynamic_scan_installed_apps() {
 
 	local id d_name p_path is_inst
 	local nl=$'\n'
-	for id in {1..110}; do
+	for id in {1..111}; do
 		d_name="${APP_META_DOCKER[$id]:-}"
 		p_path="${APP_META_PANEL_PATH[$id]:-}"
 		is_inst=0
@@ -1008,11 +1008,9 @@ _docker_app_default_install() {
 	echo "$docker_port" > "/home/docker/${docker_name}_port.conf"
 }
 
-# 单容器风格: 默认更新 (删容器+删镜像+重跑 docker_run)
+# 单容器风格: 默认更新 (使用 watchtower 更新)
 _docker_app_default_update() {
-	docker rm -f "$docker_name"
-	docker rmi -f "$docker_img"
-	docker_run
+	run_watchtower_update "$docker_name"
 }
 
 # 单容器风格: 默认卸载 (删容器+删镜像+清数据目录)
@@ -1153,6 +1151,9 @@ docker_app() {
 				1)  # 更新
 					if [ "${APP_OFFLINE:-0}" -eq 1 ]; then
 						echo -e "${red}该应用已下线，不支持更新!${white}"
+						sleep 1.5
+					elif ! check_watchtower_installed; then
+						echo -e "${red}未安装 Watchtower，请先安装${white}"
 						sleep 1.5
 					else
 						"$_update_cmd"

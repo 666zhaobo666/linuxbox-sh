@@ -544,8 +544,7 @@ EOF
 	}
 
 	docker_app_update() {
-		cd /home/docker/jumpserver && docker compose down --rmi all
-		cd /home/docker/jumpserver && docker compose up -d
+		run_watchtower_update "$docker_name"
 	}
 
 	docker_app_uninstall() {

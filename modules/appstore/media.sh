@@ -76,8 +76,7 @@ moontv_app(){
 
 
 	docker_app_update() {
-		cd /home/docker/moontv/ && docker compose down --rmi all
-		cd /home/docker/moontv/ && docker compose up -d
+		run_watchtower_update "$docker_name"
 	}
 
 
@@ -226,8 +225,7 @@ EOF
 
 
 	docker_app_update() {
-		cd /home/docker/decotv/ && docker compose down --rmi all
-		cd /home/docker/decotv/ && docker compose up -d
+		run_watchtower_update "$docker_name"
 	}
 
 
@@ -392,8 +390,7 @@ EOF
 	}
 
 	docker_app_update() {
-		cd /home/docker/photoprism && docker compose down --rmi all
-		cd /home/docker/photoprism && docker compose up -d
+		run_watchtower_update "$docker_name"
 	}
 
 	docker_app_uninstall() {
@@ -433,7 +430,7 @@ immich_app(){
 	}
 
 	docker_app_update() {
-		cd /home/docker/immich && docker compose pull && docker compose up -d
+		run_watchtower_update "$docker_name"
 	}
 
 	docker_app_uninstall() {

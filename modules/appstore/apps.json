@@ -1428,5 +1428,18 @@
     "description": "普罗米修斯监控",
     "panel_path": "",
     "func": "prometheus_app"
+  },
+  {
+    "id": 111,
+    "name": "Watchtower容器更新工具",
+    "category": "tools",
+    "status": "normal",
+    "docker_name": "watchtower",
+    "docker_img": "containrrr/watchtower:latest",
+    "default_port": "",
+    "homepage": "https://containrrr.dev/watchtower/",
+    "description": "Watchtower - 自动化更新 Docker 容器镜像的工具",
+    "panel_path": "",
+    "func": "watchtower_app"
   }
 ]

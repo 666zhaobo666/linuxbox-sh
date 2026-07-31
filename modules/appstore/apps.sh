@@ -1002,6 +1002,15 @@ init_appstore_registry() {
 	APP_META_DESC[110]="普罗米修斯监控"
 	APP_META_FUNC[110]="prometheus_app"
 	APP_META_PANEL_PATH[110]=""
+	APP_META_NAME[111]="Watchtower容器更新工具"
+	APP_META_CAT[111]="tools"
+	APP_META_STATUS[111]="normal"
+	APP_META_DOCKER[111]="watchtower"
+	APP_META_PORT[111]=""
+	APP_META_HOMEPAGE[111]="https://containrrr.dev/watchtower/"
+	APP_META_DESC[111]="Watchtower - 自动化更新 Docker 容器镜像的工具"
+	APP_META_FUNC[111]="watchtower_app"
+	APP_META_PANEL_PATH[111]=""
 }
 
 init_appstore_registry

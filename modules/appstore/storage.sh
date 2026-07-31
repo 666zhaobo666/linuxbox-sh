@@ -145,8 +145,7 @@ EOF
 	}
 
 	docker_app_update() {
-		cd /home/docker/nextcloud && docker compose down --rmi all
-		cd /home/docker/nextcloud && docker compose up -d
+		run_watchtower_update "$docker_name"
 	}
 
 	docker_app_uninstall() {

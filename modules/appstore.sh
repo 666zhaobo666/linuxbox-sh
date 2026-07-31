@@ -59,7 +59,7 @@ render_category_apps_menu() {
 
 		local app_ids=()
 		local id
-		for id in {1..110}; do
+		for id in {1..111}; do
 			if [ "${APP_META_CAT[$id]:-}" = "$cat_key" ]; then
 				app_ids+=("$id")
 			fi
@@ -137,7 +137,7 @@ render_app_search_menu() {
 	dynamic_scan_installed_apps
 	local matched_ids=()
 	local id name
-	for id in {1..110}; do
+	for id in {1..111}; do
 		name="${APP_META_NAME[$id]:-}"
 		if echo "$name" | grep -qi "$kw"; then
 			matched_ids+=("$id")
@@ -165,7 +165,7 @@ render_app_search_menu() {
 	fi
 }
 
-# 传统全量展现视图 (1..110 传统三列打印)
+# 传统全量展现视图 (1..111 传统三列打印)
 render_full_grid_menu() {
 	while true; do
 		dynamic_scan_installed_apps
@@ -176,7 +176,7 @@ render_full_grid_menu() {
 		docker_tato 2>/dev/null || true
 		echo -e "${pink}------------------------------------------------------------------------------------${white}"
 
-		for i in {1..110}; do
+		for i in {1..111}; do
 			local name="${APP_META_NAME[$i]:-}"
 			[ -z "$name" ] && continue
 			local dot_str="${red}●${white}"

@@ -40,6 +40,28 @@ docker_tato() {
 	fi
 }
 
+check_watchtower_installed() {
+	if command -v watchtower &>/dev/null || docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^watchtower$" || docker images --format '{{.Repository}}' 2>/dev/null | grep -q "^containrrr/watchtower$"; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+run_watchtower_update() {
+	local container_name="$1"
+	if ! check_watchtower_installed; then
+		echo -e "${red}未安装 Watchtower，请先安装${white}"
+		return 1
+	fi
+	echo -e "${yellow}正在使用 Watchtower 更新...${white}"
+	if command -v watchtower &>/dev/null; then
+		watchtower --run-once $container_name
+	else
+		docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once $container_name
+	fi
+}
+
 ## 1. Docker容器管理
 docker_ps() {
 while true; do
@@ -55,6 +77,8 @@ while true; do
 	echo -e "${cyan}3.${white}  停止指定容器            ${cyan}7.${white} 停止所有容器"
 	echo -e "${cyan}4.${white}  删除指定容器            ${cyan}8.${white} 删除所有容器"
 	echo -e "${cyan}5.${white}  重启指定容器            ${cyan}9.${white} 重启所有容器"
+	echo -e "${pink}-------------------------------------------${white}"
+	echo -e "${cyan}10.${white} 更新指定容器"
 	echo -e "${pink}-------------------------------------------${white}"
 	echo -e "${cyan}11.${white} 进入指定容器           ${cyan}12.${white} 查看容器日志"
 	echo -e "${cyan}13.${white} 查看容器网络           ${cyan}14.${white} 查看容器占用"
@@ -125,6 +149,21 @@ while true; do
 			## "重启所有容器"
 			docker restart $(docker ps -q)
 			break_end
+			;;
+		10)
+			## "更新指定容器"
+			if ! check_watchtower_installed; then
+				echo -e "${red}未安装 Watchtower，请先安装${white}"
+				sleep 1.5
+			else
+				read -e -p "请输入容器名（多个容器名请用空格分隔）: " dockername
+				if [ -n "$dockername" ]; then
+					run_watchtower_update "$dockername"
+				else
+					echo -e "${yellow}未输入容器名, 取消操作${white}"
+				fi
+				break_end
+			fi
 			;;
 		11)
 			## "进入容器"
