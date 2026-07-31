@@ -1325,6 +1325,7 @@ watchtower_app(){
 	local docker_port=""
 
 	docker_run() {
+		docker pull containrrr/watchtower:latest
 		docker run -d \
 			--name watchtower \
 			--restart=always \
